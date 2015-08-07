@@ -34,7 +34,7 @@ $sql = array(
 		'CREATE TABLE IF NOT EXISTS `'._DB_PREFIX_.'todopago_productos'.'`(
 			    `id_product` INT(11) NOT NULL,
 			    `tipo_servicio` VARCHAR(500),
-			    `tipo_delievery` VARCHAR(500),
+			    `tipo_delivery` VARCHAR(500),
 				`referencia_pago` VARCHAR(500) ,
 				`fecha_evento` DATETIME,
 				`tipo_envio` VARCHAR(500),

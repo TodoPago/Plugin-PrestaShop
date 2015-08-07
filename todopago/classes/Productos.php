@@ -1,12 +1,12 @@
 <?php
 
-class TPProductoCybersource extends ObjectModel{
+class TPProductoControlFraude extends ObjectModel{
 	public $id_product;
-	public $tipo_servicio;
-	public $referencia_pago;
-	public $tipo_delivery;
-	public $fecha_evento;
-	public $tipo_envio;
+	public $tipo_servicio = "";
+	public $referencia_pago = "";
+	public $tipo_delivery = "";
+	public $fecha_evento = "";
+	public $tipo_envio = "";
 	public $codigo_producto = "default";
 	
 	public static $definition = array(
@@ -26,7 +26,7 @@ class TPProductoCybersource extends ObjectModel{
 	
 	public static function existeRegistro($idProducto)
 	{
-		$sql = 'SELECT COUNT(*) FROM '._DB_PREFIX_.TPProductoCybersource::$definition['table'].' WHERE '.TPProductoCybersource::$definition['primary'].'='.$idProducto;
+		$sql = 'SELECT COUNT(*) FROM '._DB_PREFIX_.TPProductoControlFraude::$definition['table'].' WHERE '.TPProductoControlFraude::$definition['primary'].'='.$idProducto;
 		
 		if (Db::getInstance()->getValue($sql) > 0)
 			return true;
@@ -35,18 +35,18 @@ class TPProductoCybersource extends ObjectModel{
 	
 	public static function getRegistroAsArray($idProducto)
 	{
-		$sql = 'SELECT * FROM '._DB_PREFIX_.TPProductoCybersource::$definition['table'].' WHERE '.TPProductoCybersource::$definition['primary'].'='.$idProducto;
+		$sql = 'SELECT * FROM '._DB_PREFIX_.TPProductoControlFraude::$definition['table'].' WHERE '.TPProductoControlFraude::$definition['primary'].'='.$idProducto;
 		return Db::getInstance()->executeS($sql);
 	}
 	
 	public static function getRegistroAsArrayCampos($idProducto, $campos)
 	{
-		$sql = 'SELECT '.join(",",$campos).' FROM '._DB_PREFIX_.TPProductoCybersource::$definition['table'].' WHERE '.TPProductoCybersource::$definition['primary'].'='.$idProducto;
+		$sql = 'SELECT '.join(",",$campos).' FROM '._DB_PREFIX_.TPProductoControlFraude::$definition['table'].' WHERE '.TPProductoControlFraude::$definition['primary'].'='.$idProducto;
 		return Db::getInstance()->executeS($sql);
 	}
 	
 	public static function getValorRegistro($idProducto, $campo)
 	{
-		return Db::getInstance()->getValue('SELECT '.$campo.' FROM '._DB_PREFIX_.TPProductoCybersource::$definition['table'].' WHERE '.TPProductoCybersource::$definition['primary'].'='.$idProducto);
+		return Db::getInstance()->getValue('SELECT '.$campo.' FROM '._DB_PREFIX_.TPProductoControlFraude::$definition['table'].' WHERE '.TPProductoControlFraude::$definition['primary'].'='.$idProducto);
 	}
 }

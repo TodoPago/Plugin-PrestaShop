@@ -31,17 +31,20 @@
 
 use TodoPago\Sdk;
 use TPTransaccion as Transaccion;
-use TPProductoCybersource as ProductoCybersource;
+use TPProductoControlFraude as ProductoControlFraude;
 
 require_once (dirname(__FILE__) . '../../../lib/TodoPago/lib/Sdk.php');
 require_once (dirname(__FILE__) . '../../../classes/Transaccion.php');
 require_once (dirname(__FILE__) . '../../../classes/Productos.php');
+require_once (dirname(__FILE__) . '../../../lib/ControlFraude/ControlFraudeFactory.php');
+
 class TodoPagoPaymentModuleFrontController extends ModuleFrontController
 {
     public $ssl = true;
     public $display_column_left = false;
     private $codigoAprobacion = -1; //valor del campo SatusCode que indica que la transaccion fue aprobada (en este caso -1).
-    
+    private $first_step = false;
+	
     public function initContent()
     {
         $this->display_column_left = false;//para que no se muestre la columna de la izquierda
@@ -63,7 +66,7 @@ class TodoPagoPaymentModuleFrontController extends ModuleFrontController
         $template;//template de Smarty que se usa. Depende del paso.
         $smarty;//variables que se usan en la template que corresponda al paso
         $this->tranEstado = $this->_tranEstado($cart->id);
-        
+		
         try 
         {
             if (!$this->module->checkCurrency($cart))
@@ -163,11 +166,6 @@ class TodoPagoPaymentModuleFrontController extends ModuleFrontController
          * PublicRequestKey: igual al RequestKey
          */
         $this->module->logInfo($cart->id,'first step');
-        if($this->tranEstado != 1)
-        {
-            throw new Exception("first_step ya realizado");
-            $smarty['status'] = 0;//indica que hubo un error en este paso
-        }
         
         $options = $this->getOptionsSARComercio($prefijo, $cart->id);
         $options = array_merge($options, $this->getOptionsSAROperacion($prefijo, $cliente, $cart));
@@ -178,6 +176,15 @@ class TodoPagoPaymentModuleFrontController extends ModuleFrontController
         $this->module->logInfo($cart->id,'response SAR',$respuesta);
         if ($respuesta['StatusCode']  != $this->codigoAprobacion)//Si la transacción salió mal
         {
+			if(($respuesta['StatusCode']  == 702)&&(!$this->first_step)) {
+				$http_header = $this->_getAuthorization();
+				$merchant = Configuration::get($prefijo.'_ID_SITE');
+				$security = Configuration::get($prefijo.'_SECURITY');
+				if((isset($http_header["Authorization"]))&&(!empty($merchant))&&(!empty($security))){
+					$this->first_step = true;
+					$this->first_step_todopago($cart, $prefijo, $cliente, $connector);
+				}
+			}
             $this->_guardarTransaccion($cart, $respuesta['StatusMessage'], "");
             $this->_tranUpdate($cart->id, array("first_step" => null));
             $smarty['status'] = 0;//indica que hubo un error en este paso            
@@ -243,6 +250,10 @@ class TodoPagoPaymentModuleFrontController extends ModuleFrontController
         
         if ($status == 0)//si se llego a este paso mediante URL_ERROR
         {
+			if(isset($respuesta['Payload']['Answer'])) {
+				$this->_tranUpdate($cartId, array("first_step" => null, "second_step" => null));				
+				throw new Exception($respuesta['status']);
+			}
             $this->_guardarTransaccion($cart, $respuesta['StatusMessage'], $respuesta['Payload']['Answer']);
             $respuesta = Transaccion::getOptions($cart->id);
             $this->_tranUpdate($cartId, array("first_step" => null, "second_step" => null));
@@ -350,15 +361,6 @@ class TodoPagoPaymentModuleFrontController extends ModuleFrontController
             'buttonBorder' => (string) Configuration::get($prefijo.'_BUTTONBORDER')
         );        
     }
-    /**
-     * Recupera los WSDL de Authorization, PaymentMethods y Operations guardados en la base de datos
-     * @param String $prefijo indica el ambiente en uso
-     * @return array resultado de decodear el los wsdls que están en formato json.
-     */
-    private function _getWSDLs($prefijo)
-    {
-        return json_decode(Configuration::get($prefijo.'_WSDL'), TRUE);
-    }
     
     /**
      * Recupera el authorize.
@@ -369,15 +371,6 @@ class TodoPagoPaymentModuleFrontController extends ModuleFrontController
     {
         $prefijo = $this->module->getPrefijo('PREFIJO_CONFIG');
         return json_decode(Configuration::get($prefijo.'_AUTHORIZATION'), TRUE);
-    }
-    
-    /**
-     * Recupera el endpoint
-     * @param String $prefijo indica el ambiente en uso
-     */
-    private function _getEndpoint($prefijo)
-    {
-        return Configuration::get($prefijo.'_ENDPOINT');
     }
     
     public function getOptionsSARComercio($prefijo,$cartId)
@@ -406,7 +399,7 @@ class TodoPagoPaymentModuleFrontController extends ModuleFrontController
                 )
         );
         
-        $params['operacion'] = array_merge_recursive($params['operacion'], $this->_getParamsCybersource($cliente, $cart));
+        $params['operacion'] = array_merge_recursive($params['operacion'], $this->_getParamsControlFraude($cliente, $cart));
         return $params;        
     }
     
@@ -421,10 +414,8 @@ class TodoPagoPaymentModuleFrontController extends ModuleFrontController
         );
     }
     
-    private function _guardarTransaccion($cart, $statusMessage, $respuesta)
-    {        
-        if (!Transaccion::existe($cart->id))
-        {
+    private function _guardarTransaccion($cart, $statusMessage, $respuesta) {        
+        if (!Transaccion::existe($cart->id)){
             Transaccion::agregar(
                     $cart->id, 
                     array(
@@ -434,9 +425,7 @@ class TodoPagoPaymentModuleFrontController extends ModuleFrontController
                         'total' => $cart->getOrderTotal(true, Cart::BOTH)
                     )
             );
-        }
-        else
-        {
+        }else{
             Transaccion::actualizar(
                     $cart->id,
                     array(
@@ -449,260 +438,18 @@ class TodoPagoPaymentModuleFrontController extends ModuleFrontController
     }
     
     /**
-     * Devuelve los parametros necesarios para Cybersource
+     * Devuelve los parametros necesarios para ControlFraude
      * @param Customer $customer
      * @param Cart $cart
      * @return array con los parametros
      */
-    private function _getParamsCybersource($customer, $cart)
-    {
-        $prefijo= $this->module->getPrefijo('PREFIJO_CONFIG');
-        $segmento = $this->module->getSegmentoTienda();
-        
-        $general = $this->_getGeneralCybersourceParams($prefijo, $customer, $cart->id_address_delivery, $cart->getOrderTotal(true, Cart::BOTH));
-        switch ($segmento)
-        {
-            case 'retail':
-                return array_merge($general,$this->_getRetailCybersourceParams($prefijo, $customer, $cart));
-            break;
-            case 'services':
-                return array_merge($general,$this->_getServicesCybersourceParams($prefijo, $customer, $cart));
-            break;
-            case 'digital goods':
-                return array_merge($general,$this->_getDigitalGoodsCybersourceParams($prefijo, $customer, $cart));
-            break;
-            case 'ticketing':
-                return array_merge($general,$this->_getTicketingCybersourceParams($prefijo, $customer, $cart));
-            break;
-            default:
-                return $general;
-            break;
-        }
-    }
-
-    private function _getStateIso($id)
-    {
-        $state = new State($id);
-        return $state->iso_code;
-    }
-    
-    /**
-     * Obtiene los datos a enviar por cada producto. De ser mas de uno, los valores deben estar separado con #
-     * @param array $productos
-     * @return array con los siguientes campos: CSITPRODUCTCODE, CSITPRODUCTDESCRIPTION, CSITPRODUCTNAME, 
-     * CSITPRODUCTSKU, CSITTOTALAMOUNT, CSITQUANTITY, CSITUNITPRICE
-     */
-    private function _getProductsDetails($productos)
-    {
-        /**
-         * Campos del array
-         * CSITPRODUCTCODE: Código de producto. CONDICIONAL. Valores posibles(adult_content;coupon;default;electronic_good;electronic_software;gift_certificate;handling_only;service;shipping_and_handling;shipping_only;subscription)
-         * CSITPRODUCTDESCRIPTION: Descripción del producto.
-         * CSITPRODUCTNAME: Nombre del producto.
-         * CSITPRODUCTSKU:  Código identificador del producto. CONDICIONAL.
-         * CSITTOTALAMOUNT:  CSITTOTALAMOUNT=CSITUNITPRICE*CSITQUANTITY "999999[.CC]" Con decimales opcional usando el puntos como separador de decimales. No se permiten comas, ni como separador de miles ni como separador de decimales. CONDICIONAL.
-         * CSITQUANTITY: Cantidad del producto. CONDICIONAL.
-         * CSITUNITPRICE: Formato Idem CSITTOTALAMOUNT. CONDICIONAL.
-         */
-
-        $code =array();
-        $description = array();
-        $name = array();
-        $sku = array();
-        $total = array();
-        $quantity = array();
-        $unit = array();
-        
-        foreach ($productos as $item) {
-            $configCybersource = new ProductoCybersource($item['id_product']);
-            $code[]  = $configCybersource->codigo_producto;
-            
-            $desc = $item['description_short'];
-            $desc = substr(Sdk::sanitizeValue($desc),0,50);
-            $description[]   = $desc;
-            
-            $name[]  = substr($item['name'],0,250);
-            $sku[]  = substr($item['reference'],0,250);
-            $total[]  = number_format($item['total_wt'],2,".","");
-            $quantity[]  = $item['cart_quantity'];
-            $unit[]  = number_format($item['price_wt'],2,".","");
-        }
-
-        return array (
-            'CSITPRODUCTCODE' => join("#", $code),
-            'CSITPRODUCTDESCRIPTION' => join("#", $description),
-            'CSITPRODUCTNAME' => join("#", $name),
-            'CSITPRODUCTSKU' => join("#", $sku),
-            'CSITTOTALAMOUNT' => join("#", $total),
-            'CSITQUANTITY' => join("#", $quantity),
-            'CSITUNITPRICE' => join("#", $unit),
-        );
-    }
-    
-    /**
-     * Recupera las opciones de cybersource comunes a todos los casos
-     * @param $customer Cliente
-     * @param $total float
-     */
-    private function _getGeneralCybersourceParams($prefijo, $customer, $address, $total)
-    {
-        $address = new Address($address);
-        $validOrders = Db::getInstance()->getValue('SELECT COUNT(`'.Order::$definition['primary'].'`) FROM '._DB_PREFIX_.Order::$definition['table'].' WHERE id_customer = '.$customer->id.' AND valid = 1');
-        
-        $country = new Country($address->id_country);
-        $params = array(
-                //Obligatorios
-                'CSBTCITY' => substr($address->city,0,250), //Ciudad de facturacion
-                'CSBTCOUNTRY' => $country->iso_code, //Pais de facturacion (codigo ISO)
-                'CSBTCUSTOMERID' => $customer->id, //Identificador del usuario al que se le emite la factura
-                'CSBTIPADDRESS' => Tools::getRemoteAddr(),//ver https://www.prestashop.com/forums/topic/154027-add-customer-ip-to-contact-email/
-                'CSBTEMAIL' => $customer->email, //Mail del usuario al que se le emite la factura
-                'CSBTFIRSTNAME' => $customer->firstname, //nombre
-                'CSBTLASTNAME' => $customer->lastname, //apellido
-                'CSBTPHONENUMBER' => $this->_phoneSanitize(empty($address->phone)?$address->phone_mobile:$address->phone), //telefono
-                'CSBTPOSTALCODE' => $address->postcode, //codigo postal
-                'CSBTSTATE' => $this->_getStateIso($address->id_state), //provincia
-                'CSBTSTREET1' => $address->address1, //domicilio: calle y numero
-                'CSPTCURRENCY' => 'ARS', //moneda
-                'CSPTGRANDTOTALAMOUNT' => number_format($total,2,".",""), //total
-                //Opcionales
-                //'CSBTSTREET2' => $address->address2, //Complemento del domicilio. (piso, departamento).
-                //'CSMDD6' => Configuration::get($prefijo.'_CANAL'), // Canal de venta (Valores posibles: Web, Mobile, Telefonica). Valor configurado en el backoffice
-                'CSMDD7' => $this->_getDateTimeDiff($customer->date_add), //Fecha registro comprador(num Dias). Dias que pasaron desde la fecha de registro o la fecha en un formato especifico
-                'CSMDD10' => $validOrders, //Histórica de compras del comprador (Num transacciones).
-                'CSMDD11' => $this->_phoneSanitize(empty($address->phone_mobile)?$address->phone:$address->phone_mobile) //Customer Cell Phone.S
-        );
-                
-        return array_merge_recursive($params, $this->_getCustomerDetails($customer));
-    }
-    
-	private function _phoneSanitize($number){
-		$number = str_replace(array(" ","(",")","-","+"),"",$number);
+    private function _getParamsControlFraude($customer, $cart) {
+        $prefijo = $this->module->getPrefijo('PREFIJO_CONFIG');
+        $segmento = $this->module->getSegmentoTienda(true);
+        $config = array("deadline" => Configuration::get($prefijo.'_DEADLINE'));
 		
-		if(substr($number,0,2)=="54") return $number;
-		
-		if(substr($number,0,2)=="15"){
-			$number = substr($number,2,strlen($number));
-		}
-		if(strlen($number)==8) return "5411".$number;
-		
-		if(substr($number,0,1)=="0") return "54".substr($number,1,strlen($number));
-		return "54".$number;
-	}
-    /**
-     * Obtiene los parametros de Cybersource propios de las tiendas de tipo Retail
-     * @param Customer $customer
-     * @param Cart $cart
-     * @return array
-     */
-    private function _getRetailCybersourceParams($prefijo, $customer, $cart)
-    {
-        $paramsGenerales = $this->_getGeneralCybersourceParams($prefijo, $customer, $cart->id_address_delivery, $cart->getOrderTotal(true, Cart::BOTH));
-        $carrier = new Carrier($cart->id_carrier);
-        
-        $params = array(
-                //Parametros obligatorios
-                'CSSTCITY' => $paramsGenerales['CSBTCITY'], //Ciudad de envio de la orden.
-                'CSSTCOUNTRY' => $paramsGenerales['CSBTCOUNTRY'], //País de envío de la orden.
-                'CSSTEMAIL' => $paramsGenerales['CSBTEMAIL'], //Mail del destinatario.
-                'CSSTFIRSTNAME' => $paramsGenerales['CSBTFIRSTNAME'], //Nombre del destinatario.
-                'CSSTLASTNAME' => $paramsGenerales['CSBTLASTNAME'], //Apellido del destinatario.
-                'CSSTPHONENUMBER' => $paramsGenerales['CSBTPHONENUMBER'], //Número de teléfono del destinatario.
-                'CSSTPOSTALCODE' => $paramsGenerales['CSBTPOSTALCODE'], //Código postal del domicilio de envío.
-                'CSSTSTATE' => $paramsGenerales['CSBTSTATE'], //Provincia de envío. Son de 1 caracter
-                'CSSTSTREET1' => $paramsGenerales['CSBTSTREET1'], //Domicilio de envío.
-                //Parametros opcionales
-                //'CSSTSTREET2' => $paramsGenerales['CSBTSTREET2'], //Localidad de envío.
-                'CSMDD12' => Configuration::get($prefijo.'_DEADLINE'),//Shipping DeadLine (Num Dias). Se configura en el backoffice
-                'CSMDD13' => $carrier->name,//Método de Despacho.
-                //'CSMDD14' => 'N',//Customer requires Tax Bill ? (Y/N).
-                //'CSMDD15' => '',//Customer Loyality Number.
-                'CSMDD16' => ''//Promotional / Coupon Code.
-        );
-        
-        return array_merge_recursive($params, $this->_getProductsDetails($cart->getProducts()));
-    }
-        
-    /**
-     * Obtiene los parametros de Cybersource propios de las tiendas de tipo Ticketing
-     * @param Customer $customer
-     * @param Cart $cart
-     * @return array
-     */
-    private function _getTicketingCybersourceParams($prefijo, $customer, $cart)
-    {
-        $dias = array();
-        $envio =array();
-        
-        //si hay mas de una entrada se concatenan como en los detalles de producto
-        foreach ($cart->getProducts() as $item)
-        {
-            $configCybersource = new ProductoCybersource($item['id_product']);
-            $dias[] = $this->_getDateTimeDiff($configCybersource->fecha_evento);
-            $envio[] = $configCybersource->tipo_envio;
-        }
-        
-        return array_merge_recursive(
-                array(
-                        'CSMDD33' => join("#", $dias),
-                        'CSMDD34' => join("#", $envio)
-                ), 
-                $this->_getProductsDetails($cart->getProducts())
-        );
-    }
-
-    /**
-     * Obtiene los parametros de Cybersource propios de las tiendas de tipo Services
-     * @param Customer $customer
-     * @param Cart $cart
-     * @return array
-     */
-    private function _getServicesCybersourceParams($prefijo, $customer, $cart)
-    {
-        /**
-         * CSMDD28: Tipo de Servicio. MANDATORIO. Valores posibles: Luz, Gas, Telefono, Agua, TV, Cable, Internet, Impuestos.
-         * CSMDD29, CSMDD30, CSMDD31: Referencias de pago de los servicios. MANDATORIO.
-         * Detalles de los servicios. Se llama a la funcion _getProductsDetails
-         */
-        $detallesServiciosProductos = $this->_getDetallesCybersourceProductos($cart->getProducts());
-        
-        //no debe haber más de tres servicios
-        if (count($cart->getProducts()) > 3)
-        {
-            throw new Exception('No se pueden elegir mas de tres servicios');
-        }
-        
-        //los servicios deben ser del mismo tipo
-        if ($this->_isServiciosIgualTipo($detallesServiciosProductos))
-        {
-            throw new Exception('Los servicios deben ser del mismo tipo');
-        }
-        
-        return array_merge_recursive(
-                array('CSMDD28'=>$detallesServiciosProductos[0]['tipo_servicio'] ),
-                $this->_getReferenciasPago($detallesProductos),
-                $this->_getProductsDetails($cart->getProducts())
-        );
-    }
-    
-    /**
-     * Obtiene los parametros de Cybersource propios de las tiendas de tipo DigitalGoods
-     * @param Customer $customer
-     * @param Cart $cart
-     * @return array
-     */
-    private function _getDigitalGoodsCybersourceParams($prefijo, $customer, $cart)
-    {
-        $params = array(
-                'CSMDD31'=>'', //Tipo de delivery. MANDATORIO. Valores posibles: WEB Session, Email, SmartPhone
-        );
-        
-        return array_merge_recursive($params, $this->_getProductsDetails($cart->getProducts()));
-    }
-    
-    private function _getDateTimeDiff($fecha)
-    {
-        return date_diff(new DateTime($fecha), new DateTime())->format('%a');
+		$dataCS = ControlFraudeFactory::get_controlfraude_extractor($segmento, $customer, $cart, $config)->getDataCS();
+		return $dataCS;
     }
     
     private function _isAmountIgual($cart, $amount)
@@ -711,74 +458,5 @@ class TodoPagoPaymentModuleFrontController extends ModuleFrontController
             return true;
         else
             return false;
-    }
-    
-    private function _getCustomerDetails($customer)
-    {
-        /*
-         * CSMDD8:  Es un usuario invitado? (Y/N) En caso de ser Y, el campo CSMDD9 no deberá enviarse.
-         * CSMDD9: Customer password Hash: criptograma asociado al password del comprador final.
-        */
-        
-        if ($customer->isGuest())
-        {
-            return array(
-                    'CSMDD8' => 'S',
-            );
-        }
-        else
-        {
-            return array(
-                    'CSMDD8' => 'N',
-                    'CSMDD9' => $customer->passwd
-            );
-        }
-    }
-    
-    private function _getDetallesCybersourceProductos($productos)
-    {
-        $detalles = array();
-        
-        foreach ($productos as $item)
-        {
-            $detalles[] = ProductoCybersource::getRegistroAsArray($item['id_product']);
-        }
-        
-        return $detalles;
-    }
-    
-    /**
-     * Verifica que todos los servicios sean del mismo tipo
-     * @param array $detallesProductos
-     * @return boolean
-     */
-    private function _isServiciosIgualTipo($detallesProductos)
-    {
-        $cantidad = count($detallesProductos);
-        
-        for ($i=0; $i < $cantidad; $i++)
-        {
-            //si el tipo de servicio del producto actual es distinto al del producto anterior, y no estamos en el comienzo del array
-            if ( ($i > 0) && ($detallesProductos[$i]['tipo_servicio'] != $detallesProductos[$i-1]['tipo_servicio']))
-            {
-                return false;
-            }
-        }
-        
-        return true;
-    }
-    
-    private function _getReferenciasPago($detallesProductos)
-    {
-        $referencias = array(
-                'CSMDD29'=>'', //Referencia de pago del servicio 1. MANDATORIO.
-                'CSMDD30'=>'', //Referencia de pago del servicio 2. MANDATORIO.
-                'CSMDD31'=>'', //Referencia de pago del servicio 3. MANDATORIO.
-        );
-        
-        for ($i=0; $i < count($detallesProductos); $i++)
-        {
-            $referencias['CSMDD'.(29+$i)] = $detallesProductos[$i]['referencia_pago'];
-        }
     }
 }

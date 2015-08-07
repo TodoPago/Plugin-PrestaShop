@@ -31,6 +31,7 @@ require_once (dirname(__FILE__) . '/classes/Transaccion.php');
 require_once (dirname(__FILE__) . '/classes/Productos.php');
 require_once (dirname(__FILE__) . '/classes/Formulario.php');
 require_once (dirname(__FILE__) . '/lib/TodoPago/lib/Sdk.php');
+require_once (dirname(__FILE__) . '/lib/ControlFraude/ControlFraudeFactory.php');
 
 class TodoPago extends PaymentModule
 {
@@ -58,7 +59,7 @@ class TodoPago extends PaymentModule
 		//acerca del modulo en si
 		$this->name = 'todopago';
 		$this->tab = 'payments_gateways';
-		$this->version = '1.0.0';
+		$this->version = '1.1.1';
 		$this->author = 'Todo Pago';
 		$this->need_instance = 0;
 
@@ -328,7 +329,7 @@ class TodoPago extends PaymentModule
 		{
 			TodoPago\Formulario::postProcessFormularioConfigs($this->getPrefijo('CONFIG_EMBEBED'), TodoPago\Formulario::getFormInputsNames( TodoPago\Formulario::getEmbebedFormInputs() ) );
 		}
-		elseif (Tools::isSubmit('btnSubmitCybersource'))
+		elseif (Tools::isSubmit('btnSubmitControlfraude'))
 		{
 			$registro = array();
 			//recupero los nombres de los campos
@@ -397,11 +398,11 @@ class TodoPago extends PaymentModule
 	}
 	
 	/**
-	 * Verifica si Cybersource está hablitado
+	 * Verifica si ControlFraude está hablitado
 	 */
-	public function isCybersourceActivo()
+	public function isControlFraudeActivo()
 	{
-		return (boolean)Configuration::get($this->getPrefijo('CONFIG_CYBERSOURCE').'_STATUS');
+		return (boolean)Configuration::get($this->getPrefijo('CONFIG_CONTROLFRAUDE').'_STATUS');
 	}
 	
 	/**
@@ -422,10 +423,31 @@ class TodoPago extends PaymentModule
 	/**
 	 * Obtiene el segmento de la tienda
 	 */
-	public function getSegmentoTienda()
+	public function getSegmentoTienda($cs = false)
 	{
 		$prefijo= $this->getPrefijo('PREFIJO_CONFIG');
-		return Configuration::get($prefijo.'_SEGMENTO');	
+		$segmento = Configuration::get($prefijo.'_SEGMENTO');
+		if($cs) {
+			switch ($segmento)
+			{
+				case 'retail':
+					return ControlFraudeFactory::RETAIL;
+				break;
+				case 'services':
+					return ControlFraudeFactory::SERVICE;
+				break;
+				case 'digital goods':
+					return ControlFraudeFactory::DIGITAL_GOODS;
+				break;
+				case 'ticketing':
+					return ControlFraudeFactory::TICKETING;
+				break;
+				default:
+					return ControlFraudeFactory::RETAIL;
+				break;
+			}
+		}
+		return 	$segmento;
 	}
 	
 	public function getOrderStatesModulo($nombre=NULL)
@@ -613,7 +635,7 @@ class TodoPago extends PaymentModule
 			);
 		}
 		//recupero el contenido del formulario, si existiera
-		elseif (TPProductoCybersource::existeRegistro($idProducto))
+		elseif (TPProductoControlFraude::existeRegistro($idProducto))
 		{
 			$campos = TodoPago\Formulario::getFormInputsNames($form_fields['form']['input']);
 			
@@ -621,25 +643,25 @@ class TodoPago extends PaymentModule
 		
 			foreach ($campos as $nombre)
 			{
-				$fields_value[$nombre] = TPProductoCybersource::getValorRegistro($idProducto, $nombre);
+				$fields_value[$nombre] = TPProductoControlFraude::getValorRegistro($idProducto, $nombre);
 			}
 		}
 		
 		//creo el helperForm y seteo el controlador, id de de producto y token necesarios para que el form apunte donde corresponde
-		$helperForm = $this->getHelperForm('Cybersource',$fields_value);
+		$helperForm = $this->getHelperForm('Controlfraude',$fields_value);
 		$helperForm->currentIndex .= '&id_product='.$idProducto;
 		
 		//obtengo el html del formulario y lo agrego al smarty	
 		$this->smarty->assign(array(
 				'segmento' => $this->getSegmentoTienda(),//para filtrar campos del formulario segun el segmento
 				'tab' => $this->displayName,
-				'nombreDiv' => strtolower($this->name).'-cybersource',
+				'nombreDiv' => strtolower($this->name).'-controlfraude',
 				'form' => $helperForm->generateForm(array($form_fields)),
 				'campos' => $campos
 			)
 		);
 		
-		return $this->display(__FILE__, 'views/templates/admin/cybersource.tpl');//indico la template a utilizar
+		return $this->display(__FILE__, 'views/templates/admin/controlfraude.tpl');//indico la template a utilizar
 	}
 	
 	/**
@@ -653,43 +675,40 @@ class TodoPago extends PaymentModule
 		 * id_product: id del producto. Viene tanto desde AdminProducts como desde el postProcess del modulo
 		 * form: contiene lo escrito en los campos del formulario. No existe si el hook no se ejecuta desde el postProcess del modulo
 		 */
-		 
-		$idProducto = $params['id_product'];//recupero el id del producto desde el backoffice
-		$segmento = $this->getSegmentoTienda();//recupero el segmento de la tienda
-		$this->displayName = $this->l('Prevencion del fraude');//nombre que se muestra en la tab
-			
-		$this->log('ActionProductUpdate - Segmento '.$segmento.' - params: '.json_encode($params));
-		
 		try
-		{
+		{ 
 			if (isset($params['form']) && count($params['form'])>0) //si el hook se ejecuto desde el _postProcess
-			{
+			{		
+				$idProducto = $params['id_product'];//recupero el id del producto desde el backoffice
+				$segmento = $this->getSegmentoTienda();//recupero el segmento de la tienda
+				$this->displayName = $this->l('Prevencion del fraude');//nombre que se muestra en la tab
+					
+				$this->log('ActionProductUpdate - Segmento '.$segmento.' - params: '.json_encode($params));
+				
 				$registro = $params['form'];//recupero desde los params
-			}
-
-			//si se recuperaron valores
-			if (isset($registro) && count($registro)>0)
-			{
-				//creo un nuevo registro o actualizo el existente
-				if (!TPProductoCybersource::existeRegistro($idProducto))
+				
+				if (isset($registro) && count($registro)>0)
 				{
-					$registro['id_product'] = $idProducto;
-					Db::getInstance()->insert(TPProductoCybersource::$definition['table'],  $registro);
-					$this->log('ActionProductUpdate - Segmento '.$segmento.' - insertado registro para producto id='.$idProducto.' : '.json_encode($registro));
+					//creo un nuevo registro o actualizo el existente
+					if (!TPProductoControlFraude::existeRegistro($idProducto))
+					{
+						$registro['id_product'] = $idProducto;
+						Db::getInstance()->insert(TPProductoControlFraude::$definition['table'],  $registro);
+						$this->log('ActionProductUpdate - Segmento '.$segmento.' - insertado registro para producto id='.$idProducto.' : '.json_encode($registro));
+					}
+					else
+					{
+						Db::getInstance()->update(TPProductoControlFraude::$definition['table'],  $registro, TPProductoControlFraude::$definition['primary'].'='.$idProducto);
+						$this->log('ActionProductUpdate - Segmento '.$segmento.' - actualizado registro para producto id='.$idProducto.' : '.json_encode($registro));
+					}
 				}
-				else
-				{
-					Db::getInstance()->update(TPProductoCybersource::$definition['table'],  $registro, TPProductoCybersource::$definition['primary'].'='.$idProducto);
-					$this->log('ActionProductUpdate - Segmento '.$segmento.' - actualizado registro para producto id='.$idProducto.' : '.json_encode($registro));
-				}
+				Tools::redirectAdmin($this->context->link->getAdminLink('AdminProducts').'&id_product='.$idProducto.'&updateproduct&token='.Tools::getAdminTokenLite('AdminProducts'));
 			}
 		}
 		catch (Exception $e)
 		{
 			$this->log('EXCEPCION: '.$e->getMessage());
 		}
-		//redirijo a la pagina de edicion del producto
-		Tools::redirectAdmin($this->context->link->getAdminLink('AdminProducts').'&id_product='.$idProducto.'&updateproduct&token='.Tools::getAdminTokenLite('AdminProducts'));
 	}
 
 	/**
