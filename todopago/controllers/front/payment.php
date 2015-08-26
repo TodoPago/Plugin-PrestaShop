@@ -56,15 +56,6 @@ class TodoPagoPaymentModuleFrontController extends ModuleFrontController
         $total = $cart->getOrderTotal(true, Cart::BOTH);
         $cliente = new Customer($cart->id_customer);//recupera al objeto cliente
         $paso = (int) Tools::getValue('paso');
-        $prefijo;//Modo en el que se ejecuta el modulo
-        $options;//lo que se envia a los webservices
-        $respuesta=array();//lo que devuelven los webservices
-        $ClavePago;
-        $urlRedir;
-        $servicioConfig;
-        $exception_message = '';
-        $template;//template de Smarty que se usa. Depende del paso.
-        $smarty;//variables que se usan en la template que corresponda al paso
         $this->tranEstado = $this->_tranEstado($cart->id);
 		
         try 
@@ -74,39 +65,16 @@ class TodoPagoPaymentModuleFrontController extends ModuleFrontController
             
             //si el carrito esta vacio
             if ($cart == NULL ||  $cart->getProducts() == NULL || $cart->getOrderTotal(true, Cart::BOTH) == 0)
-            {
                 throw new Exception('Carrito vacio');
-            }
             
             //si ya existe una orden para este carrito
             if ($cart->OrderExists() == true)
-            {
                 throw new Exception('Ya existe una orden para el carro id '.$cart->id);
-            }
             
-            //Prefijo que se usa para la peticion al webservice, dependiendo del modo en el que este seteado el modulo
-            $prefijo = $this->module->getPrefijoModo();
-            
-            //Traigo los settings del servicio (proxy, ubicacion del certificado y timeout
-            $servicioConfig = $this->_getServiceSettings($prefijo);
-            
-            $mode = ($this->module->getModo())?"prod":"test";
-            //creo el conector con el valor de Authorization, la direccion de WSDL y endpoint que corresponda
-            $connector = new Sdk($this->_getAuthorization(), $mode);
-                    
-            if (isset($servicioConfig['proxy'])) // si hay un proxy
-                $connector->setProxyParameters($proxy['host'], $proxy['port'], $proxy['user'], $proxy['pass']);
-            
-            if ($servicioConfig['certificado'] != '')//si hay una ubicación de certificado
-                $connector->setLocalCert($servicioConfig['certificado']);
-            
-            if ($servicioConfig['timeout'] != '')//si hay un timeout
-                $connector->setConnectionTimeout($servicioConfig['timeout']);
-            
-            if($this->tranEstado == 0) 
-                $this->_tranCrear($cart->id, array());
-            
-            //comunicacion con el  webservice
+			//Prefijo que se usa para la peticion al webservice, dependiendo del modo en el que este seteado el modulo
+			$prefijo = $this->module->getPrefijoModo();			
+			$connector = $this->prepare_connector($prefijo);
+			
             switch ($paso)
             {
                 case 1: 
@@ -116,35 +84,31 @@ class TodoPagoPaymentModuleFrontController extends ModuleFrontController
                     $this->second_step_todopago($prefijo, $cart, $connector);        
                 break;
                 default:
-                    $this->module->log('Redireccionando al paso 1');
+                    $this->module->log->info('Redireccionando al paso 1');
                     Tools::redirect($this->context->link->getModuleLink('todopago', 'payment', array ('paso' => '1'), true));
                 break;
             }
         }
         catch (Exception $e)
         {
-            //Guardo el mensaje
-            $this->module->log('EXCEPCION: '.$e->getMessage());
+            $this->module->log->error('EXCEPCION',$e);
             $template='payment_error';
         }
         
         //asigno las variables que se van a a ver en la template de payment (payment.tpl)
         $this->context->smarty->assign(array(
             'nombre' => Configuration::get($this->module->getPrefijo('PREFIJO_CONFIG').'_NOMBRE'),//nombre con el que aparece este modulo de pago en el frontend
-            //variables de la compra
             'cart_id' => $cart->id,
             'nbProducts' => $cart->nbProducts(),//productos
             'cust_currency' => $cart->id_currency,//moneda en la que paga el cliente
             'currencies' => $this->module->getCurrency((int)$cart->id_currency),//moneda
             'total' => $total,//total de la orden
             'cliente' =>$cliente->email,
-            //otros
             'this_path' => $this->module->getPathUri(),
             'this_path_modulo' => strtolower('modules/'.$this->module->name.'/'),
             'this_path_ssl' => Tools::getShopDomainSsl(true, true).__PS_BASE_URI__.'modules/'.$this->module->name.'/'
         ));
 
-        //variables que dependen de cada paso
         if (isset($smarty))//hay casos en los que esta variable no esta seteada
         {
             $this->context->smarty->assign(array(
@@ -155,25 +119,49 @@ class TodoPagoPaymentModuleFrontController extends ModuleFrontController
         $this->setTemplate($template.'.tpl');//plantilla que se va a usar.
     }
     
-    public function first_step_todopago($cart, $prefijo, $cliente, $connector)
-    {
-        /** PASO 1: sendAuthorizeRequest
-         * La respuesta contiene los siguientes campos: 
-         * StatusCode: codigo correspondiente al resultado de la autorizacion, 
-         * StatusMessage: mensaje explicativo, 
-         * URL_Request. url del formulario al que se ingresan los datos,
-         * RequestKey: id necesario para el formulario,
-         * PublicRequestKey: igual al RequestKey
-         */
-        $this->module->logInfo($cart->id,'first step');
-        
+	protected function prepare_connector($prefijo)
+	{		
+		//Traigo los settings del servicio (proxy, ubicacion del certificado y timeout
+		$servicioConfig = $this->_getServiceSettings($prefijo);
+		
+		$mode = ($this->module->getModo())?"prod":"test";
+		//creo el conector con el valor de Authorization
+		$connector = new Sdk($this->_getAuthorization(), $mode);
+				
+		if (isset($servicioConfig['proxy'])) // si hay un proxy
+			$connector->setProxyParameters($proxy['host'], $proxy['port'], $proxy['user'], $proxy['pass']);
+		
+		if ($servicioConfig['certificado'] != '')//si hay una ubicación de certificado
+			$connector->setLocalCert($servicioConfig['certificado']);
+		
+		if ($servicioConfig['timeout'] != '')//si hay un timeout
+			$connector->setConnectionTimeout($servicioConfig['timeout']);
+				
+		return $connector;
+	}
+	
+	protected function prepare_order($cart)
+	{
+		if($this->tranEstado == 0) 
+			$this->_tranCrear($cart->id, array());
+		
+        if($this->_tranEstado($cart->id) == 3)
+            throw new Exception("second_step ya realizado");	
+	}
+	
+	protected function get_paydata($prefijo, $cart, $cliente)
+	{
         $options = $this->getOptionsSARComercio($prefijo, $cart->id);
         $options = array_merge($options, $this->getOptionsSAROperacion($prefijo, $cliente, $cart));
         
-        $this->module->logInfo($cart->id,'params SAR',$options);
-        
+        $this->module->log->info('params SAR - '.json_encode($options));
+		return $options;
+	}
+	
+	protected function call_SAR($options, $cart, $prefijo, $cliente, $connector)
+	{
         $respuesta = $connector->sendAuthorizeRequest($options['comercio'], $options['operacion']);//me comunico con el webservice
-        $this->module->logInfo($cart->id,'response SAR',$respuesta);
+        $this->module->log->info('response SAR - '.json_encode($respuesta));
         if ($respuesta['StatusCode']  != $this->codigoAprobacion)//Si la transacción salió mal
         {
 			if(($respuesta['StatusCode']  == 702)&&(!$this->first_step)) {
@@ -182,6 +170,7 @@ class TodoPagoPaymentModuleFrontController extends ModuleFrontController
 				$security = Configuration::get($prefijo.'_SECURITY');
 				if((isset($http_header["Authorization"]))&&(!empty($merchant))&&(!empty($security))){
 					$this->first_step = true;
+					$this->module->log->info('Reintento');
 					$this->first_step_todopago($cart, $prefijo, $cliente, $connector);
 				}
 			}
@@ -195,7 +184,11 @@ class TodoPagoPaymentModuleFrontController extends ModuleFrontController
         $now = new DateTime();
         $this->_tranUpdate($cart->id, array("first_step" => $now->format('Y-m-d H:i:s'), "params_SAR" => json_encode($options), "response_SAR" => json_encode($respuesta), "request_key" => $respuesta['RequestKey'], "public_request_key" => $respuesta['PublicRequestKey']));
         
-        //variables que se pasan al smarty
+		return $respuesta;
+	}
+	
+	protected function custom_commerce($respuesta)
+	{
         $smarty['redir'] = $respuesta['URL_Request'];//direccion del formulario
         $smarty['StatusMessage'] = $respuesta['StatusMessage'];//mensaje que devuelve el primer webservice
         $smarty['status'] = 1;//indica que este paso se ejecuto correctamente
@@ -209,57 +202,70 @@ class TodoPagoPaymentModuleFrontController extends ModuleFrontController
             $smarty['embebed'] = $embebed;
             $template = 'payment_embebed';
         } else {
-            $template = 'payment_execution';//plantilla a utilizar
+            $template = 'payment_execution';
         }            
 
-        return array($smarty,$template);
+        return array($smarty,$template);		
+	}
+	
+    public function first_step_todopago($cart, $prefijo, $cliente, $connector)
+    {
+        /** PASO 1: sendAuthorizeRequest
+         * La respuesta contiene los siguientes campos: 
+         * StatusCode: codigo correspondiente al resultado de la autorizacion, 
+         * StatusMessage: mensaje explicativo, 
+         * URL_Request. url del formulario al que se ingresan los datos,
+         * RequestKey: id necesario para el formulario,
+         * PublicRequestKey: igual al RequestKey
+         */
+        $this->module->log->info('first step');
+		
+		$this->prepare_order($cart);
+		
+		$options = $this->get_paydata($prefijo, $cart, $cliente);
+
+        $respuesta = $this->call_SAR($options, $cart, $prefijo, $cliente, $connector);
+		
+		return $this->custom_commerce($respuesta);
     }
     
-    public function second_step_todopago($prefijo, $cart, $connector)
-    {
-        /** PASO 2: getAuthorizeAnswer
-         * La respuesta contiene los siguientes campos: 
-         * StatusCode (codigo correspondiente al resultado de la autorizacion), 
-         * StatusMessage (mensaje explicativo)
-         * AuthorizationKey
-         * EncodingMethod
-         * Payload: contiene los detalles del pago aceptado
-         * Request: contiene los campos enviados
-         * Del formulario viene
-         * AnswerKey: necesario para el getAuthorizeAnswer
-         */
-        
-        $answerKey = Tools::getValue('Answer');//answerKey
-        $status =Tools::getValue('estado');
+	protected function call_GAA($prefijo, $connector)
+	{
+        $answerKey = Tools::getValue('Answer');
         $cartId =Tools::getValue('cart');
-        
-        $this->module->logInfo($cartId,'second step');
+
         if($this->_tranEstado($cartId) != 2)
-        {
             throw new Exception("second_step ya realizado");
-            $smarty['status'] = 0;//indica que hubo un error en este paso
-        }
-        
+		
         $options = $this->_getRequestOptionsPasoDos($prefijo, $cartId, $answerKey);
-        $this->module->logInfo($cart->id,'params GAA',$options);
+        $this->module->log->info('params GAA - '.json_encode($options));
         $respuesta = $connector->getAuthorizeAnswer($options);
-        $this->module->logInfo($cartId,'response GAA',$respuesta);
+        $this->module->log->info('response GAA - '.json_encode($respuesta));
 
         $now = new DateTime();
         $this->_tranUpdate($cartId, array("second_step" => $now->format('Y-m-d H:i:s'), "params_GAA" => json_encode($options), "response_GAA" => json_encode($respuesta), "answer_key" => $answerKey));
-        
+        		
+		return $respuesta;
+	}
+	
+	protected function take_action($respuesta)
+	{
+		$cartId =Tools::getValue('cart');
+		$status =Tools::getValue('estado');
+		$cart = new Cart($cartId);
+		
         if ($status == 0)//si se llego a este paso mediante URL_ERROR
         {
 			if(isset($respuesta['Payload']['Answer'])) {
 				$this->_tranUpdate($cartId, array("first_step" => null, "second_step" => null));				
-				throw new Exception($respuesta['status']);
+				throw new Exception($respuesta['StatusMessage']);
 			}
             $this->_guardarTransaccion($cart, $respuesta['StatusMessage'], $respuesta['Payload']['Answer']);
             $respuesta = Transaccion::getOptions($cart->id);
             $this->_tranUpdate($cartId, array("first_step" => null, "second_step" => null));
-            throw new Exception($respuesta['status']);
+            throw new Exception($respuesta['StatusMessage']);
         }
-        
+		
         //en el caso de pagar con Rapipago o Pago Facil
         if( strlen($respuesta['Payload']['Answer']["BARCODE"]) > 0) //si existe un barcode
         {
@@ -278,13 +284,33 @@ class TodoPagoPaymentModuleFrontController extends ModuleFrontController
         if ($respuesta['StatusCode'] == $this->codigoAprobacion && $this->_isAmountIgual($cart, $respuesta['Payload']['Request']['AMOUNT']))//Si todo salio bien
         {
             $this->_guardarTransaccion($cart, $respuesta['StatusMessage'], $respuesta['Payload']['Answer']);//guardo el StatusMessage y los detalles de la transaaccion
-            $this->module->log('Redireccionando al controller de validacion');
+            $this->module->log->info('Redireccionando al controller de validacion');
             Tools::redirect($this->context->link->getModuleLink(strtolower($this->module->name), 'validation', array(), false));//redirijo al controller de validacion
         }
         else 
-        {
-            throw new Exception($respuesta['StatusMessage']);
-        }        
+            throw new Exception($respuesta['StatusMessage']);		
+		
+	}
+	
+    public function second_step_todopago($prefijo, $cart, $connector)
+    {
+        /** PASO 2: getAuthorizeAnswer
+         * La respuesta contiene los siguientes campos: 
+         * StatusCode (codigo correspondiente al resultado de la autorizacion), 
+         * StatusMessage (mensaje explicativo)
+         * AuthorizationKey
+         * EncodingMethod
+         * Payload: contiene los detalles del pago aceptado
+         * Request: contiene los campos enviados
+         * Del formulario viene
+         * AnswerKey: necesario para el getAuthorizeAnswer
+         */
+        
+        $this->module->log->info('second step');
+        
+		$respuesta = $this->call_GAA($prefijo, $connector);
+
+		$this->take_action($respuesta);     
     }
     
     private function _tranEstado($cartId)

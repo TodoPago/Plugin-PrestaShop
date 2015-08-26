@@ -32,6 +32,7 @@ require_once (dirname(__FILE__) . '/classes/Productos.php');
 require_once (dirname(__FILE__) . '/classes/Formulario.php');
 require_once (dirname(__FILE__) . '/lib/TodoPago/lib/Sdk.php');
 require_once (dirname(__FILE__) . '/lib/ControlFraude/ControlFraudeFactory.php');
+require_once (dirname(__FILE__) . '/lib/Logger/logger.php');
 
 class TodoPago extends PaymentModule
 {
@@ -54,25 +55,25 @@ class TodoPago extends PaymentModule
 
 	protected $product_code = array('default', 'adult_content', 'coupon', 'electronic_good', 'electronic_software', 'gift_certificate', 'handling_only', 'service', 'shipping_and_handling', 'shipping_only', 'subscription');
 
+	public $log;
+	
 	public function __construct()//constructor
 	{
 		//acerca del modulo en si
 		$this->name = 'todopago';
 		$this->tab = 'payments_gateways';
-		$this->version = '1.1.1';
+		$this->version = '1.2.0';
 		$this->author = 'Todo Pago';
 		$this->need_instance = 0;
-
 		$this->bootstrap = true;//para que use bootstrap
-		
 		parent::__construct();
 		
 		//lo que se muestra en el listado de modulos en el backoffice
 		$this->displayName = $this->l('Todo Pago');//nombre
 		$this->description = $this->l('Pagos con tarjeta');//descripcion
-
 		$this->confirmUninstall = $this->l('Realmente quiere desinstalar este modulo?');//mensaje que aparece al momento de desinstalar el modulo
 		
+		$this->log = $this->configureLog();
 	}
 	
 	/**
@@ -100,7 +101,8 @@ class TodoPago extends PaymentModule
 					$this->registerHook('displayAdminProductsExtra') && //para crear la tab y mostrar contenido en ella
             		$this->registerHook('actionProductUpdate') && //se llama cuando se actualiza un producto, asi podemos recuperar lo que se ingreso en la tab
             		$this->registerHook('displayAdminOrderContentOrder') && //muestra contenido en el detalle de la orden
-					$this->registerHook('displayAdminOrderTabOrder'); //muestra una tab en el detalle de la orden
+					$this->registerHook('displayAdminOrderTabOrder') &&
+					$this->unregisterHook('displayAdminProductsExtra'); //muestra una tab en el detalle de la orden
 	}
 
 	public function uninstall()
@@ -108,6 +110,27 @@ class TodoPago extends PaymentModule
 		$this->deleteConfigVariables();
 		//include(dirname(__FILE__).'/sql/uninstall.php');//no se borran para no perder los datos
 		return parent::uninstall();
+	}
+	
+	public function configureLog() {
+		$cart = $this->context->cart;
+		$endpoint = ($this->getModo())?"TODOPAGO_ENDPOINT_PROD":"TODOPAGO_ENDPOINT_TEST";
+		$logger = new TodoPagoLogger();
+		$logger->setPhpVersion(phpversion());
+		$logger->setCommerceVersion(_PS_VERSION_);
+		$logger->setPluginVersion($this->version);
+		$payment = false;
+		if($cart != null)
+			if($cart->id != null) 
+				$payment = true;
+		if($payment) {
+			$logger->setEndPoint($endpoint);
+			$logger->setCustomer($cart->id_customer);
+			$logger->setOrder($cart->id);
+		}
+		$logger->setLevels("debug","fatal");
+		$logger->setFile(dirname(__FILE__)."/todopago.log");
+		return $logger->getLogger($payment);
 	}
 	
 	public function getPrefijo($nombre)
@@ -178,8 +201,7 @@ class TodoPago extends PaymentModule
 
 		$output = $this->context->smarty->fetch($this->local_path.'views/templates/admin/configure.tpl');//recupero el template de configuracion
 		
-		return $output.
-					$this->renderConfigForms();
+		return $output.$this->renderConfigForms();
 	}
 	
 	/**
@@ -347,25 +369,7 @@ class TodoPago extends PaymentModule
 			Hook::exec('actionProductUpdate', array('id_product' => Tools::getValue('id_product'), 'form' => $registro));//llamo al hook desde aca porque no funciona de otra forma
 		}
 	}
-
-	/**
-	* Opcional: para archivos CSS y JavaScript que se usaran en el BackOffice de este modulo.
-	*/
-	public function hookBackOfficeHeader()
-	{
-/*		$this->context->controller->addJS(strtolower($this->_path).'js/back.js');
-		$this->context->controller->addCSS($this->_path.'css/back.css');*/
-	}
-
-	/**
-	 * Opcional: para archivos CSS y JavaScript que se usaran en el FrontOffice de este modulo.
-	 */
-	public function hookHeader()
-	{
-/*		$this->context->controller->addJS(strtolower($this->_path).'/js/front.js');
-		$this->context->controller->addCSS($this->_path.'/css/front.css');*/
-	}
-			
+	
 	/**
 	 * Usada en payment.php
 	 */
@@ -398,7 +402,7 @@ class TodoPago extends PaymentModule
 	}
 	
 	/**
-	 * Verifica si ControlFraude está hablitado
+	 * Verifica si ControlFraude estÃ¡ hablitado
 	 */
 	public function isControlFraudeActivo()
 	{
@@ -496,43 +500,14 @@ class TodoPago extends PaymentModule
 	}
 	
 	/**
-	 * Recupera los WSDL de Authorization, PaymentMethods y Operations guardados en la base de datos
-	 * @param String $prefijo indica el ambiente en uso
-	 * @return array resultado de decodear el los wsdls que están en formato json.
-	 */
-	protected function getWSDLs($prefijo)
-	{
-		return json_decode(Configuration::get($prefijo.'_WSDL'), TRUE);
-	}
-	
-	/**
 	 * Recupera el authorize.
 	 * @param String $prefijo indica el ambiente en uso
-	 * @return array resultado de decodear el authorization que está en formato json.
+	 * @return array resultado de decodear el authorization que estÃ¡ en formato json.
 	 */
 	protected function getAuthorization()
 	{
 		$prefijo = $this->getPrefijo('PREFIJO_CONFIG');
 		return json_decode(Configuration::get($prefijo.'_AUTHORIZATION'), TRUE);
-	}
-	
-	/**
-	 * Recupera el endpoint
-	 * @param String $prefijo indica el ambiente en uso
-	 */
-	protected function getEndpoint($prefijo)
-	{
-		return Configuration::get($prefijo.'_ENDPOINT');
-	}
-
-	/**
-	 * Log
-	 */
-	public function logInfo($order, $action, $params = false)
-	{
-		$log = 'TodoPago - Orden: ' . $order . ' - ' . $action;
-		if($params) $log = $log . ' - Parametros: ' .json_encode($params);
-		$this->log($log);
 	}
 	
 	/**
@@ -598,15 +573,6 @@ class TodoPago extends PaymentModule
 		return $this->display(__FILE__, 'payment_return.tpl');//asigno el template que quiero usar
 	}
 	
-	public function log($mensaje)
-	{
-		$nombre = 'log';
-		
-		$archivo = fopen(dirname(__FILE__).'/'.$nombre.'.txt', 'a+');
-		fwrite($archivo, date('Y/m/d - H:i:s').' - '.$mensaje . PHP_EOL);
-		fclose($archivo);
-	}
-	
 	/**
 	 * Para crear una tab en la vista de cada producto  y mostrar contenido en ella
 	 * @param array $params al parecer es null
@@ -630,7 +596,7 @@ class TodoPago extends PaymentModule
 		{
 			$form_fields['form']['input'] = array(
 				array(
-						'label' => 'No se necesita agregar informaciÃ³n para este segmento.'
+						'label' => 'No se necesita agregar informaciÃƒÂ³n para este segmento.'
 				)	
 			);
 		}
@@ -661,7 +627,7 @@ class TodoPago extends PaymentModule
 			)
 		);
 		
-		return $this->display(__FILE__, 'views/templates/admin/controlfraude.tpl');//indico la template a utilizar
+		return ;
 	}
 	
 	/**
@@ -683,7 +649,7 @@ class TodoPago extends PaymentModule
 				$segmento = $this->getSegmentoTienda();//recupero el segmento de la tienda
 				$this->displayName = $this->l('Prevencion del fraude');//nombre que se muestra en la tab
 					
-				$this->log('ActionProductUpdate - Segmento '.$segmento.' - params: '.json_encode($params));
+				$this->log->info('ActionProductUpdate - Segmento '.$segmento.' - params: '.json_encode($params));
 				
 				$registro = $params['form'];//recupero desde los params
 				
@@ -694,12 +660,12 @@ class TodoPago extends PaymentModule
 					{
 						$registro['id_product'] = $idProducto;
 						Db::getInstance()->insert(TPProductoControlFraude::$definition['table'],  $registro);
-						$this->log('ActionProductUpdate - Segmento '.$segmento.' - insertado registro para producto id='.$idProducto.' : '.json_encode($registro));
+						$this->log->info('ActionProductUpdate - Segmento '.$segmento.' - insertado registro para producto id='.$idProducto.' : '.json_encode($registro));
 					}
 					else
 					{
 						Db::getInstance()->update(TPProductoControlFraude::$definition['table'],  $registro, TPProductoControlFraude::$definition['primary'].'='.$idProducto);
-						$this->log('ActionProductUpdate - Segmento '.$segmento.' - actualizado registro para producto id='.$idProducto.' : '.json_encode($registro));
+						$this->log->info('ActionProductUpdate - Segmento '.$segmento.' - actualizado registro para producto id='.$idProducto.' : '.json_encode($registro));
 					}
 				}
 				Tools::redirectAdmin($this->context->link->getAdminLink('AdminProducts').'&id_product='.$idProducto.'&updateproduct&token='.Tools::getAdminTokenLite('AdminProducts'));
@@ -707,7 +673,7 @@ class TodoPago extends PaymentModule
 		}
 		catch (Exception $e)
 		{
-			$this->log('EXCEPCION: '.$e->getMessage());
+			$this->log->error('EXCEPCION',$e);
 		}
 	}
 
@@ -728,7 +694,7 @@ class TodoPago extends PaymentModule
 		$opciones = array('MERCHANT'=>Configuration::get($prefijo.'_ID_SITE'), 'OPERATIONID'=>$order_id);
 		$status = $connector->getStatus($opciones);
 		
-		$this->log('DisplayAdminOrderContentOrder - $status:'.json_encode($status));
+		$this->log->info('DisplayAdminOrderContentOrder - $status:'.json_encode($status));
 		
 		$rta = '';
 		if (count($status) > 0)//si hay un status para esta orden

@@ -75,9 +75,9 @@ abstract class ControlFraude {
             $description[]   = $desc;
             
             $name[]  = substr($item['name'],0,250);
-            $sku[]  = substr($item['reference'],0,250);
+            $sku[]  = substr((empty($item['reference'])?$item['id_product']:$item['reference']),0,250);
             $total[]  = number_format($item['total_wt'],2,".","");
-            $quantity[]  = $item['cart_quantity'];
+            $quantity[]  = number_format($item['cart_quantity'],0,".","");
             $unit[]  = number_format($item['price_wt'],2,".","");
         }
 		

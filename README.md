@@ -113,16 +113,6 @@ nota: la funcion $cart->getProducts() devuelve un array con el listado de los pr
 <br />
 <strong>Celular:</strong> se utiliza el atributo phone_mobile del registro Address recuperado.
 
-####Nuevos Atributos en los productos
-Para efectivizar la prevención de fraude se han creado nuevos atributos de producto dentro de la categoria <em>"Prevención de Fraude"</em>. Para modificar estos atributos se debe ir, dentro del detalle del producto deseado, a la solapa llamada "Todo Pago"
-
-![cybersource default](https://raw.githubusercontent.com/TodoPago/imagenes/master/README.img/cybersource%20none.jpg)
-<sub>Si no hay atributos que agregar para el vertical/segmento de la tienda</sub>
-
-Estos campos no son obligatorios aunque si requeridos para el control de riesgo
-<br />
-[<sub>Volver a inicio</sub>](#inicio)
-
 <a name="tablas"></a>
 ## Tablas de Referencia
 

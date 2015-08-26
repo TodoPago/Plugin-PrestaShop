@@ -90,9 +90,9 @@ class TodoPagoValidationModuleFrontController extends ModuleFrontController
 										false,
 										$customer->secure_key);
 	
-		$this->module->log('Creada orden id '.(int)$this->module->currentOrder.' para carro id '.$cart->id);
-		$this->module->log('Status: '.json_encode($transaccion));
-		$this->module->log('Actualizando registro OrderPayment para orden id '.(int)$this->module->currentOrder.' con OPERATIONID='.$transaccion['OPERATIONID'].' CARDNUMBERVISIBLE='.$transaccion['CARDNUMBERVISIBLE'].' PAYMENTMETHODNAME='.$transaccion['PAYMENTMETHODNAME']);
+		$this->module->log->info('Creada orden id '.(int)$this->module->currentOrder.' para carro id '.$cart->id);
+		$this->module->log->info('Status: '.json_encode($transaccion));
+		$this->module->log->info('Actualizando registro OrderPayment para orden id '.(int)$this->module->currentOrder.' con OPERATIONID='.$transaccion['OPERATIONID'].' CARDNUMBERVISIBLE='.$transaccion['CARDNUMBERVISIBLE'].' PAYMENTMETHODNAME='.$transaccion['PAYMENTMETHODNAME']);
 		
 		try
 		{
@@ -100,7 +100,7 @@ class TodoPagoValidationModuleFrontController extends ModuleFrontController
 		}
 		catch (Exception $e)
 		{
-			$this->module->log('EXCEPCION: '.$e->getMessage());//guardo el mensaje
+			$this->module->log->error('EXCEPCION',$e);//guardo el mensaje
 		}
 				
 		Tools::redirect('index.php?controller=order-confirmation&id_cart='.(int)$cart->id.'&id_module='.(int)$this->module->id.'&id_order='.$this->module->currentOrder.'&key='.$customer->secure_key);

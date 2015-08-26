@@ -28,7 +28,14 @@ class ControlFraudeRetail extends ControlFraude {
 	}
 
 	protected function getCategoryArray($id_product){
+		/*
 		$controlFraude = new TPProductoControlFraude($id_product);
         return $controlFraude->codigo_producto;
+		*/
+		$controlFraude = new Product($id_product);
+		$category = new Category($controlFraude->getDefaultCategory()[0]);
+        $name = $category->getName();
+		if(empty($name)) return "default";
+		return $name;		
 	}
 }
