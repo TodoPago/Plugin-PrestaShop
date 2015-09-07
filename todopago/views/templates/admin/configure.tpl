@@ -27,5 +27,5 @@
 	<div class="panel-heading">
 		<i class="icon-cogs"></i>Versi&oacute;n utilizada
 	</div>
-	Utilizando la versi&oacute;n: 1.1.2
+	Utilizando la versi&oacute;n: 1.3.0
 </div>

@@ -14,7 +14,7 @@ class ControlFraudeDigitalgoods extends ControlFraude {
 	}
 
 	protected function getCategoryArray($id_product){
-		$controlFraude = new TPProductoCybersource($id_product);
+		$controlFraude = new TPProductoControlFraude($id_product);
         return $controlFraude->codigo_producto;
 	}
 }
