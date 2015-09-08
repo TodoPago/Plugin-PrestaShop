@@ -34,8 +34,10 @@ class ControlFraudeRetail extends ControlFraude {
 		*/
 		$controlFraude = new Product($id_product);
 		$categories = $controlFraude->getDefaultCategory();
-		$category_id = $categories[0]
+		
+		$category_id = $categories[0];
 		$category = new Category($category_id);
+		
         $name = $category->getName();
 		if(empty($name)) return "default";
 		return $name;		

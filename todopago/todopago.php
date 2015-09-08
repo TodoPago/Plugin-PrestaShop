@@ -62,7 +62,7 @@ class TodoPago extends PaymentModule
 		//acerca del modulo en si
 		$this->name = 'todopago';
 		$this->tab = 'payments_gateways';
-		$this->version = '1.3.0';
+		$this->version = '1.3.1';
 		$this->author = 'Todo Pago';
 		$this->need_instance = 0;
 		$this->bootstrap = true;//para que use bootstrap
@@ -197,12 +197,15 @@ class TodoPago extends PaymentModule
 	{
 		$this->_postProcess();
 
-		$this->context->smarty->assign('module_dir', $this->_path);
-
+		$this->context->smarty->assign(array(
+			'module_dir' 	 	  => $this->_path,
+			'version'    	 	  => $this->version,
+			'config_general' 	  => $this->renderConfigForms(),
+		));
 		$output = $this->context->smarty->fetch($this->local_path.'views/templates/admin/configure.tpl');//recupero el template de configuracion
 		
-		return $output.$this->renderConfigForms();
-	}
+		return $output;
+	}	
 	
 	/**
 	 * @return el html de todos los formularios
