@@ -25,7 +25,7 @@ La versión de este plug in esta testeada en PHP 5.3 en adelante y Prestashop 1.
 4. En la lista de módulos, ir a la fila llamada "Todo pago" y 	hacer click donde dice "Instalar". De aparecer un cartel de advertencia, elegir la opción "Seguir con la instalación". Una vez instalado, se redirige a la pagina de configuración, a la que se puede acceder desde la lista de módulos.
 
 Observación:
-Descomentar: <em>extension=php_soap.dll</em> del php.ini, ya que para la conexión al gateway se utiliza la clase <em>SoapClient</em> del API de PHP.
+Descomentar: <em>extension=php_soap.dll</em> y <em>extension=php_openssl.dll</em> del php.ini, ya que para la conexión al gateway se utiliza la clase <em>SoapClient</em> del API de PHP.
 <br />
 [<sub>Volver a inicio</sub>](#inicio)
 
