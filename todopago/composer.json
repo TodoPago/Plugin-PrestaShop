@@ -1,0 +1,5 @@
+{
+    "require": {
+        "todopago/php-sdk": "^1.2"
+    }
+}

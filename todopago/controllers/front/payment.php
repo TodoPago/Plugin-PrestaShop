@@ -395,8 +395,7 @@ class TodoPagoPaymentModuleFrontController extends ModuleFrontController
      */
     private function _getAuthorization()
     {
-        $prefijo = $this->module->getPrefijo('PREFIJO_CONFIG');
-        return json_decode(Configuration::get($prefijo.'_AUTHORIZATION'), TRUE);
+        return $this->module->getAuthorization();
     }
     
     public function getOptionsSARComercio($prefijo,$cartId)

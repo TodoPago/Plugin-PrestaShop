@@ -27,10 +27,10 @@
 if (!defined('_PS_VERSION_'))
 	exit;
 
+require_once (dirname(__FILE__) . '/vendor/autoload.php');
 require_once (dirname(__FILE__) . '/classes/Transaccion.php');
 require_once (dirname(__FILE__) . '/classes/Productos.php');
 require_once (dirname(__FILE__) . '/classes/Formulario.php');
-require_once (dirname(__FILE__) . '/lib/TodoPago/lib/Sdk.php');
 require_once (dirname(__FILE__) . '/lib/ControlFraude/ControlFraudeFactory.php');
 require_once (dirname(__FILE__) . '/lib/Logger/logger.php');
 
@@ -62,7 +62,7 @@ class TodoPago extends PaymentModule
 		//acerca del modulo en si
 		$this->name = 'todopago';
 		$this->tab = 'payments_gateways';
-		$this->version = '1.3.1';
+		$this->version = '1.3.2';
 		$this->author = 'Todo Pago';
 		$this->need_instance = 0;
 		$this->bootstrap = true;//para que use bootstrap
@@ -201,11 +201,99 @@ class TodoPago extends PaymentModule
 			'module_dir' 	 	  => $this->_path,
 			'version'    	 	  => $this->version,
 			'config_general' 	  => $this->renderConfigForms(),
+			//'config_mediosdepago' => $this->renderMediosdePagoForm(),
 		));
 		$output = $this->context->smarty->fetch($this->local_path.'views/templates/admin/configure.tpl');//recupero el template de configuracion
 		
 		return $output;
-	}	
+	}
+	
+	private function _getBancosFromService($data)
+	{
+		$bank_collection = $data['BanksCollection']['Bank'];
+
+		$bancos = array();
+		foreach($bank_collection as $bank)
+		{
+			$bancos[$bank['Id']] = $bank;
+		}
+		
+		return $bancos;
+	}
+	
+	private function _getMediosFromService($data)
+	{
+		$method_collection = $data['PaymentMethodsCollection']['PaymentMethod'];
+	
+		$medios = array();
+		foreach($method_collection as $medio)
+		{
+			$medios[$medio['Id']] = $medio;
+		}		
+		
+		return $medios;
+	}
+
+	private function _getRelacionesFromService($data)
+	{
+		$relations_collection = $data['PaymentMethodBanksCollection']['PaymentMethodBank'];
+		
+		$relaciones = array();
+		foreach($relations_collection as $rel)
+		{
+			$relaciones[$rel['PaymentMethodId']][] = $rel['BankId'];
+		}
+		return $relaciones;
+	}
+	
+	public function renderMediosdePagoForm()
+	{
+		$medios_pago = $this->getMediosdePago();
+		$bancos = $this->_getBancosFromService($medios_pago);
+		$medios = $this->_getMediosFromService($medios_pago);
+		$relaciones = $this->_getRelacionesFromService($medios_pago);
+		
+		$this->context->smarty->assign(array(
+			'medios' => $this->_renderMedios($medios),
+			'bancos' => $this->_renderBancos($bancos),
+			'relaciones' => $this->_renderRelaciones($relaciones, $medios, $bancos),
+		));
+		
+		$output = $this->context->smarty->fetch($this->local_path.'views/templates/admin/configure_medios.tpl');
+		return $output;	
+	}
+
+	private function _renderRelaciones($relaciones, $medios, $bancos)
+	{
+		$this->context->smarty->assign(array(
+			'medios' => $medios,
+			'bancos' => $bancos,
+			'relaciones' => $relaciones,
+		));
+		
+		$output = $this->context->smarty->fetch($this->local_path.'views/templates/admin/relaciones.tpl');
+		return $output;
+	}
+	
+	private function _renderBancos($bancos)
+	{
+		$this->context->smarty->assign(array(
+			'bancos' => $bancos,
+		));
+		
+		$output = $this->context->smarty->fetch($this->local_path.'views/templates/admin/bancos.tpl');
+		return $output;
+	}
+	
+	private function _renderMedios($medios)
+	{
+		$this->context->smarty->assign(array(
+			'medios' => $medios,
+		));
+		
+		$output = $this->context->smarty->fetch($this->local_path.'views/templates/admin/mediosdepago.tpl');
+		return $output;
+	}
 	
 	/**
 	 * @return el html de todos los formularios
@@ -319,7 +407,7 @@ class TodoPago extends PaymentModule
 				'id_language' => $this->context->language->id
 		);
 		return $helper;
-	}	
+	}
 	
 	/**
 	 * recupero y guardo los valores ingresados en el formulario
@@ -507,10 +595,30 @@ class TodoPago extends PaymentModule
 	 * @param String $prefijo indica el ambiente en uso
 	 * @return array resultado de decodear el authorization que está en formato json.
 	 */
-	protected function getAuthorization()
+	public function getAuthorization()
 	{
+		$prefijo = $this->getPrefijoModo();
+		$auth = json_decode(Configuration::get($prefijo.'_AUTHORIZATION'), TRUE);
+		if(!empty($auth)) return $auth;
+
 		$prefijo = $this->getPrefijo('PREFIJO_CONFIG');
 		return json_decode(Configuration::get($prefijo.'_AUTHORIZATION'), TRUE);
+	}
+	
+	public function getMediosdePago()
+	{
+		$prefijo = $this->getPrefijoModo();
+		$mode = ($this->getModo())?"prod":"test";
+		$connector = new TodoPago\Sdk($this->getAuthorization(), $mode);
+		
+		$opciones = array('MERCHANT'=>Configuration::get($prefijo.'_ID_SITE'));
+		return $connector->getAllPaymentMethods($opciones);
+	}
+	
+	public function hookDisplayBackOfficeHeader()
+	{
+		$this->context->controller->addCSS($this->local_path.'css/back.css', 'all');
+		$this->context->controller->addJS($this->local_path.'js/back.js', 'all');
 	}
 	
 	/**

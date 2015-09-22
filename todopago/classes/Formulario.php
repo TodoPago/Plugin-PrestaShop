@@ -54,13 +54,6 @@ class Formulario {
 				),
 				array(
 						'type' => 'text',
-						'label' =>'Authorization HTTP',
-						'name' =>  'authorization',
-						'desc' => 'Codigo provisto por Todo Pago',
-						'required' => false
-				),
-				array(
-						'type' => 'text',
 						'label' =>'Nombre a mostrar en el front end',
 						'name' =>  'nombre',
 						'desc' => 'Nombre con el que aparecera el metodo de pago',
@@ -137,7 +130,14 @@ class Formulario {
 						'name' =>  'security',
 						'desc' => 'Codigo provisto por Todo Pago',
 						'required' => false
-				)
+				),
+				array(
+						'type' => 'text',
+						'label' =>'Authorization HTTP',
+						'name' =>  'authorization',
+						'desc' => 'Codigo provisto por Todo Pago',
+						'required' => false
+				),				
 		);
 	}
 	

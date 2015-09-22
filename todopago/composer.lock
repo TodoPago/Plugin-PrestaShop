@@ -1,0 +1,45 @@
+{
+    "_readme": [
+        "This file locks the dependencies of your project to a known state",
+        "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
+        "This file is @generated automatically"
+    ],
+    "hash": "5c1e36c9dea41bb1b3da62afbe49603f",
+    "packages": [
+        {
+            "name": "todopago/php-sdk",
+            "version": "V1.2.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/TodoPago/SDK-PHP.git",
+                "reference": "cd98c1437534ab5bd1ecd86b6eb51e36592a68f1"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/TodoPago/SDK-PHP/zipball/cd98c1437534ab5bd1ecd86b6eb51e36592a68f1",
+                "reference": "cd98c1437534ab5bd1ecd86b6eb51e36592a68f1",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=5.3"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "TodoPago\\": "TodoPago/lib"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "description": "SDK para TodoPago",
+            "time": "2015-09-11 16:18:29"
+        }
+    ],
+    "packages-dev": [],
+    "aliases": [],
+    "minimum-stability": "stable",
+    "stability-flags": [],
+    "prefer-stable": false,
+    "prefer-lowest": false,
+    "platform": [],
+    "platform-dev": []
+}
