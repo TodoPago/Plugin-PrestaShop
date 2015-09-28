@@ -33,7 +33,6 @@ use TodoPago\Sdk;
 use TPTransaccion as Transaccion;
 use TPProductoControlFraude as ProductoControlFraude;
 
-require_once (dirname(__FILE__) . '../../../lib/TodoPago/lib/Sdk.php');
 require_once (dirname(__FILE__) . '../../../classes/Transaccion.php');
 require_once (dirname(__FILE__) . '../../../classes/Productos.php');
 require_once (dirname(__FILE__) . '../../../lib/ControlFraude/ControlFraudeFactory.php');

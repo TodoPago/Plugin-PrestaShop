@@ -223,6 +223,9 @@ class Formulario {
 	 */
 	public static function getEstadosFormInputs($estadosOption)
 	{
+		$approvalsStatus = array_filter($estadosOption, function ($item) {
+			return $item['valid_order'] == 1;
+		});
 		return array(
 				array(
 						'type' => 'select',
@@ -243,7 +246,7 @@ class Formulario {
 						'desc' => 'Estado final de lo aprobado por el medio de pago',
 						'required' => false,
 						'options' => array(
-								'query' => $estadosOption,
+								'query' => $approvalsStatus,
 								'id' => 'id_option',
 								'name' => 'name'
 						)

@@ -62,7 +62,7 @@ class TodoPago extends PaymentModule
 		//acerca del modulo en si
 		$this->name = 'todopago';
 		$this->tab = 'payments_gateways';
-		$this->version = '1.3.2';
+		$this->version = '1.3.3';
 		$this->author = 'Todo Pago';
 		$this->need_instance = 0;
 		$this->bootstrap = true;//para que use bootstrap
@@ -562,7 +562,7 @@ class TodoPago extends PaymentModule
 	
 	public function getOrderStateOptions()
 	{
-		$list =  Db::getInstance()->executeS('SELECT os.id_order_state as id, name
+		$list =  Db::getInstance()->executeS('SELECT os.id_order_state as id, name, logable as valid_order
 			FROM `'._DB_PREFIX_.OrderState::$definition['table'].'` os
 			LEFT JOIN `'._DB_PREFIX_.OrderState::$definition['table'].'_lang` osl 
 				ON (os.'.OrderState::$definition['primary'].' = osl.'.OrderState::$definition['primary'].' AND osl.`id_lang` = '.(int)$this->context->language->id.')
@@ -572,7 +572,8 @@ class TodoPago extends PaymentModule
 		//ingreso la opcion por defecto
 		$options[] = array(
 					'id_option' => NULL,
-					'name' => 'Ninguno'
+					'name' => 'Ninguno',
+					'valid_order' => '1'
 			);
 		
 		//si la query devuelve un resultado
@@ -582,7 +583,8 @@ class TodoPago extends PaymentModule
 			{
 					$options[] = array(
 							'id_option' => $item['id'],
-							'name' => $item['name']
+							'name' => $item['name'],
+						    'valid_order' => $item['valid_order']
 					);
 			}
 		}

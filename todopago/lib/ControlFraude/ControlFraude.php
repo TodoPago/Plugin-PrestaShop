@@ -1,7 +1,5 @@
 <?php
 
-require_once(dirname(__FILE__)."/../TodoPago/lib/Sdk.php");
-
 abstract class ControlFraude {
   
 	protected $datasources = array();
