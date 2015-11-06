@@ -21,7 +21,7 @@
 /**
  * This class is specialized in retrieving loggers by name and also maintaining 
  * the logger hierarchy. The logger hierarchy is dealing with the several Log-Levels
- * Logger can have. From log4j website:
+ * TPLogger can have. From log4j website:
  * 
  * "A logger is said to be an ancestor of another logger if its name followed 
  * by a dot is a prefix of the descendant logger name. A logger is said to be
@@ -49,7 +49,7 @@
  */
 class LoggerHierarchy {
 	
-	/** Array holding all Logger instances. */
+	/** Array holding all TPLogger instances. */
 	protected $loggers = array();
 	
 	/** 
@@ -108,12 +108,12 @@ class LoggerHierarchy {
 	/**
 	 * Returns a named logger instance logger. If it doesn't exist, one is created.
 	 * 
-	 * @param string $name Logger name
-	 * @return Logger Logger instance.
+	 * @param string $name TPLogger name
+	 * @return TPLogger Logger instance.
 	 */
 	public function getLogger($name) {
 		if(!isset($this->loggers[$name])) {
-			$logger = new Logger($name);
+			$logger = new TPLogger($name);
 
 			$nodes = explode('.', $name);
 			$firstNode = array_shift($nodes);
@@ -236,7 +236,7 @@ class LoggerHierarchy {
 	}
 	
 	/**
-	 * Prints the current Logger hierarchy tree. Useful for debugging.
+	 * Prints the current TPLogger hierarchy tree. Useful for debugging.
 	 */
 	public function printHierarchy() {
 		$this->printHierarchyInner($this->getRootLogger(), 0);

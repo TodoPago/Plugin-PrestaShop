@@ -39,10 +39,10 @@ require dirname(__FILE__) . '/LoggerAutoloader.php';
  * @version	   SVN: $Id: Logger.php 1395241 2012-10-07 08:28:53Z ihabunek $
  * @link	   http://logging.apache.org/log4php
  */
-class Logger {
+class TPLogger {
 	
 	/**
-	 * Logger additivity. If set to true then child loggers will inherit
+	 * TPLogger additivity. If set to true then child loggers will inherit
 	 * the appenders of their ancestors by default.
 	 * @var boolean
 	 */
@@ -54,10 +54,10 @@ class Logger {
 	 */
 	private $fqcn = 'Logger';
 
-	/** The assigned Logger level. */
+	/** The assigned TPLogger level. */
 	private $level;
 	
-	/** The name of this Logger instance. */
+	/** The name of this TPLogger instance. */
 	private $name;
 	
 	/** The parent logger. Set to null if this is the root logger. */
@@ -253,7 +253,7 @@ class Logger {
 	// ******************************************
 	
 	/**
-	 * Check whether this Logger is enabled for a given Level passed as parameter.
+	 * Check whether this TPLogger is enabled for a given Level passed as parameter.
 	 *
 	 * @param LoggerLevel level
 	 * @return boolean
@@ -263,7 +263,7 @@ class Logger {
 	}
 	
 	/**
-	 * Check whether this Logger is enabled for the TRACE Level.
+	 * Check whether this TPLogger is enabled for the TRACE Level.
 	 * @return boolean
 	 */
 	public function isTraceEnabled() {
@@ -271,7 +271,7 @@ class Logger {
 	}
 	
 	/**
-	 * Check whether this Logger is enabled for the DEBUG Level.
+	 * Check whether this TPLogger is enabled for the DEBUG Level.
 	 * @return boolean
 	 */
 	public function isDebugEnabled() {
@@ -279,7 +279,7 @@ class Logger {
 	}
 
 	/**
-	 * Check whether this Logger is enabled for the INFO Level.
+	 * Check whether this TPLogger is enabled for the INFO Level.
 	 * @return boolean
 	 */
 	public function isInfoEnabled() {
@@ -287,7 +287,7 @@ class Logger {
 	}
 	
 	/**
-	 * Check whether this Logger is enabled for the WARN Level.
+	 * Check whether this TPLogger is enabled for the WARN Level.
 	 * @return boolean
 	 */
 	public function isWarnEnabled() {
@@ -295,7 +295,7 @@ class Logger {
 	}
 	
 	/**
-	 * Check whether this Logger is enabled for the ERROR Level.
+	 * Check whether this TPLogger is enabled for the ERROR Level.
 	 * @return boolean
 	 */
 	public function isErrorEnabled() {
@@ -303,7 +303,7 @@ class Logger {
 	}
 	
 	/**
-	 * Check whether this Logger is enabled for the FATAL Level.
+	 * Check whether this TPLogger is enabled for the FATAL Level.
 	 * @return boolean
 	 */
 	public function isFatalEnabled() {
@@ -377,7 +377,7 @@ class Logger {
 	}
  
 	/**
-	 * Starting from this Logger, search the Logger hierarchy for a non-null level and return it.
+	 * Starting from this Logger, search the TPLogger hierarchy for a non-null level and return it.
 	 * @see LoggerLevel
 	 * @return LoggerLevel or null
 	 */
@@ -390,7 +390,7 @@ class Logger {
 	}
   
 	/**
-	 * Get the assigned Logger level.
+	 * Get the assigned TPLogger level.
 	 * @return LoggerLevel The assigned level or null if none is assigned. 
 	 */
 	public function getLevel() {
@@ -398,7 +398,7 @@ class Logger {
 	}
 	
 	/**
-	 * Set the Logger level.
+	 * Set the TPLogger level.
 	 *
 	 * Use LoggerLevel::getLevelXXX() methods to get a LoggerLevel object, e.g.
 	 * <code>$logger->setLevel(LoggerLevel::getLevelInfo());</code>
@@ -421,9 +421,9 @@ class Logger {
 	
 	/**
 	 * Sets the parent logger.
-	 * @param Logger $logger
+	 * @param TPLogger $logger
 	 */
-	public function setParent(Logger $logger) {
+	public function setParent(TPLogger $logger) {
 		$this->parent = $logger;
 	} 
 	
@@ -454,7 +454,7 @@ class Logger {
 	}
 	
 	/**
-	 * Returns a Logger by name. If it does not exist, it will be created.
+	 * Returns a TPLogger by name. If it does not exist, it will be created.
 	 *
 	 * @param string $name The logger name
 	 * @return Logger
@@ -478,7 +478,7 @@ class Logger {
 	}
 	
 	/**
-	 * Clears all Logger definitions from the logger hierarchy.
+	 * Clears all TPLogger definitions from the logger hierarchy.
 	 * @return boolean
 	 */
 	public static function clear() {
@@ -514,7 +514,7 @@ class Logger {
 	}
 	
 	/**
-	 * Returns an array this whole Logger instances.
+	 * Returns an array this whole TPLogger instances.
 	 * @see Logger
 	 * @return array
 	 */

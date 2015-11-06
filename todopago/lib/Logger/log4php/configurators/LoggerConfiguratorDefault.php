@@ -397,10 +397,10 @@ class LoggerConfiguratorDefault implements LoggerConfigurator
 	/**
 	 * Configures a logger. 
 	 * 
-	 * @param Logger $logger The logger to configure
-	 * @param array $config Logger configuration options.
+	 * @param TPLogger $logger The logger to configure
+	 * @param array $config TPLogger configuration options.
 	 */
-	private function configureLogger(Logger $logger, $config) {
+	private function configureLogger(TPLogger $logger, $config) {
 		$loggerName = $logger->getName();
 		
 		// Set logger level

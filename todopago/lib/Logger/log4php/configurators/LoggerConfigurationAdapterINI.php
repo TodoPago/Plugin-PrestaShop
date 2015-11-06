@@ -135,7 +135,7 @@ class LoggerConfigurationAdapterINI implements LoggerConfigurationAdapter {
 	 * </pre>
 	 * 
 	 * @param string $value The configuration value (level and appender-refs).
-	 * @param string $name Logger name. 
+	 * @param string $name TPLogger name.
 	 */
 	private function parseLogger($value, $name) {
 		// Value is divided by commas

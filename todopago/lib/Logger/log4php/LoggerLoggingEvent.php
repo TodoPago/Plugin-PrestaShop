@@ -34,7 +34,7 @@ class LoggerLoggingEvent {
 	private $fqcn;
 	
 	/**
-	* @var Logger reference
+	* @var TPLogger reference
 	*/
 	private $logger;
 	
@@ -119,7 +119,7 @@ class LoggerLoggingEvent {
 	*/
 	public function __construct($fqcn, $logger, LoggerLevel $level, $message, $timeStamp = null, $throwable = null) {
 		$this->fqcn = $fqcn;
-		if($logger instanceof Logger) {
+		if($logger instanceof TPLogger) {
 			$this->logger = $logger;
 			$this->categoryName = $logger->getName();
 		} else {
@@ -205,7 +205,7 @@ class LoggerLoggingEvent {
 
 	/**
 	 * Returns the logger which created the event.
-	 * @return Logger
+	 * @return TPLogger
 	 */
 	public function getLogger() {
 		return $this->logger;

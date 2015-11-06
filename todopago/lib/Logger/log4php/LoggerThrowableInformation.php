@@ -36,7 +36,7 @@ class LoggerThrowableInformation {
 	 * Create a new instance
 	 * 
 	 * @param $throwable - a throwable as a exception
-	 * @param $logger - Logger reference
+	 * @param $logger - TPLogger reference
 	 */
 	public function __construct(Exception $throwable) {
 		$this->throwable = $throwable;

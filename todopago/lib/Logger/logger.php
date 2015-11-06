@@ -77,7 +77,7 @@ class TodoPagoLogger {
 	}
 	
 	public function getLogger($payment) {
-		Logger::configure($this->config);
+		TPLogger::configure($this->config);
 		
 		if($this->php_version != null)
 			LoggerMDC::put('php_version', $this->php_version);
@@ -107,8 +107,8 @@ class TodoPagoLogger {
 		}
 			
 		if($payment)
-			return Logger::getLogger("todopagopayment");
-		return Logger::getLogger("todopagoadmin");
+			return TPLogger::getLogger("todopagopayment");
+		return TPLogger::getLogger("todopagoadmin");
 	}
 	
 	public function setPhpVersion($php_version) {

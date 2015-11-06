@@ -25,7 +25,7 @@
  * @package log4php
  * @see Logger
  */
-class LoggerRoot extends Logger {
+class LoggerRoot extends TPLogger {
 	/**
 	 * Constructor
 	 *
@@ -63,9 +63,9 @@ class LoggerRoot extends Logger {
 	
 	/**
 	 * Override parent setter. Root logger cannot have a parent.
-	 * @param Logger $parent
+	 * @param TPLogger $parent
 	 */
-	public function setParent(Logger $parent) {
+	public function setParent(TPLogger $parent) {
 		trigger_error("log4php: LoggerRoot cannot have a parent.", E_USER_WARNING);
 	}
 }
