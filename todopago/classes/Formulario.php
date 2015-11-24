@@ -119,21 +119,21 @@ class Formulario {
 		return array(
 				array(
 						'type' => 'text',
-						'label' =>'Id del sitio',
+						'label' =>'Id del sitio (Merchant ID)',
 						'name' =>  'id_site',
 						'desc' => 'Numero de comercio provisto por Todo Pago',
 						'required' => false
 				),
 				array(
 						'type' => 'text',
-						'label' =>'Codigo de seguridad ("Security")',
+						'label' =>'Codigo de seguridad (Key sin PRISMA/TODOPAGO y sin espacios)',
 						'name' =>  'security',
 						'desc' => 'Codigo provisto por Todo Pago',
 						'required' => false
 				),
 				array(
 						'type' => 'text',
-						'label' =>'Authorization HTTP',
+						'label' =>'Authorization HTTP (código de autorizacion)',
 						'name' =>  'authorization',
 						'desc' => 'Codigo provisto por Todo Pago',
 						'required' => false
@@ -521,10 +521,28 @@ class Formulario {
 	 * @param array $inputsName resultado de la funcion getFormInputsNames
 	 */
 	public static function postProcessFormularioConfigs($prefijo, $inputsName)
-	{
+	{	
 		foreach ($inputsName as $nombre)
-		{
-			\Configuration::updateValue( $prefijo.'_'.strtoupper( $nombre ), \Tools::getValue($nombre));
+		{	
+			//mejorarlo este codigo
+			if($nombre == "authorization"){
+
+				$auth = \Tools::getValue($nombre);
+				if(json_decode($auth) == NULL) {
+					//armo json de autorization        
+					$autorizationId = new \stdClass();
+					$autorizationId->Authorization = $auth;
+					$auth = json_encode($autorizationId);
+				}
+
+				$valueField = $auth;
+
+			}else{
+				$valueField = \Tools::getValue($nombre);
+			}
+			
+			\Configuration::updateValue( $prefijo.'_'.strtoupper( $nombre ), $valueField);
+
 		}
 	}
 	

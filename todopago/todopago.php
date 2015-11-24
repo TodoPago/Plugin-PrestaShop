@@ -62,7 +62,7 @@ class TodoPago extends PaymentModule
 		//acerca del modulo en si
 		$this->name = 'todopago';
 		$this->tab = 'payments_gateways';
-		$this->version = '1.3.4';
+		$this->version = '1.3.5';
 		$this->author = 'Todo Pago';
 		$this->need_instance = 0;
 		$this->bootstrap = true;//para que use bootstrap
@@ -336,7 +336,7 @@ class TodoPago extends PaymentModule
 	public function renderForm($tabla)
 	{
 		$form_fields;
-		
+
 		switch ($tabla)
 		{
 			case 'config':
@@ -377,7 +377,10 @@ class TodoPago extends PaymentModule
 		
 		if (isset($prefijo))
 			$fields_value= TodoPago\Formulario::getConfigs($prefijo, TodoPago\Formulario::getFormInputsNames($form_fields['form']['input']));
-		
+
+		//obtiene el authorization code desde el json guardado
+		$fields_value=$this->getAuthorizationKeyFromJSON($fields_value, $tabla);
+
 		return $this->getHelperForm($tabla,$fields_value)->generateForm(array($form_fields));
 	}
 	
@@ -388,7 +391,7 @@ class TodoPago extends PaymentModule
 	public function getHelperForm($tabla, $fields_value=NULL)
 	{
 		$helper = new HelperForm();
-		
+
 		$helper->show_toolbar = false;//no mostrar el toolbar
 		$helper->table = $this->table;
 		$helper->module = $this;
@@ -414,6 +417,7 @@ class TodoPago extends PaymentModule
 	 */
 	protected function _postProcess()
 	{
+
 		if (Tools::isSubmit('btnSubmitConfig'))
 		{
 			TodoPago\Formulario::postProcessFormularioConfigs($this->getPrefijo('PREFIJO_CONFIG'), TodoPago\Formulario::getFormInputsNames( TodoPago\Formulario::getConfigFormInputs(null, null) ) );
@@ -435,19 +439,20 @@ class TodoPago extends PaymentModule
 			TodoPago\Formulario::postProcessFormularioConfigs($this->getPrefijo('CONFIG_ESTADOS'), TodoPago\Formulario::getFormInputsNames( TodoPago\Formulario::getEstadosFormInputs(NULL) ) );
 		}
 		elseif (Tools::isSubmit('btnSubmitServicio'))
-		{
+		{	
 			TodoPago\Formulario::postProcessFormularioConfigs($this->getPrefijo('PREFIJO_CONFIG'), TodoPago\Formulario::getFormInputsNames( TodoPago\Formulario::getServicioConfFormInputs() ) );
 		}
 		elseif (Tools::isSubmit('btnSubmitEmbebed'))
-		{
+		{	
 			TodoPago\Formulario::postProcessFormularioConfigs($this->getPrefijo('CONFIG_EMBEBED'), TodoPago\Formulario::getFormInputsNames( TodoPago\Formulario::getEmbebedFormInputs() ) );
 		}
 		elseif (Tools::isSubmit('btnSubmitControlfraude'))
 		{
+
 			$registro = array();
 			//recupero los nombres de los campos
 			$campos = TodoPago\Formulario::getFormInputsNames(TodoPago\Formulario::getProductoFormInputs($this->getSegmentoTienda(), NULL, NULL, NULL));
-			
+
 			//recupero lo ingresado en el formulario
 			if (isset ($campos)  && count($campos) > 0)
 			{
@@ -456,7 +461,7 @@ class TodoPago extends PaymentModule
 					$registro[$item] = Tools::getValue($item);
 				}
 			}
-			
+
 			Hook::exec('actionProductUpdate', array('id_product' => Tools::getValue('id_product'), 'form' => $registro));//llamo al hook desde aca porque no funciona de otra forma
 		}
 	}
@@ -592,6 +597,23 @@ class TodoPago extends PaymentModule
 		return $options;
 	}
 	
+	public function getAuthorizationKeyFromJSON($fields_val, $tabla)
+	{
+		if($tabla == 'test' || $tabla == 'produccion')
+		{
+			foreach($fields_val as $index=>$value)
+			{
+				if($index == "authorization" && $value != null)
+				{
+					$authKey = json_decode($value);
+					$fields_val[$index] = $authKey->Authorization;
+				}
+			}
+		}
+
+		return $fields_val;
+	}
+
 	/**
 	 * Recupera el authorize.
 	 * @param String $prefijo indica el ambiente en uso

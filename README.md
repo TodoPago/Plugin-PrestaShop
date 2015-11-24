@@ -31,14 +31,18 @@ Descomentar: <em>extension=php_soap.dll</em> y <em>extension=php_openssl.dll</em
 
 <a name="configuracion"></a>
 ##Configuración
-Para llegar al menu de configuración ir a <em>Módulos</em> y en la lista buscar el ítem llamado <strong>Todo Pago</strong>. El Plug-in esta separado en configuarción general y 3 sub-menues.<br />
+Para llegar al menu de configuración ir a <em>Módulos</em> y en la lista buscar el ítem llamado <strong>Todo Pago</strong>. La configuración esta separada en 2 tabs: Configuración general y configuración de medios de pago.<br />
+## Configuración general
+El Plug-in esta separado en configuarción general y 3 sub-menues.
 <sub><em>Menú principal</em></sub>
 ![imagen de configuracion](https://raw.githubusercontent.com/TodoPago/imagenes/master/README.img/general.jpg)
 <a name="confplanes"></a>
 <br />
 
-Nota: lo siguientes campos de la configuración deben ingresarse con formato JSON
-*  Authorization. Ejemplo: {"Authorization": "PRISMA 345678RGAGHUAJRG6789GJDDSDHJK"}
+Datos de configuración
+*  <strong>Authorization HTTP:</strong> Codigo de autorización otorgado por Todo Pago. Ejemplo: PRISMA 912EC803B2CE49E4A541068D12345678
+*  <strong>Security Code:</strong> Código provisto por Todo Pago
+*  <strong>ID Site Todo Pago:</strong> Nombre de comercio provisto por Todo Pago
 
 [<sub>Volver a inicio</sub>](#inicio)
 <a name="tca"></a>
@@ -126,7 +130,7 @@ nota: la funcion $cart->getProducts() devuelve un array con el listado de los pr
 <tr><td>Chubut</td><td>U</td></tr>
 <tr><td>Córdoba</td><td>X</td></tr>
 <tr><td>Corrientes</td><td>W</td></tr>
-<tr><td>Entre Ríos</td><td>R</td></tr>
+<tr><td>Entre Ríos</td><td>E</td></tr>
 <tr><td>Formosa</td><td>P</td></tr>
 <tr><td>Jujuy</td><td>Y</td></tr>
 <tr><td>La Pampa</td><td>L</td></tr>
