@@ -8,6 +8,7 @@ Plug in para la integración con gateway de pago <strong>Todo Pago</strong>
 - [Consideraciones Generales](#consideracionesgenerales)
 - [Instalación](#instalacion)
 - [Configuración](#configuracion)
+- [Devoluciones](#devoluciones)
 - [Datos adiccionales para prevención de fraude](#cybersource)
 - [Consulta de transacciones](#constrans)
 - [Tablas de referencia](#tablas)
@@ -39,10 +40,20 @@ El Plug-in esta separado en configuarción general y 3 sub-menues.
 <a name="confplanes"></a>
 <br />
 
-Datos de configuración
-*  <strong>Authorization HTTP:</strong> Codigo de autorización otorgado por Todo Pago. Ejemplo: PRISMA 912EC803B2CE49E4A541068D12345678
-*  <strong>Security Code:</strong> Código provisto por Todo Pago
-*  <strong>ID Site Todo Pago:</strong> Nombre de comercio provisto por Todo Pago
+Nota: lo siguientes campos de la configuración deben ingresarse con formato JSON
+*  Authorization. Ejemplo: {"Authorization": "PRISMA 345678RGAGHUAJRG6789GJDDSDHJK"}
+
+<a name="devoluciones"></a>
+##Devoluciones
+TodoPago permite realizar la devolucion total o parcial de dinero de una orden de compra.
+
+Para ello se debe habilitar en Prestashop la opcion de devoluciones, ir a Pedido->Devoluciones de Mercancía.
+
+![imagen de configuracion](https://raw.githubusercontent.com/TodoPago/imagenes/master/prestashop/admin-enable-devoluciones.png)
+
+Para realizar una devolucion parcial o total, Prestashop tiene en la seccion "Pedido->Pedidos->Ver Orden". Dos botones "Reembolso parcial" el cual permite devolver un monto especifico y "Devolver productos" que permite devolver el total del monto.
+
+![imagen de configuracion](https://raw.githubusercontent.com/TodoPago/imagenes/master/prestashop/funcionalidad-devolucion.png)
 
 [<sub>Volver a inicio</sub>](#inicio)
 <a name="tca"></a>

@@ -158,8 +158,10 @@ class TodoPagoPaymentModuleFrontController extends ModuleFrontController
 	}
 	
 	protected function call_SAR($options, $cart, $prefijo, $cliente, $connector)
-	{
+	{      
         $respuesta = $connector->sendAuthorizeRequest($options['comercio'], $options['operacion']);//me comunico con el webservice
+        
+
         $this->module->log->info('response SAR - '.json_encode($respuesta));
         if ($respuesta['StatusCode']  != $this->codigoAprobacion)//Si la transacción salió mal
         {
@@ -217,6 +219,7 @@ class TodoPagoPaymentModuleFrontController extends ModuleFrontController
          * RequestKey: id necesario para el formulario,
          * PublicRequestKey: igual al RequestKey
          */
+
         $this->module->log->info('first step');
 		
 		$this->prepare_order($cart);
@@ -482,5 +485,66 @@ class TodoPagoPaymentModuleFrontController extends ModuleFrontController
             return true;
         else
             return false;
+    }
+    //obtengo RequestKey de la orden
+    private function getRequestKeyTransaccion($IdOrder){
+
+        $sql = 'SELECT request_key FROM '._DB_PREFIX_.'todopago_transaccion WHERE id_orden = '.$IdOrder;
+        $dataTransacciontions = Db::getInstance()->ExecuteS($sql);
+
+        if (!$dataTransacciontions){
+            return null;
+        }else{
+            foreach($dataTransacciontions as $dataRequest){
+                return $dataRequest['request_key'];
+            }
+        }
+    }
+
+    public function voidPaymentTP($OrderId){
+        $merchant = Configuration::get($prefijo.'_ID_SITE');
+        $security = Configuration::get($prefijo.'_SECURITY');
+        $orderIdTransaccion = $OrderId;
+
+        $requestKey = $this->getRequestKeyTransaccion($orderIdTransaccion);
+
+        $options = array(
+            "Security" => $security,
+            "Merchant" => $merchant, 
+            "RequestKey" => $requestKey
+        );
+
+        $refResponse = $connector->voidRequest($options);
+
+        if($refResponse['StatusCode'] == 2011){
+            return true;
+        }
+
+        return false;
+    }
+
+    public function partialRefundTP($OrderId, $amount){
+        $merchant = Configuration::get($prefijo.'_ID_SITE');
+        $security = Configuration::get($prefijo.'_SECURITY');
+        $orderIdTransaccion = $OrderId;
+        $paymentAmount = $amount; 
+
+        //getRequestKey
+        $requestKey = $this->getRequestKeyTransaccion($orderIdTransaccion);
+
+        $options = array(
+            "Security" => $security,
+            "Merchant" => $merchant, 
+            "RequestKey" => $requestKey, 
+            "AMOUNT" => $paymentAmount 
+        );
+        
+        $refResponse = $connector->returnRequest($options);
+
+        if($refResponse['StatusCode'] == 2011){
+            return true;
+        }
+
+        return false;
     }
 }

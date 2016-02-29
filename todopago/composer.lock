@@ -8,7 +8,7 @@
     "packages": [
         {
             "name": "todopago/php-sdk",
-            "version": "V1.2.0",
+            "version": "V1.2.3",
             "source": {
                 "type": "git",
                 "url": "https://github.com/TodoPago/SDK-PHP.git",
