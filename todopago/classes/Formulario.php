@@ -577,7 +577,7 @@ class Formulario {
 						'type' => 'switch',
 						'label' =>'Activado',
 						'name' =>  'embebed',
-						'desc' => 'Activa y desactiva el formulario embebed',
+						'desc' => 'Si esta desactivado redireccionara a un formulario externo',
 						'is_bool' => true,
 						'values' => array(
 								array(
@@ -591,41 +591,6 @@ class Formulario {
 										'label' =>'NO'
 								)
 						),
-						'required' => false
-				),
-				array(
-						'type' => 'text',
-						'label' =>'backgroundColor',
-						'name' =>  'backgroundColor',
-						//'desc' => '',
-						'required' => false
-				),
-				array(
-						'type' => 'text',
-						'label' =>'border',
-						'name' =>  'border',
-						//'desc' => '',
-						'required' => false
-				),
-				array(
-						'type' => 'text',
-						'label' =>'buttonBackgroundColor',
-						'name' =>  'buttonBackgroundColor',
-						//'desc' => '',
-						'required' => false
-				),
-				array(
-						'type' => 'text',
-						'label' =>'buttonColor',
-						'name' =>  'buttonColor',
-						//'desc' => '',
-						'required' => false
-				),
-				array(
-						'type' => 'text',
-						'label' =>'buttonBorder',
-						'name' =>  'buttonBorder',
-						//'desc' => '',
 						'required' => false
 				)
 		);

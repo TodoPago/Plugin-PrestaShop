@@ -130,7 +130,7 @@ class TodoPagoPaymentModuleFrontController extends ModuleFrontController
 		if (isset($servicioConfig['proxy'])) // si hay un proxy
 			$connector->setProxyParameters($proxy['host'], $proxy['port'], $proxy['user'], $proxy['pass']);
 		
-		if ($servicioConfig['certificado'] != '')//si hay una ubicaciÛn de certificado
+		if ($servicioConfig['certificado'] != '')//si hay una ubicaci√≥n de certificado
 			$connector->setLocalCert($servicioConfig['certificado']);
 		
 		if ($servicioConfig['timeout'] != '')//si hay un timeout
@@ -158,12 +158,10 @@ class TodoPagoPaymentModuleFrontController extends ModuleFrontController
 	}
 	
 	protected function call_SAR($options, $cart, $prefijo, $cliente, $connector)
-	{      
+	{
         $respuesta = $connector->sendAuthorizeRequest($options['comercio'], $options['operacion']);//me comunico con el webservice
-        
-
         $this->module->log->info('response SAR - '.json_encode($respuesta));
-        if ($respuesta['StatusCode']  != $this->codigoAprobacion)//Si la transacciÛn saliÛ mal
+        if ($respuesta['StatusCode']  != $this->codigoAprobacion)//Si la transacci√≥n sali√≥ mal
         {
 			if(($respuesta['StatusCode']  == 702)&&(!$this->first_step)) {
 				$http_header = $this->_getAuthorization();
@@ -219,7 +217,6 @@ class TodoPagoPaymentModuleFrontController extends ModuleFrontController
          * RequestKey: id necesario para el formulario,
          * PublicRequestKey: igual al RequestKey
          */
-
         $this->module->log->info('first step');
 		
 		$this->prepare_order($cart);
@@ -236,7 +233,7 @@ class TodoPagoPaymentModuleFrontController extends ModuleFrontController
         $answerKey = Tools::getValue('Answer');
         $cartId =Tools::getValue('cart');
 
-        if($this->_tranEstado($cartId) != 2)
+        if($this->_tranEstado($cartId) == 3)
             throw new Exception("second_step ya realizado");
 		
         $options = $this->_getRequestOptionsPasoDos($prefijo, $cartId, $answerKey);
@@ -393,7 +390,7 @@ class TodoPagoPaymentModuleFrontController extends ModuleFrontController
     /**
      * Recupera el authorize.
      * @param String $prefijo indica el ambiente en uso
-     * @return array resultado de decodear el authorization que est· en formato json.
+     * @return array resultado de decodear el authorization que est√° en formato json.
      */
     private function _getAuthorization()
     {

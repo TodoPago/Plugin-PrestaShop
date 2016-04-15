@@ -67,8 +67,22 @@ abstract class ControlFraude {
         $unit = array();
 
         foreach ($productos as $item) {
+            $prodDescription = ""; 
             $code[]  = $this->getCategoryArray($item['id_product']);
-            $desc = TodoPago\Sdk::sanitizeValue($item['description_short']);
+
+            //obtengo el string para CSITPRODUCTDESCRIPTION
+            $prodDescription = $this->getProdDescription($item['id_product']);
+            if($prodDescription == null || $prodDescription == ""){
+            	if($item['description_short'] == null || $item['description_short'] == ""){
+            		$prodDescription = $item['name'];
+            	}else{
+            		$prodDescription = $item['description_short'];	
+            	}
+            }
+            $prodDescription = str_replace("#","",$prodDescription);
+            $prodDescription = strip_tags($prodDescription);
+            $desc = TodoPago\Sdk::sanitizeValue($prodDescription);
+
             $desc = substr($desc,0,50);
             $description[]   = $desc;
             
@@ -88,7 +102,7 @@ abstract class ControlFraude {
             'CSITQUANTITY' => join("#", $quantity),
             'CSITUNITPRICE' => join("#", $unit),
         );
-	
+
 		return $productsData;
 	}
 	
@@ -131,6 +145,12 @@ abstract class ControlFraude {
 		fclose($archivo);
 	}
 
+	protected function getProdDescription($idProduct){
+		$sql = 'SELECT description FROM '._DB_PREFIX_.'product_lang as pl WHERE id_product = '.$idProduct.' '.$id_lang.Shop::addSqlRestrictionOnLang('pl');
+        	$dataProduct = Db::getInstance(_PS_USE_SQL_SLAVE_)->ExecuteS($sql);
+
+		return $dataProduct[0]['description']; 
+	}
 	protected function _phoneSanitize($number){
 		$number = str_replace(array(" ","(",")","-","+"),"",$number);
 		

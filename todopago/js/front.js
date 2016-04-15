@@ -28,4 +28,5 @@
 
 $(document).ready(function(){
 	//agregar codigo javascript aca
+	
 });

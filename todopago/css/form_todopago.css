@@ -1,0 +1,71 @@
+#tp-form-tph{
+	margin:5px 0px 5px 20px;
+}
+#tp-form-tph input, #tp-form-tph select {
+	margin:5px 0px 5px 0;
+}
+#tp-logo{
+	background-image: url("../imagenes/logo_tp.png");
+	background-repeat: no-repeat;
+	height:40px;
+	width:110px;
+}
+.modal-class {
+
+}
+.modal-content {
+
+}
+#tp-bt-wrapper{
+	margin:15px 0px 0px 0;
+}
+.tp-button{
+}
+#tp-content-form{
+	margin: 4px 0 0 0;
+}
+#tp-content-form h5{
+	margin: 16px 0 4px 1px;
+}
+#mesTxt, #anioTxt{
+	max-width: 66px;
+}
+#codigoSeguridadTxt{
+	max-width: 122px;
+}
+#promosCbx{
+	min-width:61px;
+}
+.date-group{
+}
+.date-group .col-sm-1{
+	margin:0 -16px 0 0;
+}
+#labelCodSegTextId{
+	margin:18px 0 0 9px;
+}
+#MY_btnPagarConBilletera{
+	margin: 0 0 0 10px;
+}
+.left{
+	float:left;
+}
+.right{
+	float:right;
+}
+.clear{
+	clear:both;
+}
+.tp-label{
+	/*margin:12px 0 0 10px;*/
+}
+.select-control{
+	color: #9c9b9b;
+    vertical-align: middle;
+    background-color: #fff;
+    border: 1px solid #d6d4d4;
+    height: 30px;
+}
+#MY_btnConfirmarPago{
+	display:none;
+}

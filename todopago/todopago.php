@@ -62,7 +62,7 @@ class TodoPago extends PaymentModule
 		//acerca del modulo en si
 		$this->name = 'todopago';
 		$this->tab = 'payments_gateways';
-		$this->version = '1.5.5';
+		$this->version = '1.5.6';
 		$this->author = 'Todo Pago';
 		$this->need_instance = 0;
 		$this->bootstrap = true;//para que use bootstrap
@@ -370,7 +370,7 @@ class TodoPago extends PaymentModule
 				break;
 				
 			case 'embebed':
-				$form_fields = TodoPago\Formulario::getFormFields('configuracion - embebed', TodoPago\Formulario::getEmbebedFormInputs());
+				$form_fields = TodoPago\Formulario::getFormFields('configuracion - formulario hibrido', TodoPago\Formulario::getEmbebedFormInputs());
 				$prefijo = $this->getPrefijo('CONFIG_EMBEBED');
 				break;				
 		}
@@ -830,14 +830,30 @@ class TodoPago extends PaymentModule
 		$status = $connector->getStatus($opciones);
 		
 		$this->log->info('DisplayAdminOrderContentOrder - $status:'.json_encode($status));
-		
+
 		$rta = '';
-		if (count($status) > 0)//si hay un status para esta orden
-		{
-			foreach ($status['Operations'] as $key => $value)
-			{
-				$rta .= "$key: $value <br>";
+		//si hay un status para esta orden
+		if(count($status) > 0){
+
+			foreach($status['Operations'] as $key => $value){
+				if($key == "REFUNDS" || $key == "refounds"){	
+					$rta .=$key.": <br>";
+					if(is_array($value)){
+						$rta .="&ensp;&ensp;Order Id   -   Amount   -  Date.<br>";
+						foreach ($value as $key => $refundsList){
+							foreach($refundsList as $key => $value){
+								$rta .="&ensp;&ensp;".$value['ID']." - ".$value['AMOUNT']." - ".$value['DATE']."<br>";
+							}
+						}
+					}else{
+						$rta .="No tiene devoliciones<br>";
+					}
+					
+				}else{
+					$rta .= $key .": ". $value."<br>";
+				}
 			}
+
 		}
 		else
 		{
