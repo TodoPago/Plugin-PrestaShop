@@ -84,6 +84,7 @@
 			
 			$("#btnConfirmarPagoValida").on("click", function(){
 		        $('#alert-form').empty();
+		        $('.alert-warning').hide();
 		        $('#MY_btnConfirmarPago').click();
 		    });
 		});
@@ -91,7 +92,7 @@
 		//securityRequesKey, esta se obtiene de la respuesta del SAR
 		var security = "{$publicKey}";
 		var mail = "{$email}";
-		var completeName = "{$nombre}";
+		var completeName = "{$name}";
 		var dni = 'Numero de documento';
 		var defDniType = 'DNI';
 
@@ -117,6 +118,9 @@
             defaultTipoDoc: defDniType
         });
 		
+		urlBase = "{$content_dir}/index.php?";
+		orderId = "{$orderId}";
+
 		//callbacks de respuesta del pago
 		function validationCollector(response) {
 			var errorMessage = "<li>"+response.error+"</li>";
@@ -125,22 +129,17 @@
 		}
 
 		function billeteraPaymentResponse(response){
-
+			//wallet
 		}
 
-		function customPaymentSuccessResponse(response) {
-			
-			//console.log(response);
-			//window.location.href = document.location.origin + urlSuccessRedirect + <?php echo $id_decode ?> + "&Answer=" + response.AuthorizationKey;
-			//console.log(document.location.origin);
+		function customPaymentSuccessResponse(response){
+			window.location.href = urlBase+"paso=2&estado=1&cart="+orderId+"&fc=module&module=todopago&controller=payment&Answer="+response.AuthorizationKey;
 
-			//window.location.href = document.location.origin + urlSuccessRedirect + <?php echo $id_decode ?> + 
-			//"&Answer=" + response.AuthorizationKey;
 		}
 
 		function customPaymentErrorResponse(response) {
-			console.log(response);
-			//window.location.href = "";
+			window.location.href = urlBase+"paso=2&estado=0&cart="+orderId+"&fc=module&module=todopago&controller=payment";
+
 		}
 
 		function initLoading() {

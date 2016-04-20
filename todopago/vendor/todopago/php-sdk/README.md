@@ -12,6 +12,7 @@ Modulo para conexión con gateway de pago Todo Pago
 ######[Ejemplo](#ejemplo)		
 ######[Modo test](#test)
 ######[Status de la operación](#status)
+######[Consulta de operaciones por rango de tiempo](#statusdate)
 ######[Diagrama de secuencia](#secuencia)
 ######[Tablas de referencia](#tablas)		
 
@@ -25,13 +26,13 @@ También se puede realizar la instalación a través de Composer.<br/>
 ```composer require todopago/php-sdk```<br/>
 E incluir el archivo vendor/autoload.php en el proyecto.<br/>
 <br/>
-Observación: Descomentar: extension=php_soap.dll y extension=php_openssl.dll del php.ini, ya que para la conexión al gateway se utiliza la clase SoapClient del API de PHP. 
+Observación: Descomentar: extension=php_soap.dll, extension=php_openssl.dll y extension=php_curl.dll del php.ini, ya que para la conexión al gateway se utiliza la clase SoapClient del API de PHP. 
 
 [<sub>Volver a inicio</sub>](#inicio)		
 
 <a name="Versionesdephpsoportadas"></a>		
 ## Versiones de php soportadas		
-La versi&oacute;n implementada de la SDK, esta testeada para versiones desde  PHP5.3 en adelante.
+La versi&oacute;n implementada de la SDK, esta testeada para versiones desde  PHP 5.3 en adelante.
 <br />		
 [<sub>Volver a inicio</sub>](#inicio)		
 
@@ -82,7 +83,7 @@ $optionsSAR_operacion debe ser un array con la siguiente estructura:
 ```php
 $optionsSAR_operacion = array (
 	'MERCHANT'=> 305, //dato fijo (número identificador del comercio)
-	'OPERATIONID'=>'27398173292187', //número único que identifica la operación
+	'OPERATIONID'=>'27398173292187', //número único que identifica la operación, generado por el comercio.
 	'CURRENCYCODE'=> 32, //por el momento es el único tipo de moneda aceptada
 	'AMOUNT'=>54.00,
 	'EMAILCLIENTE'=>'email_cliente@dominio.com',
@@ -218,13 +219,13 @@ $optionsSAR_operacion = array(
 	'CSMDD15'=>'',//Customer Loyality Number. NO MANDATORIO. 		
 	'CSMDD16'=>'',//Promotional / Coupon Code. NO MANDATORIO. 		
 	//Retail: datos a enviar por cada producto, los valores deben estar separados con #:		
-	'CSITPRODUCTCODE'=>'electronic_good', //Código de producto. CONDICIONAL. Valores posibles(adult_content;coupon;default;electronic_good;electronic_software;gift_certificate;handling_only;service;shipping_and_handling;shipping_only;subscription)		
-	'CSITPRODUCTDESCRIPTION'=>'NOTEBOOK L845 SP4304LA DF TOSHIBA', //Descripción del producto. CONDICIONAL.		
-	'CSITPRODUCTNAME'=>'NOTEBOOK L845 SP4304LA DF TOSHIBA', //Nombre del producto. CONDICIONAL.		
-	'CSITPRODUCTSKU'=>'LEVJNSL36GN', //Código identificador del producto. CONDICIONAL.		
-	'CSITTOTALAMOUNT'=>'1254.40', //CSITTOTALAMOUNT=CSITUNITPRICE*CSITQUANTITY "999999[.CC]" Con decimales opcional usando el punto como separador de decimales. No se permiten comas, ni como separador de miles ni como separador de decimales. CONDICIONAL.		
-	'CSITQUANTITY'=>'1', //Cantidad del producto. CONDICIONAL.		
-	'CSITUNITPRICE'=>'1254.40', //Formato Idem CSITTOTALAMOUNT. CONDICIONAL.		
+	'CSITPRODUCTCODE'=>'electronic_good', //Código de producto. MANDATORIO. Valores posibles(adult_content;coupon;default;electronic_good;electronic_software;gift_certificate;handling_only;service;shipping_and_handling;shipping_only;subscription)		
+	'CSITPRODUCTDESCRIPTION'=>'NOTEBOOK L845 SP4304LA DF TOSHIBA', //Descripción del producto. MANDATORIO.		
+	'CSITPRODUCTNAME'=>'NOTEBOOK L845 SP4304LA DF TOSHIBA', //Nombre del producto. MANDATORIO.		
+	'CSITPRODUCTSKU'=>'LEVJNSL36GN', //Código identificador del producto. MANDATORIO.		
+	'CSITTOTALAMOUNT'=>'1254.40', //CSITTOTALAMOUNT=CSITUNITPRICE*CSITQUANTITY "999999[.CC]" Con decimales opcional usando el punto como separador de decimales. No se permiten comas, ni como separador de miles ni como separador de decimales. MANDATORIO.		
+	'CSITQUANTITY'=>'1', //Cantidad del producto. MANDATORIO.		
+	'CSITUNITPRICE'=>'1254.40', //Formato Idem CSITTOTALAMOUNT. MANDATORIO.		
 	...........................................................		
 ```		
 		
@@ -272,51 +273,29 @@ Además, se puede conocer el estado de las transacciones a través del portal [w
 
 [<sub>Volver a inicio</sub>](#inicio)		
 
+<a name="statusdate"></a>
+## Consulta de operaciones por rango de tiempo
+En este caso hay que llamar a getByRangeDateTime() y devolvera todas las operaciones realizadas en el rango de fechas dado
+
+```php
+$client = new TodoPago\Sdk($http_header, $mode);
+
+//Fecha en formato "c", DATE_ATOM o DateTime::ATOM
+$date1 = date("c", time()-60*60*24*30);
+$date2 = date("c", time());
+
+$client->getByRangeDateTime(array('MERCHANT'=>'305', "STARTDATE" => $date1, "ENDDATE" => $date2));
+```
+
+[<sub>Volver a inicio</sub>](#inicio)		
+
 <a name="secuencia"></a>
 ##Diagrama de secuencia
 ![imagen de configuracion](https://raw.githubusercontent.com/TodoPago/imagenes/master/README.img/secuencia-page-001.jpg)
 
 <a name="tablas"></a>		
 ## Tablas de Referencia		
-######[Códigos de Estado](#cde)		
 ######[Provincias](#p)		
-<a name="cde"></a>		
-<p>Codigos de Estado</p>		
-<table>		
-<tr><th>IdEstado</th><th>Descripción</th></tr>		
-<tr><td>1</td><td>Ingresada</td></tr>		
-<tr><td>2</td><td>A procesar</td></tr>		
-<tr><td>3</td><td>Procesada</td></tr>		
-<tr><td>4</td><td>Autorizada</td></tr>		
-<tr><td>5</td><td>Rechazada</td></tr>		
-<tr><td>6</td><td>Acreditada</td></tr>		
-<tr><td>7</td><td>Anulada</td></tr>		
-<tr><td>8</td><td>Anulación Confirmada</td></tr>		
-<tr><td>9</td><td>Devuelta</td></tr>		
-<tr><td>10</td><td>Devolución Confirmada</td></tr>		
-<tr><td>11</td><td>Pre autorizada</td></tr>		
-<tr><td>12</td><td>Vencida</td></tr>		
-<tr><td>13</td><td>Acreditación no cerrada</td></tr>		
-<tr><td>14</td><td>Autorizada *</td></tr>		
-<tr><td>15</td><td>A reversar</td></tr>		
-<tr><td>16</td><td>A registar en Visa</td></tr>		
-<tr><td>17</td><td>Validación iniciada en Visa</td></tr>		
-<tr><td>18</td><td>Enviada a validar en Visa</td></tr>		
-<tr><td>19</td><td>Validada OK en Visa</td></tr>		
-<tr><td>20</td><td>Recibido desde Visa</td></tr>		
-<tr><td>21</td><td>Validada no OK en Visa</td></tr>		
-<tr><td>22</td><td>Factura generada</td></tr>		
-<tr><td>23</td><td>Factura no generada</td></tr>		
-<tr><td>24</td><td>Rechazada no autenticada</td></tr>		
-<tr><td>25</td><td>Rechazada datos inválidos</td></tr>		
-<tr><td>28</td><td>A registrar en IdValidador</td></tr>		
-<tr><td>29</td><td>Enviada a IdValidador</td></tr>		
-<tr><td>32</td><td>Rechazada no validada</td></tr>		
-<tr><td>38</td><td>Timeout de compra</td></tr>		
-<tr><td>50</td><td>Ingresada Distribuida</td></tr>		
-<tr><td>51</td><td>Rechazada por grupo</td></tr>		
-<tr><td>52</td><td>Anulada por grupo</td></tr>		
-</table>		
 		
 <a name="p"></a>		
 <p>Provincias</p>
@@ -330,7 +309,7 @@ Además, se puede conocer el estado de las transacciones a través del portal [w
 <tr><td>Chubut</td><td>U</td></tr>		
 <tr><td>Córdoba</td><td>X</td></tr>		
 <tr><td>Corrientes</td><td>W</td></tr>		
-<tr><td>Entre Ríos</td><td>R</td></tr>		
+<tr><td>Entre Ríos</td><td>E</td></tr>		
 <tr><td>Formosa</td><td>P</td></tr>		
 <tr><td>Jujuy</td><td>Y</td></tr>		
 <tr><td>La Pampa</td><td>L</td></tr>		

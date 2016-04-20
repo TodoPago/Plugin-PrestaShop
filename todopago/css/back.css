@@ -25,3 +25,144 @@
 * Don't forget to prefix your containers with your own identifier
 * to avoid any conflicts with others containers.
 */
+.loader-image{
+	width:29px;
+    height: 29px;
+}
+
+.loader{
+	display: none !important;
+    width:30px;
+    height: 30px;
+    margin: -2px 0 8px 0;
+}
+.login-credencial{
+	border:1px solid #9c9c9c !important;
+	background-color: #e2e2e2 !important;
+	text-decoration: none;
+	color:#000;
+}
+#error_message{
+	display:none;
+	margin: -3px 0 11px 0 !important;
+    color: red !important;
+}
+.panel#fieldset_0_1_1{
+	/*display:none !important;*/
+	padding: 0 0 8px 6px;
+}
+.fancybox-custom .fancybox-skin {
+	box-shadow: 0 0 50px #222;
+}
+.fancybox-close{
+	right: 7px !important;
+	top: 9px !important;
+	width: 17px !important;
+	height: 16px !important;
+}
+.fancybox-title{
+	display:none;
+}
+.fancybox-close{
+	background-image: url("../imagenes/disabled.gif") !important;
+}
+#error_mes-credencial{
+
+}
+.fancybox-inner{
+	overflow: hidden !important;
+	width:500px !important;
+} 
+
+.panel-heading{
+	/* modal style */
+	font-family: "Ubuntu Condensed",Helvetica,Arial,sans-serif;
+    font-weight: 400;
+    font-size: 14px;
+    text-overflow: ellipsis;
+    text-transform: uppercase;
+    white-space: nowrap;
+    color: #555;
+    height: 24px;
+    border-bottom: 1px solid #555;
+    margin-bottom: 14px;
+}
+
+.panel#fieldset_0_1_1 .btn {
+    display: inline-block;
+    margin-bottom: 0;
+    font-weight: normal;
+    text-align: center;
+    vertical-align: middle;
+    cursor: pointer;
+    background-image: none;
+    border: 1px solid transparent;
+    white-space: nowrap;
+    padding: 6px 8px;
+    font-size: 12px;
+    line-height: 1.42857;
+    border-radius: 3px;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}    
+.btn a{
+    background-color: #fff;
+    border-color: #DEDEDE;
+    text-decoration: none;
+    padding: 9px 11px 9px 11px;
+}
+/*input[type="text"], .bootstrap input[type="search"], .bootstrap input[type="password"], .bootstrap textarea, .bootstrap select {*/
+.panel#fieldset_0_1_1 input[type="text"]{	
+    -webkit-transition: border-color ease-in-out 0.15s,box-shadow ease-in-out 0.15s;
+    -o-transition: border-color ease-in-out 0.15s,box-shadow ease-in-out 0.15s;
+    transition: border-color ease-in-out 0.15s,box-shadow ease-in-out 0.15s;
+    display: block;
+    width: 50%;
+    height: 31px;
+    padding: 0px 0px 0 0;
+    font-size: 12px;
+    line-height: 1.42857;
+    color: #555;
+    background-color: #F5F8F9;
+    background-image: none;
+    border: 1px solid #C7D6DB;
+    border-radius: 3px;
+    margin: 8px 0 15px 1px;
+}
+
+.panel#fieldset_0_1_1 input[type="password"]{	
+    -webkit-transition: border-color ease-in-out 0.15s,box-shadow ease-in-out 0.15s;
+    -o-transition: border-color ease-in-out 0.15s,box-shadow ease-in-out 0.15s;
+    transition: border-color ease-in-out 0.15s,box-shadow ease-in-out 0.15s;
+    display: block;
+    width: 167%;
+    height: 31px;
+    padding: 0px 0px 0 0;
+    font-size: 12px;
+    line-height: 1.42857;
+    color: #555;
+    background-color: #F5F8F9;
+    background-image: none;
+    border: 1px solid #C7D6DB;
+    border-radius: 3px;
+    margin: 8px 0 15px 1px;
+}
+
+/*input[type="password"] */
+.form-group {
+    margin-left: -5px;
+    margin-right: -5px;
+}
+.input-group{
+	position: relative;
+    display: table;
+    border-collapse: separate;
+}
+.control-label{
+	/*margin:0 0 0 10px;*/
+}
+.icon-key{
+	display:none !important;
+}

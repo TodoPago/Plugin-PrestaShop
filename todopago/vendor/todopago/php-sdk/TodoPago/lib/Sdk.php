@@ -3,7 +3,7 @@ namespace TodoPago;
 
 require_once(dirname(__FILE__)."/Client.php");
 
-define('TODOPAGO_VERSION','1.3.0');
+define('TODOPAGO_VERSION','1.4.0');
 define('TODOPAGO_ENDPOINT_TEST','https://developers.todopago.com.ar/');
 define('TODOPAGO_ENDPOINT_PROD','https://apis.todopago.com.ar/');
 define('TODOPAGO_ENDPOINT_TENATN', 't/1.1/');
@@ -40,10 +40,12 @@ class Sdk
 
 	private function getHeaderHttp($header_http_array){
 		$header = "";
-		foreach($header_http_array as $key=>$value){
-			$header .= "$key: $value\r\n";
-		}
-		
+		if(is_array($header_http_array)) {
+			foreach($header_http_array as $key=>$value){
+				$header .= "$key: $value\r\n";
+			}
+
+		}		
 		return $header;
 	}
 	/*
@@ -180,10 +182,11 @@ class Sdk
  		unset($optionsAuthorize['SDK']);
  		unset($optionsAuthorize['SDKVERSION']);
  		unset($optionsAuthorize['LENGUAGEVERSION']);
- 		$optionsAuthorize['SDK'] = "PHP";
- 		$optionsAuthorize['SDKVERSION'] = TODOPAGO_VERSION;
- 		$optionsAuthorize['LENGUAGEVERSION'] = PHP_VERSION;
-		
+		unset($optionsAuthorize['PLUGINVERSION']);
+		unset($optionsAuthorize['ECOMMERCENAME']);
+		unset($optionsAuthorize['ECOMMERCEVERSION']);
+		unset($optionsAuthorize['CMSVERSION']);
+
 		foreach($optionsAuthorize as $key => $value){
 			if(strpos($value,"#") === false) {
 				$value = substr($value, 0, 254);
@@ -288,37 +291,8 @@ class Sdk
 		$returnRequestResponseValues = json_decode(json_encode($returnRequestResponse), true);
 
 		return $returnRequestResponseValues;
-
 	}
 	
-	public function getByRangeDateTime($optionsGetByRangeDateTime){
-		$rangeDateTime = $this->parseToRangeDateTime($optionsGetByRangeDateTime);
-
-		$rangeDateTimeResponse = $this->getByRangeDateTimeResponse($rangeDateTime);
-
-		$rangeDateTimeResponseValues = $this->parseRangeDateTimeResponseToArray($rangeDateTimeResponse);
-
-		return $rangeDateTimeResponseValues;
-	}
-
-	private function parseToRangeDateTime($optionsGetByRangeDateTime){
-		
-		$obj_options_rangedatetime = (object) $optionsGetByRangeDateTime;
-		
-		return $obj_options_rangedatetime;
-	}
-
-	private function getByRangeDateTimeResponse($rangeDateTime){
-		$client = $this->getClientSoap('Operations');
-		$rangeDateTime = $client->GetByRangeDateTime($rangeDateTime);
-		return $rangeDateTime;
-	}
-
-	private function parseRangeDateTimeResponseToArray($rangeDateTimeResponse){
-		$rangeDateTimeResponseOptions = json_decode(json_encode($rangeDateTimeResponse), true);
-
-		return $rangeDateTimeResponseOptions;
-	}
 	
 	//REST
 	public function getStatus($arr_datos_status){
@@ -331,22 +305,59 @@ class Sdk
 		return $this->doRest($url);
 	}
 	
-	private function doRest($url){
+	public function getByRangeDateTime($arr_datos) {
+		if(!isset($arr_datos['PAGENUMBER'])) $arr_datos['PAGENUMBER'] = 1;
+		$url = $this->end_point.TODOPAGO_ENDPOINT_TENATN.'api/Operations/GetByRangeDateTime/MERCHANT/'. $arr_datos["MERCHANT"] . '/STARTDATE/' . $arr_datos["STARTDATE"] . '/ENDDATE/' . $arr_datos["ENDDATE"] . '/PAGENUMBER/' . $arr_datos["PAGENUMBER"];
+		return $this->doRest($url);
+	}
+	
+	public function getCredentials(Data\User $user) {
+		$url = $this->end_point.'api/Credentials';
+		$data = $user->getData();
+
+		$response = $this->doRest($url, $data, "POST", array("Content-Type: application/json"));
+
+		if($response == null) {
+			throw new Exception\ConnectionException("Error de conexion");
+		}
+		if($response["Credentials"]["resultado"]["codigoResultado"] != 0) {
+			throw new Exception\ResponseException($response["Credentials"]["resultado"]["mensajeResultado"]);
+		}
+
+		$user->setMerchant($response["Credentials"]["merchantId"]);
+		$user->setApikey($response["Credentials"]["APIKey"]);
+		
+		return $user;
+	}
+	
+	private function doRest($url, $data = array(), $method = "GET", $headers = array()){
 		$curl = curl_init($url);
 		curl_setopt($curl, CURLOPT_RETURNTRANSFER, 1);
-		curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, false);	
-		curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, false);	
+		curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, false);
+		curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, false);
+		
+		$conn_headers = array_filter(explode("\r\n",$this->header_http));
+		curl_setopt($curl, CURLOPT_HTTPHEADER, array_merge($conn_headers,$headers));
+		
+		if($method == "POST") {
+			curl_setopt($curl, CURLOPT_POST, 1);
+			curl_setopt($curl, CURLOPT_POSTFIELDS,json_encode($data));
+		}
+
 		if($this->host != null)
 			curl_setopt($curl, CURLOPT_PROXY, $this->host);
 		if($this->port != null)
 			curl_setopt($curl, CURLOPT_PROXYPORT, $this->port);
+		
 		$result = curl_exec($curl);
 		$http_status = curl_getinfo($curl, CURLINFO_HTTP_CODE);
 		curl_close($curl);
 		if($http_status != 200) {
 			$result = "<Colections/>";
 		}
-
+		if( json_decode($result) != null ) {
+			return json_decode($result,true);
+		} 
 		return json_decode(json_encode(simplexml_load_string($result)), true);
 	}
 }

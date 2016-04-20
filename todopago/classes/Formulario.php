@@ -10,20 +10,50 @@ class Formulario {
 	 * Genera los form fields necesarios para crear un formulario
 	 */
 	public static function getFormFields($titulo, $inputs)
-	{
-		return array(
-				'form' => array(
-						'legend' => array(
-								'title' => $titulo,//titulo del form
-								'icon' => 'icon-cogs',//icono
-						),
-						'input' =>$inputs,
-						'submit' => array(
-								'title' => 'Guardar',
-								'class' => 'button'
-						),
-				),
-		);
+	{	
+
+		//solo para las credenciales
+		//mejorar este codigo
+		if($titulo == "Obtener credenciales"){
+
+			$elements = array(
+						'form' => array(
+								'legend' => array(
+										'title' => $titulo,//titulo del form
+										'icon' => 'icon-cogs',//icono
+								),
+								'input' =>$inputs,
+								'buttons' => array(
+							        array(
+							            'href' => '#',
+							            'title' => 'Credenciales',
+							            'class' => 'button login-credencial'
+							        )
+							    )
+						)		
+								
+			);
+
+		}else{
+
+			$elements = array(
+						'form' => array(
+								'legend' => array(
+										'title' => $titulo,//titulo del form
+										'icon' => 'icon-cogs',//icono
+								),
+								'input' =>$inputs,
+								'submit' => array(
+										'title' => 'Guardar',
+										'class' => 'button'
+								)
+						)		
+								
+			);
+
+		}
+
+		return $elements;
 	}
 	
 	/**
@@ -114,30 +144,66 @@ class Formulario {
 	/**
 	 * @return un array con los campos del formulario
 	 */
+	public static function getLoginCredenciales($tabla)
+	{	
+
+		return  array(
+					array(
+							'type' => 'text',
+							'label' =>'Usuario de Todo Pago',
+							'name' =>  'id_user',
+							'required' => true
+					),
+					array(
+							'type' => 'password',
+							'label' =>'Contraseña de Todo Pago',
+							'name' =>  'id_pass',
+							'required' => true
+					),
+					array(
+		                    'type' => 'html',
+		                    'name' => 'html_data',
+		                    'html_content' => '<div class="loader"><img class="loader-image" src="'._PS_BASE_URL_.__PS_BASE_URI__.'/modules/todopago/imagenes/loader.gif" alt="loading.."></div>
+		                    <div id="error_message"></div>'
+				    )			
+		);
+	}
+
+	/**
+	 * @return un array con los campos del formulario
+	 */
 	public static function getAmbienteFormInputs($tabla)
-	{
-		return array(
-				array(
-						'type' => 'text',
-						'label' =>'Id del sitio (Merchant ID)',
-						'name' =>  'id_site',
-						'desc' => 'Numero de comercio provisto por Todo Pago',
-						'required' => false
-				),
-				array(
-						'type' => 'text',
-						'label' =>'Codigo de seguridad (Key sin PRISMA/TODOPAGO y sin espacios)',
-						'name' =>  'security',
-						'desc' => 'Codigo provisto por Todo Pago',
-						'required' => false
-				),
-				array(
-						'type' => 'text',
-						'label' =>'Authorization HTTP (código de autorizacion)',
-						'name' =>  'authorization',
-						'desc' => 'Codigo provisto por Todo Pago',
-						'required' => false
-				),				
+	{	
+
+		return  array(
+					array(
+			                'type' => 'html',
+			                'label' =>'Credenciales Todo Pago',
+			                'name' => 'credenciales_button',
+			                'html_content' => '<a href="#fieldset_0_1_1" id="cred-button" class="fancybox btn btn-default btn-primary modalbox">Obtener credenciales</a>',
+			                'desc' => ' '
+		            ),
+					array(
+							'type' => 'text',
+							'label' =>'Id del sitio (Merchant ID)',
+							'name' =>  'id_site',
+							'desc' => 'Numero de comercio provisto por Todo Pago',
+							'required' => false
+					),
+					array(
+							'type' => 'text',
+							'label' =>'Codigo de seguridad (Key sin PRISMA/TODOPAGO y sin espacios)',
+							'name' =>  'security',
+							'desc' => 'Codigo provisto por Todo Pago',
+							'required' => false
+					),
+					array(
+							'type' => 'text',
+							'label' =>'Authorization HTTP (código de autorizacion)',
+							'name' =>  'authorization',
+							'desc' => 'Codigo provisto por Todo Pago',
+							'required' => false
+					)				
 		);
 	}
 	

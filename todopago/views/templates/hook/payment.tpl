@@ -4,3 +4,4 @@
 		<img src="http://www.todopago.com.ar/sites/todopago.com.ar/files/pluginstarjeta.jpg" alt="{$nombre}"/>
 	</a>
 </p> 
+

@@ -62,7 +62,7 @@ class TodoPago extends PaymentModule
 		//acerca del modulo en si
 		$this->name = 'todopago';
 		$this->tab = 'payments_gateways';
-		$this->version = '1.5.6';
+		$this->version = '1.6.6';
 		$this->author = 'Todo Pago';
 		$this->need_instance = 0;
 		$this->bootstrap = true;//para que use bootstrap
@@ -200,6 +200,7 @@ class TodoPago extends PaymentModule
 		$this->context->smarty->assign(array(
 			'module_dir' 	 	  => $this->_path,
 			'version'    	 	  => $this->version,
+			'url_base'			  => _PS_BASE_URL_.__PS_BASE_URI__,
 			'config_general' 	  => $this->renderConfigForms(),
 			//'config_mediosdepago' => $this->renderMediosdePagoForm(),
 		));
@@ -301,12 +302,13 @@ class TodoPago extends PaymentModule
 	public function renderConfigForms()
 	{
 		return $this->renderForm('config')
+					.$this->renderForm('login')
 					.$this->renderForm('test')
 					.$this->renderForm('produccion')
 					.$this->renderForm('estado')
 					.$this->renderForm('proxy')
-					.$this->renderForm('servicio');
-					//.$this->renderForm('embebed');
+					.$this->renderForm('servicio')
+					.$this->renderForm('embebed');
 	}
 	
 	/**
@@ -344,6 +346,11 @@ class TodoPago extends PaymentModule
 				$prefijo = $this->getPrefijo('PREFIJO_CONFIG');
 				break;
 			
+			case 'login':
+				$form_fields = TodoPago\Formulario::getFormFields('Obtener credenciales', TodoPago\Formulario::getLoginCredenciales($tabla));
+				$prefijo = $this->getPrefijo('CONFIG_LOGIN_CREDENCIAL');
+				break;
+
 			case 'test':
 				$form_fields = TodoPago\Formulario::getFormFields('ambiente developers', TodoPago\Formulario::getAmbienteFormInputs($tabla));
 				$prefijo = $this->getPrefijo('CONFIG_TEST');
@@ -374,9 +381,9 @@ class TodoPago extends PaymentModule
 				$prefijo = $this->getPrefijo('CONFIG_EMBEBED');
 				break;				
 		}
-		
+
 		if (isset($prefijo))
-			$fields_value= TodoPago\Formulario::getConfigs($prefijo, TodoPago\Formulario::getFormInputsNames($form_fields['form']['input']));
+			$fields_value= TodoPago\Formulario::getConfigs($prefijo, TodoPago\Formulario::getFormInputsNames($form_fields['form']['input']));		
 
 		//obtiene el authorization code desde el json guardado
 		$fields_value=$this->getAuthorizationKeyFromJSON($fields_value, $tabla);
@@ -400,15 +407,27 @@ class TodoPago extends PaymentModule
 		
 		$helper->identifier = $this->identifier;
 		$helper->submit_action = 'btnSubmit'.ucfirst($tabla);//nombre del boton de submit. Util al momento de procesar el formulario
-		$helper->currentIndex = $this->context->link->getAdminLink('AdminModules', false)
-		.'&configure='.$this->name.'&tab_module='.$this->tab.'&module_name='.$this->name;
-		$helper->token = Tools::getAdminTokenLite('AdminModules');
-		
+
+		//mejorar este codigo, solo para el form de login de credenciales remueve la url y token de action
+		if($tabla != "login"){
+			$helper->currentIndex = $this->context->link->getAdminLink('AdminModules', false)
+			.'&configure='.$this->name.'&tab_module='.$this->tab.'&module_name='.$this->name;
+			$helper->token = Tools::getAdminTokenLite('AdminModules');
+		}else{
+			$helper->currentIndex = "#";
+			$helper->token = "";
+		}	
+
+		if($tabla == "login")
+			$fields_value['id_user'] = " ";
+
+
 		$helper->tpl_vars = array(
 				'fields_value' => $fields_value,
 				'languages' => $this->context->controller->getLanguages(),
 				'id_language' => $this->context->language->id
 		);
+
 		return $helper;
 	}
 	
@@ -834,9 +853,8 @@ class TodoPago extends PaymentModule
 		$rta = '';
 		//si hay un status para esta orden
 		if(count($status) > 0){
-
 			foreach($status['Operations'] as $key => $value){
-				if($key == "REFUNDS" || $key == "refounds"){	
+				if($key == "REFUNDS"){
 					$rta .=$key.": <br>";
 					if(is_array($value)){
 						$rta .="&ensp;&ensp;Order Id   -   Amount   -  Date.<br>";
@@ -853,7 +871,6 @@ class TodoPago extends PaymentModule
 					$rta .= $key .": ". $value."<br>";
 				}
 			}
-
 		}
 		else
 		{

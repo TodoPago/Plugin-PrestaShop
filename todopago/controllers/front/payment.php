@@ -208,7 +208,8 @@ class TodoPagoPaymentModuleFrontController extends ModuleFrontController
 	}
 	
     public function first_step_todopago($cart, $prefijo, $cliente, $connector)
-    {
+    {   
+
         /** PASO 1: sendAuthorizeRequest
          * La respuesta contiene los siguientes campos: 
          * StatusCode: codigo correspondiente al resultado de la autorizacion, 

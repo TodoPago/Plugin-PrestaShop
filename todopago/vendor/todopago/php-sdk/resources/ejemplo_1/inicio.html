@@ -58,10 +58,6 @@
                     <select id="verticales">
                         <option>seleccione un vertical</option>
                         <option value="retail">RETAIL</option>
-                        <option value="travel">TRAVEL</option>
-                        <option value="ticketing">TICKETING</option>
-                        <option value="servicios">SERVICIOS</option>
-                        <option value="bienesdigitales">BIENES DIGITALES</option>
                     </select>
                 </td>
             </tr>
@@ -227,49 +223,49 @@
             <tr>
                 <td>Ciudad de envío de la orden:</td>
                 <td>
-                    <input type="text" name="STCITY">
+                    <input type="text" name="CSSTCITY">
                 </td>
             </tr>
             <tr>
                 <td>País de envío de la orden:</td>
                 <td>
-                    <input type="text" name="STCOUNTRY">
+                    <input type="text" name="CSSTCOUNTRY">
                 </td>
             </tr>
             <tr>
                 <td>Mail del destinatario:</td>
                 <td>
-                    <input type="text" name="STEMAIL">
+                    <input type="text" name="CSSTEMAIL">
                 </td>
             </tr>
             <tr>
                 <td>Nombre del destinatario:</td>
                 <td>
-                    <input type="text" name="STFIRSTNAME">
+                    <input type="text" name="CSSTFIRSTNAME">
                 </td>
             </tr>
             <tr>
                 <td>Apellido del destinatario:</td>
                 <td>
-                    <input type="text" name="STLASTNAME">
+                    <input type="text" name="CSSTLASTNAME">
                 </td>
             </tr>
             <tr>
                 <td>teléfono del destinatario:</td>
                 <td>
-                    <input type="text" name="STPHONENUMBER">
+                    <input type="text" name="CSSTPHONENUMBER">
                 </td>
             </tr>
             <tr>
                 <td>Código postal del domicilio de envío:</td>
                 <td>
-                    <input type="text" name="STPOSTALCODE">
+                    <input type="text" name="CSSTPOSTALCODE">
                 </td>
             </tr>
             <tr>
                 <td>Provincia de envío:</td>
                 <td>
-                    <select name="STSTATE">
+                    <select name="CSSTSTATE">
                         <option value="C">CABA</option>
                         <option value="B">Buenos Aires</option>
                         <option value="K">Catamarca</option>
@@ -281,13 +277,13 @@
             <tr>
                 <td>Domicilio de envío:</td>
                 <td>
-                    <input type="text" name="STSTREET1">
+                    <input type="text" name="CSSTSTREET1">
                 </td>
             </tr>
             <tr>
                 <td>Localidad de envío:</td>
                 <td>
-                    <input type="text" name="STSTREET2">
+                    <input type="text" name="CSSTSTREET2">
                 </td>
             </tr>
             <tr>
@@ -373,363 +369,6 @@
             </tr>
         </table>
 
-        <!-- TRAVEL -->
-
-        <table id="travel_inputs">
-            <tr>
-                <td colspan="2">
-                    <h4>Parámetros Adicionales en el post inicial para el rubro TRAVEL</h4>
-                </td>
-            </tr>
-            <tr>
-                <td>Ruta completa del viaje ([ORIG1-DEST1:ORIG2-DEST2...:ORIGn-DESTn])</td>
-                <td>
-                    <input type="text" name="CSDMCOMPLETEROUTE" value="JFK-SFO:SFO-LAX">
-                </td>
-            </tr>
-            <tr>
-                <td>Tipo de viaje</td>
-                <td>
-                    <select name="CSDMJOURNEYTYPEY">
-                        <option value="round trip">round trip</option>
-                        <option value="one way">one way</option>
-                    </select>
-                </td>
-            </tr>
-            <tr>
-                <td>fecha y hora del primer tramo del viaje:</td>
-                <td>
-                    <input type="text" name="CSDMDEPARTUREDATETIME" value="2011-03-20 11:30pm GMT">
-                </td>
-            </tr>
-            <tr>
-                <td>Cantidad de pasajeros:</td>
-                <td>
-                    <input type="text" name="CSADNUMBEROFPASSENGERS">
-                </td>
-            </tr>
-            <tr>
-                <td>Codigo de reserva:</td>
-                <td>
-                    <input type="text" name="CSMDD17">
-                </td>
-            </tr>
-            <tr>
-                <td>3rd Party:</td>
-                <td>
-                    <select name="CSMDD18">
-                        <option value="Y">yes</option>
-                        <option value="N">no</option>
-                    </select>
-                </td>
-            </tr>
-            <tr>
-                <td>Departure City:</td>
-                <td>
-                    <input type="text" name="CSMDD19">
-                </td>
-            </tr>
-            <tr>
-                <td>Final Destination City:</td>
-                <td>
-                    <input type="text" name="CSMDD20">
-                </td>
-            </tr>
-            <tr>
-                <td>International Flight:</td>
-                <td>
-                    <input type="text" name="CSMDD21">
-                </td>
-            </tr>
-            <tr>
-                <td>Frequent Flyer Number:</td>
-                <td>
-                    <input type="text" name="CSMDD22">
-                </td>
-            </tr>
-            <tr>
-                <td>Class of Service:</td>
-                <td>
-                    <input type="text" name="CSMDD23">
-                </td>
-            </tr>
-            <tr>
-                <td>Day of week of Flight:</td>
-                <td>
-                    <input type="text" name="CSMDD24">
-                </td>
-            </tr>
-            <tr>
-                <td>Week of year of Flight:</td>
-                <td>
-                    <input type="text" name="CSMDD25">
-                </td>
-            </tr>
-            <tr>
-                <td>Airline Code:</td>
-                <td>
-                    <input type="text" name="CSMDD26">
-                </td>
-            </tr>
-            <tr>
-                <td>Code Share:</td>
-                <td>
-                    <input type="text" name="CSMDD27">
-                </td>
-            </tr>
-            <tr>
-                <td>Email de los psajeros:</td>
-                <td>
-                    <input type="text" name="CSITPASSENGEREMAIL" value="juan@gmail.com#carlos@hotmail.com">
-                </td>
-            </tr>
-            <tr>
-                <td>Nombres de los pasajeros:</td>
-                <td>
-                    <input type="text" name="CSITPASSENGERFIRSTNAME" value="Juan#Carlos">
-                </td>
-            </tr>
-            <tr>
-                <td>Números de pasaporte:</td>
-                <td>
-                    <input type="text" name="CSITPASSENGERID" value="21457547#21457566">
-                </td>
-            </tr>
-            <tr>
-                <td>Apellido de los pasajeros:</td>
-                <td>
-                    <input type="text" name="CSITPASSENGERLASTNAME" value="fernandez#jimenez">
-                </td>
-            </tr>
-            <tr>
-                <td></td>
-                <td>
-                    <input type="text" name="">
-                </td>
-            </tr>
-            <tr>
-                <td>telefono de los pasajeros:</td>
-                <td>
-                    <input type="text" name="CSITPASSENGERPHONE" value="541160913988#541167865543">
-                </td>
-            </tr>
-            <tr>
-                
-                    <td>Calsificación de los pasajeros:</td>
-                    <td><input type="text" name="CSITPASSENGERSTATUS" value="gold#gold">
-                </td>
-            </tr>
-            <tr>
-                <td>Tipo de pasajero asociado al precio del pasaje:</td>
-                <td>
-                    <select name="CSITPASSENGERTYPE">
-                        <option value="ADT">adult</option>
-                        <option value="CNN">child</option>
-                        <option value="INF">Infant</option>
-                        <option value="YTH">Youth</option>
-                        <option value="STU">Student</option>
-                        <option value="SCR">Senior Citizen</option>
-                        <option value="MIL">Military</option>
-                    </select>
-                </td>
-            </tr>
-        </table>
-
-        <!-- TICKETING -->
-        <table id="ticketing_inputs">
-            <tr>
-                <td colspan="2">
-                    <h4>Parámetros Adicionales en el post inicial para el rubro TICKETING:</h4>
-                </td>
-            </tr>
-            <tr>
-                <td>Código de producto</td>
-                <td>
-                    <input type="text" name="CSITPRODUCTCODE" value="art001#art002">
-                </td>
-            </tr>
-            <tr>
-                <td>descripción del producto:</td>
-                <td>
-                    <input type="text" name="CSITPRODUCTDESCRIPTION" value="art 1 descripcion#art 2 descripcion">
-                </td>
-            </tr>
-            <tr>
-                <td>nombre del producto:</td>
-                <td>
-                    <input type="text" name="CSITPRODUCTNAME" value="art 1#art 2">
-                </td>
-            </tr>
-            <tr>
-                <td>Codigo del producto:</td>
-                <td>
-                    <input type="text" name="CSITPRODUCTSKU" value="001#002">
-                </td>
-            </tr>
-            <tr>
-                <td>Monto Total:</td>
-                <td>
-                    <input type="text" name="CSITTOTALAMOUNT" value="64.00">
-                </td>
-            </tr>
-            <tr>
-                <td>cantidad:</td>
-                <td>
-                    <input type="text" name="CSITQUANTITY" value="2#1">
-                </td>
-            </tr>
-            <tr>
-                <td>Precios:</td>
-                <td>
-                    <input type="text" name="CSITUNITPRICE" value="30.00#4.00">
-                </td>
-            </tr>
-        </table>
-
-        <!-- SERVICIOS -->
-        <table id="servicios_inputs">
-            <tr>
-                <td colspan="2">
-                    <h4>Parámetros Adicionales en el post inicial para el rubro SERVICIOS:</h4>
-                </td>
-            </tr>
-            <tr>
-                <td>Tipo de Servicio:</td>
-                <td>
-                    <select name="CSMDD28">
-                        <option value="Luz">Luz</option>
-                        <option value="Gas">Gas</option>
-                        <option value="Telefono">Telefono</option>
-                        <option value="Agua">Agua</option>
-                        <option value="TV">TV</option>
-                        <option value="Cable">Cable</option>
-                        <option value="Internet">Internet</option>
-                        <option value="Impuestos">Impuestos</option>
-                    </select>
-                </td>
-            </tr>
-            <tr>
-                <td>Referencia de pago del servicio 1:</td>
-                <td>
-                    <input name="CSMDD29">
-                </td>
-            </tr>
-            <tr>
-                <td>Referencia de pago del servicio 2:</td>
-                <td>
-                    <input name="CSMDD30">
-                </td>
-            </tr>
-            <tr>
-                <td>Referencia de pago del servicio 3:</td>
-                <td>
-                    <input name="CSMDD31">
-                </td>
-            </tr>
-            <tr>
-                <td>Código de producto</td>
-                <td>
-                    <input type="text" name="CSITPRODUCTCODE" name="art001#art002">
-                </td>
-            </tr>
-            <tr>
-                <td>descripción del producto:</td>
-                <td>
-                    <input type="text" name="CSITPRODUCTDESCRIPTION" value="art 1 descripcion#art 2 descripcion">
-                </td>
-            </tr>
-            <tr>
-                <td>nombre del producto:</td>
-                <td>
-                    <input type="text" name="CSITPRODUCTNAME" value="art 1#art 2">
-                </td>
-            </tr>
-            <tr>
-                <td>Codigo del producto:</td>
-                <td>
-                    <input type="text" name="CSITPRODUCTSKU" value="001#002">
-                </td>
-            </tr>
-            <tr>
-                <td>Monto Total:</td>
-                <td>
-                    <input type="text" name="CSITTOTALAMOUNT" value="64.00">
-                </td>
-            </tr>
-            <tr>
-                <td>cantidad:</td>
-                <td>
-                    <input type="text" name="CSITQUANTITY" value="2#1">
-                </td>
-            </tr>
-            <tr>
-                <td>Precios:</td>
-                <td>
-                    <input type="text" name="CSITUNITPRICE" value="30.00#4.00">
-                </td>
-            </tr>
-        </table>
-
-        <!-- BINES DIGITALES -->
-        <table id="bienesdigitales_inputs">
-            <tr>
-                <td colspan="2">
-                    <h4>Parámetros Adicionales en el post inicial para el rubro BIENES DIGITALES:</h4>
-                </td>
-            </tr>
-            <tr>
-                <td>Tipo de delivery:</td>
-                <td>
-                    <select name="CSMDD31">
-                        <option value="WEB Session">WEB Session</option>
-                        <option value="Email">Email</option>
-                        <option value="SmartPhone">SmartPhone</option>
-                    </select>
-                </td>
-            </tr>
-            <tr>
-                <td>Código de producto</td>
-                <td>
-                    <input type="text" name="CSITPRODUCTCODE" value="art0001#art002">
-                </td>
-            </tr>
-            <tr>
-                <td>descripción del producto:</td>
-                <td>
-                    <input type="text" name="CSITPRODUCTDESCRIPTION" value="art 1 descripcion#art 2 descripcion">
-                </td>
-            </tr>
-            <tr>
-                <td>nombre del producto:</td>
-                <td>
-                    <input type="text" name="CSITPRODUCTNAME" value="art 1#art 2">
-                </td>
-            </tr>
-            <tr>
-                <td>Codigo del producto:</td>
-                <td>
-                    <input type="text" name="CSITPRODUCTSKU" value="001#002">
-                </td>
-            </tr>
-            <tr>
-                <td>Monto Total:</td>
-                <td>
-                    <input type="text" name="CSITTOTALAMOUNT" value="64.00">
-                </td>
-            </tr>
-            <tr>
-                <td>cantidad:</td>
-                <td>
-                    <input type="text" name="CSITQUANTITY" value="2#1">
-                </td>
-            </tr>
-            <tr>
-                <td>Precios:</td>
-                <td>
-                    <input type="text" name="CSITUNITPRICE" value="30.00#4.00">
-                </td>
-            </tr>
-        </table>
         <tr>
             <td colspan="2">
                 <button type="submit" name="AMOUNT" value="64.00">total a a pagar $64.00</button>

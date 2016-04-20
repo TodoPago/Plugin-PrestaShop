@@ -8,10 +8,13 @@ Plug in para la integración con gateway de pago <strong>Todo Pago</strong>
 - [Consideraciones Generales](#consideracionesgenerales)
 - [Instalación](#instalacion)
 - [Configuración](#configuracion)
+- [Credenciales](#credenciales)
 - [Devoluciones](#devoluciones)
+- [Formulario de pago integrado](#formulario)
 - [Datos adiccionales para prevención de fraude](#cybersource)
 - [Consulta de transacciones](#constrans)
 - [Tablas de referencia](#tablas)
+- [Tabla de errores](#codigoerrores)
 
 <a name="consideracionesgenerales"></a>
 ## Consideraciones Generales
@@ -40,20 +43,44 @@ El Plug-in esta separado en configuarción general y 3 sub-menues.
 <a name="confplanes"></a>
 <br />
 
-Nota: lo siguientes campos de la configuración deben ingresarse con formato JSON
-*  Authorization. Ejemplo: {"Authorization": "PRISMA 345678RGAGHUAJRG6789GJDDSDHJK"}
+<a name="credenciales"></a>
+##Credenciales
+
+En la secciones de ambientes de developers y produccion, se debe ingresar el MerchantID, Authorization y Security de Todo Pago.<br>
+Estos se pueden obtener desde la pagina de Todo Pago o desde el boton "Obtener credenciales".<br> 
+Al Ingresar el usuario de todo pago se completan los campos con los datos del ambiente seleccionado.
+
+![imagen de configuracion](https://raw.githubusercontent.com/TodoPago/imagenes/master/prestashop/login-credenciales.png)
+
+![imagen de configuracion](https://raw.githubusercontent.com/TodoPago/imagenes/master/prestashop/seccion-ambiente-credenciales.png)
+
+Nota: El boton "Obtener credenciales" se habilita si el ambiente en cuestion se encuentra seleccionado en General->Ejecucion en produccion.
+
 
 <a name="devoluciones"></a>
 ##Devoluciones
-TodoPago permite realizar la devolucion total o parcial de dinero de una orden de compra.
+TodoPago permite realizar la devolucion total o parcial de dinero de una orden de compra realizada.
 
-Para ello se debe habilitar en Prestashop la opcion de devoluciones, ir a Pedido->Devoluciones de Mercancía.
+Para ello se debe habilitar desde Admin la opcion de devoluciones, ir a Pedido->Devoluciones de Mercancía.
 
 ![imagen de configuracion](https://raw.githubusercontent.com/TodoPago/imagenes/master/prestashop/admin-enable-devoluciones.png)
 
 Para realizar una devolucion parcial o total, Prestashop tiene en la seccion "Pedido->Pedidos->Ver Orden". Dos botones "Reembolso parcial" el cual permite devolver un monto especifico y "Devolver productos" que permite devolver el total del monto.
 
 ![imagen de configuracion](https://raw.githubusercontent.com/TodoPago/imagenes/master/prestashop/funcionalidad-devolucion.png)
+
+[<sub>Volver a inicio</sub>](#inicio)
+<a name="formulario"></a>
+##Formulario de pago integrado
+El plugin tiene dos opciones de formulario para emplear en el proceso de pago. 
+El formulario externo, que redirecciona a un formulario externo en Todo Pago y el fomulario integrado que permite hacer el pago dentro del e-commerce.  
+
+En la pagina de admin del plugin, en la seccion "CONFIGURACION - FORMULARIO HIBRIDO" se puede habilitar uno de los formulario.
+![imagen de configuracion](https://raw.githubusercontent.com/TodoPago/imagenes/master/prestashop/admin-formulario-hibrido.png)
+
+El formulario seleccionado se mostrara en la etapa final del proceso de pago "Confirmar pago".
+![imagen de configuracion](https://raw.githubusercontent.com/TodoPago/imagenes/master/prestashop/formulario-hibrido.png)
+
 
 [<sub>Volver a inicio</sub>](#inicio)
 <a name="tca"></a>
@@ -159,4 +186,61 @@ nota: la funcion $cart->getProducts() devuelve un array con el listado de los pr
 <tr><td>Tierra del Fuego</td><td>V</td></tr>
 <tr><td>Tucumán</td><td>T</td></tr>
 </table>
+[<sub>Volver a inicio</sub>](#inicio)
+
+<a name="codigoerrores"></a>    
+## Tabla de errores     
+
+<table>		
+<tr><th>Id mensaje</th><th>Mensaje</th></tr>				
+<tr><td>-1</td><td>Aprobada.</td></tr>
+<tr><td>1081</td><td>Tu saldo es insuficiente para realizar la transacción.</td></tr>
+<tr><td>1100</td><td>El monto ingresado es menor al mínimo permitido</td></tr>
+<tr><td>1101</td><td>El monto ingresado supera el máximo permitido.</td></tr>
+<tr><td>1102</td><td>La tarjeta ingresada no corresponde al Banco indicado. Revisalo.</td></tr>
+<tr><td>1104</td><td>El precio ingresado supera al máximo permitido.</td></tr>
+<tr><td>1105</td><td>El precio ingresado es menor al mínimo permitido.</td></tr>
+<tr><td>2010</td><td>En este momento la operación no pudo ser realizada. Por favor intentá más tarde. Volver a Resumen.</td></tr>
+<tr><td>2031</td><td>En este momento la validación no pudo ser realizada, por favor intentá más tarde.</td></tr>
+<tr><td>2050</td><td>Lo sentimos, el botón de pago ya no está disponible. Comunicate con tu vendedor.</td></tr>
+<tr><td>2051</td><td>La operación no pudo ser procesada. Por favor, comunicate con tu vendedor.</td></tr>
+<tr><td>2052</td><td>La operación no pudo ser procesada. Por favor, comunicate con tu vendedor.</td></tr>
+<tr><td>2053</td><td>La operación no pudo ser procesada. Por favor, intentá más tarde. Si el problema persiste comunicate con tu vendedor</td></tr>
+<tr><td>2054</td><td>Lo sentimos, el producto que querés comprar se encuentra agotado por el momento. Por favor contactate con tu vendedor.</td></tr>
+<tr><td>2056</td><td>La operación no pudo ser procesada. Por favor intentá más tarde.</td></tr>
+<tr><td>2057</td><td>La operación no pudo ser procesada. Por favor intentá más tarde.</td></tr>
+<tr><td>2059</td><td>La operación no pudo ser procesada. Por favor intentá más tarde.</td></tr>
+<tr><td>90000</td><td>La cuenta destino de los fondos es inválida. Verificá la información ingresada en Mi Perfil.</td></tr>
+<tr><td>90001</td><td>La cuenta ingresada no pertenece al CUIT/ CUIL registrado.</td></tr>
+<tr><td>90002</td><td>No pudimos validar tu CUIT/CUIL.  Comunicate con nosotros <a href="#contacto" target="_blank">acá</a> para más información.</td></tr>
+<tr><td>99900</td><td>El pago fue realizado exitosamente</td></tr>
+<tr><td>99901</td><td>No hemos encontrado tarjetas vinculadas a tu Billetera. Podés  adherir medios de pago desde www.todopago.com.ar</td></tr>
+<tr><td>99902</td><td>No se encontro el medio de pago seleccionado</td></tr>
+<tr><td>99903</td><td>Lo sentimos, hubo un error al procesar la operación. Por favor reintentá más tarde.</td></tr>
+<tr><td>99970</td><td>Lo sentimos, no pudimos procesar la operación. Por favor reintentá más tarde.</td></tr>
+<tr><td>99971</td><td>Lo sentimos, no pudimos procesar la operación. Por favor reintentá más tarde.</td></tr>
+<tr><td>99977</td><td>Lo sentimos, no pudimos procesar la operación. Por favor reintentá más tarde.</td></tr>
+<tr><td>99978</td><td>Lo sentimos, no pudimos procesar la operación. Por favor reintentá más tarde.</td></tr>
+<tr><td>99979</td><td>Lo sentimos, el pago no pudo ser procesado.</td></tr>
+<tr><td>99980</td><td>Ya realizaste un pago en este sitio por el mismo importe. Si querés realizarlo nuevamente esperá 5 minutos.</td></tr>
+<tr><td>99982</td><td>En este momento la operación no puede ser realizada. Por favor intentá más tarde.</td></tr>
+<tr><td>99983</td><td>Lo sentimos, el medio de pago no permite la cantidad de cuotas ingresadas. Por favor intentá más tarde.</td></tr>
+<tr><td>99984</td><td>Lo sentimos, el medio de pago seleccionado no opera en cuotas.</td></tr>
+<tr><td>99985</td><td>Lo sentimos, el pago no pudo ser procesado.</td></tr>
+<tr><td>99986</td><td>Lo sentimos, en este momento la operación no puede ser realizada. Por favor intentá más tarde.</td></tr>
+<tr><td>99987</td><td>Lo sentimos, en este momento la operación no puede ser realizada. Por favor intentá más tarde.</td></tr>
+<tr><td>99988</td><td>Lo sentimos, momentaneamente el medio de pago no se encuentra disponible. Por favor intentá más tarde.</td></tr>
+<tr><td>99989</td><td>La tarjeta ingresada no está habilitada. Comunicate con la entidad emisora de la tarjeta para verificar el incoveniente.</td></tr>
+<tr><td>99990</td><td>La tarjeta ingresada está vencida. Por favor seleccioná otra tarjeta o actualizá los datos.</td></tr>
+<tr><td>99991</td><td>Los datos informados son incorrectos. Por favor ingresalos nuevamente.</td></tr>
+<tr><td>99992</td><td>La fecha de vencimiento es incorrecta. Por favor seleccioná otro medio de pago o actualizá los datos.</td></tr>
+<tr><td>99993</td><td>La tarjeta ingresada no está vigente. Por favor seleccioná otra tarjeta o actualizá los datos.</td></tr>
+<tr><td>99994</td><td>El saldo de tu tarjeta no te permite realizar esta operacion.</td></tr>
+<tr><td>99995</td><td>La tarjeta ingresada es invalida. Seleccioná otra tarjeta para realizar el pago.</td></tr>
+<tr><td>99996</td><td>La operación fué rechazada por el medio de pago porque el monto ingresado es inválido.</td></tr>
+<tr><td>99997</td><td>Lo sentimos, en este momento la operación no puede ser realizada. Por favor intentá más tarde.</td></tr>
+<tr><td>99998</td><td>Lo sentimos, la operación fue rechazada. Comunicate con la entidad emisora de la tarjeta para verificar el incoveniente o seleccioná otro medio de pago.</td></tr>
+<tr><td>99999</td><td>Lo sentimos, la operación no pudo completarse. Comunicate con la entidad emisora de la tarjeta para verificar el incoveniente o seleccioná otro medio de pago.</td></tr>
+</table>
+
 [<sub>Volver a inicio</sub>](#inicio)
