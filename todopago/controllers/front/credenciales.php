@@ -1,5 +1,5 @@
 <?php
-	include_once dirname(__FILE__)."\\..\\..\\vendor\\autoload.php";
+	include_once dirname(__FILE__)."/../../vendor/autoload.php";
 	use TodoPago\Sdk;
 
 	if((isset($_POST['user']) && !empty($_POST['user'])) &&  (isset($_POST['pass']) && !empty($_POST['pass']))){
@@ -13,7 +13,7 @@
 		
 		//ambiente developer por defecto	
 		$mode = "test";
-		if($_POST['mode'] == "Produccion"){
+		if($_POST['mode'] == "production"){
 			$mode = "prod";
 		}
 

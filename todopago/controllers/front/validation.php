@@ -79,16 +79,7 @@ class TodoPagoValidationModuleFrontController extends ModuleFrontController
 				* shop / tienda: null
 		*/
 		
-		$this->module->validateOrder(	
-										(int)$cart->id,
-										$orderState,
-										$total,
-										$this->module->displayName,
-										NULL,
-										NULL,
-										(int)$currency->id,
-										false,
-										$customer->secure_key);
+		$this->module->validateOrder((int)$cart->id, $orderState, $total, $this->module->displayName, NULL, NULL, (int)$currency->id, false, $customer->secure_key);
 	
 		$this->module->log->info('Creada orden id '.(int)$this->module->currentOrder.' para carro id '.$cart->id);
 		$this->module->log->info('Status: '.json_encode($transaccion));

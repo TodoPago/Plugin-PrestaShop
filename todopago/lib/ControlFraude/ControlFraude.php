@@ -146,8 +146,11 @@ abstract class ControlFraude {
 	}
 
 	protected function getProdDescription($idProduct){
-		$sql = 'SELECT description FROM '._DB_PREFIX_.'product_lang as pl WHERE id_product = '.$idProduct.' '.$id_lang.Shop::addSqlRestrictionOnLang('pl');
-        	$dataProduct = Db::getInstance(_PS_USE_SQL_SLAVE_)->ExecuteS($sql);
+		global $cookie;
+
+		$sql = 'SELECT description FROM '._DB_PREFIX_.'product_lang as pl WHERE pl.id_product = '.$idProduct .' AND pl.id_lang = '.$cookie->id_lang;
+
+		$dataProduct = Db::getInstance(_PS_USE_SQL_SLAVE_)->ExecuteS($sql);
 
 		return $dataProduct[0]['description']; 
 	}
