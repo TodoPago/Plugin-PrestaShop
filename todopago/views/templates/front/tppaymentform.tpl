@@ -11,7 +11,7 @@
 	
 	<div class="alert alert-warning">
 		<h4>Advertencia:</h4>
-		<ol id="alert-form">
+			<ol id="alert-form">
 		</ol>
 	</div>
 
@@ -72,7 +72,6 @@
 			</div>
 			
 			<div id="tp-bt-wrapper">
-				<button id="MY_btnConfirmarPago"/>
 				<button id="btnConfirmarPagoValida" class="tp-button button btn-sm btn btn-success">Pagar</button>
 			</div>
 		</div>	
@@ -81,12 +80,6 @@
 <script language="javascript">
 		$(document).ready(function(){
 			$(".alert").hide();
-			
-			$("#btnConfirmarPagoValida").on("click", function(){
-		        $('#alert-form').empty();
-		        $('.alert-warning').hide();
-		        $('#MY_btnConfirmarPago').click();
-		    });
 		});
 
 		//securityRequesKey, esta se obtiene de la respuesta del SAR
@@ -102,7 +95,7 @@
             callbackBilleteraFunction: 'billeteraPaymentResponse',
             callbackCustomSuccessFunction: 'customPaymentSuccessResponse',
             callbackCustomErrorFunction: 'customPaymentErrorResponse',
-            botonPagarId: 'MY_btnConfirmarPago',
+            botonPagarId: 'btnConfirmarPagoValida',
             modalCssClass: 'modal-class',
             modalContentCssClass: 'modal-content',
             beforeRequest: 'initLoading',
@@ -123,6 +116,7 @@
 
 		//callbacks de respuesta del pago
 		function validationCollector(response) {
+			$('#alert-form').empty();
 			var errorMessage = "<li>"+response.error+"</li>";
 			$(".alert").show();	
 			$("#alert-form").append(errorMessage);	
@@ -130,11 +124,11 @@
 
 		function billeteraPaymentResponse(response){
 			//wallet
+			
 		}
 
 		function customPaymentSuccessResponse(response){
 			window.location.href = urlBase+"paso=2&estado=1&cart="+orderId+"&fc=module&module=todopago&controller=payment&Answer="+response.AuthorizationKey;
-
 		}
 
 		function customPaymentErrorResponse(response) {

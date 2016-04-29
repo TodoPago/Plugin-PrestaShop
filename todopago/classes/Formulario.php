@@ -288,77 +288,61 @@ class Formulario {
 	 * @return un array con los campos del formulario
 	 */
 	public static function getEstadosFormInputs($estadosOption)
-	{
-		$approvalsStatus = array_filter($estadosOption, function ($item) {
-			return $item['valid_order'] == 1;
-		});
+	{	
+		if(is_array($estadosOption)){
+			$approvalsStatus = array_filter($estadosOption, function ($item) {
+				return $item['valid_order'] == 1;
+			});
+		}
+
 		return array(
-				array(
-						'type' => 'select',
-						'label' =>'En proceso',
-						'name' =>  'proceso',
-						'desc' => 'Para pagos con tarjeta de credito mientras se espera la respuesta del gateway.',
-						'required' => false,
-						'options' => array(
-								'query' => $estadosOption,
-								'id' => 'id_option',
-								'name' => 'name'
-						)
-				),
-				array(
-						'type' => 'select',
-						'label' =>'Aprobada',
-						'name' =>  'aprobada',
-						'desc' => 'Estado final de lo aprobado por el medio de pago',
-						'required' => false,
-						'options' => array(
-								'query' => $approvalsStatus,
-								'id' => 'id_option',
-								'name' => 'name'
-						)
-				),
-/*				array(
-						'type' => 'switch',
-						'label' =>'Generar factura automaticamente',
-						'name' => 'factura',
-						'desc' => 'Cuando llega al estado de aprobacion emite la factura',
-						'is_bool' => true,
-						'values' => array(
-								array(
-										'id' => 'active_on',
-										'value' => true,
-										'label' =>'Si'
-								),
-								array(
-										'id' => 'active_off',
-										'value' => false,
-										'label' =>'No'
-								)
-						)
-				),
-*/				array(
-						'type' => 'select',
-						'label' =>'Cupon pendiente de pago',
-						'name' =>  'pendiente',
-						'required' => false,
-						'options' => array(
-								'query' => $estadosOption,
-								'id' => 'id_option',
-								'name' => 'name'
-						)
-				),
-				array(
-						'type' => 'select',
-						'label' =>'Denegada',
-						'name' =>  'denegada',
-						'desc' => 'Cuando por cualquier motivo la transcaccion fue denegada.',
-						'required' => false,
-						'options' => array(
-								'query' => $estadosOption,
-								'id' => 'id_option',
-								'name' => 'name'
-						)
-				)
+					array(
+							'type' => 'select',
+							'label' =>'En proceso',
+							'name' =>  'proceso',
+							'desc' => 'Para pagos con tarjeta de credito mientras se espera la respuesta del gateway.',
+							'required' => false,
+							'options' => array(
+									'query' => $estadosOption,
+									'id' => 'id_option',
+									'name' => 'name'
+							)
+					),
+					array(
+							'type' => 'select',
+							'label' =>'Aprobada',
+							'name' =>  'aprobada',
+							'desc' => 'Estado final de lo aprobado por el medio de pago',
+							'required' => false,
+							'options' => array(
+									'query' => $approvalsStatus,
+									'id' => 'id_option',
+									'name' => 'name'
+							)
+					),
+					array(
+							'type' => 'select',
+							'label' =>'Cupon pendiente de pago',
+							'name' =>  'pendiente',
+							'required' => false,
+							'options' => array(
+									'query' => $estadosOption,
+									'id' => 'id_option',
+									'name' => 'name'
+							)
+					),
+					array(
+							'type' => 'select',
+							'label' =>'Denegada',
+							'name' =>  'denegada',
+							'desc' => 'Cuando por cualquier motivo la transcaccion fue denegada.',
+							'required' => false,
+							'options' => array(
+									'query' => $estadosOption,
+									'id' => 'id_option',
+									'name' => 'name'
+							)
+					)
 		);
 	}
 	

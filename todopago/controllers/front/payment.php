@@ -253,17 +253,19 @@ class TodoPagoPaymentModuleFrontController extends ModuleFrontController
 		$cartId =Tools::getValue('cart');
 		$status =Tools::getValue('estado');
 		$cart = new Cart($cartId);
-		
+
         if ($status == 0)//si se llego a este paso mediante URL_ERROR
         {
 			if(isset($respuesta['Payload']['Answer'])) {
 				$this->_tranUpdate($cartId, array("first_step" => null, "second_step" => null));				
 				throw new Exception($respuesta['StatusMessage']);
 			}
-            $this->_guardarTransaccion($cart, $respuesta['StatusMessage'], $respuesta['Payload']['Answer']);
+
+            //$this->_guardarTransaccion($cart, $respuesta['StatusMessage'], $respuesta['Payload']['Answer']);
+            $this->_guardarTransaccion($cart, $respuesta['StatusMessage'], "");
             $respuesta = Transaccion::getOptions($cart->id);
             $this->_tranUpdate($cartId, array("first_step" => null, "second_step" => null));
-            throw new Exception($respuesta['StatusMessage']);
+            //throw new Exception($respuesta['StatusMessage']);
         }
 		
         //en el caso de pagar con Rapipago o Pago Facil

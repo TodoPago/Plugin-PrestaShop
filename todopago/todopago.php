@@ -62,7 +62,7 @@ class TodoPago extends PaymentModule
 		//acerca del modulo en si
 		$this->name = 'todopago';
 		$this->tab = 'payments_gateways';
-		$this->version = '1.6.7';
+		$this->version = '1.6.8';
 		$this->author = 'Todo Pago';
 		$this->need_instance = 0;
 		$this->bootstrap = true;//para que use bootstrap
@@ -851,8 +851,9 @@ class TodoPago extends PaymentModule
 		$this->log->info('DisplayAdminOrderContentOrder - $status:'.json_encode($status));
 
 		$rta = '';
+
 		//si hay un status para esta orden
-		if(count($status) > 0){
+		if(isset($statusTransaccion['Operations']) && is_array($statusTransaccion['Operations'])){
 			foreach($status['Operations'] as $key => $value){
 				if($key == "REFUNDS"){
 					$rta .=$key.": <br>";

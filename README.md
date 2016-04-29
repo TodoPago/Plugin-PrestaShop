@@ -1,20 +1,26 @@
 <a name="inicio"></a>
-Prestashop
+Prestashop - módulo Todo Pago (v1.4.x a 1.6.x)
 ==========
 
-**PARA INSTALAR LA VERSIÓN v1.0.0 SE DEBE DESINSTALAR CUALQUIER VERSIÓN ANTERIOR ANTES DE COPIAR EL PLUGIN A LA CARPETA modules DE PRESTASHOP. DE LO CONTRARIO FALLARÁ LA INSTALACIÓN DE LA NUEVA VERSIÓN**
+**Para reinstalar debe desinstalar cualquier versión anterior antes de copiar el plugin a la carpeta modules de Prestashop. De lo contrario fallará la instalacion de la nueva versión**
 
 Plug in para la integración con gateway de pago <strong>Todo Pago</strong>
 - [Consideraciones Generales](#consideracionesgenerales)
 - [Instalación](#instalacion)
 - [Configuración](#configuracion)
-- [Credenciales](#credenciales)
-- [Devoluciones](#devoluciones)
-- [Formulario de pago integrado](#formulario)
-- [Datos adiccionales para prevención de fraude](#cybersource)
-- [Consulta de transacciones](#constrans)
-- [Tablas de referencia](#tablas)
+	- [Configuración plug in](#confplugin)
+	- [Formulario de pago integrado](#formulario)
+	- [Obtener datos de configuracion](#getcredentials)
+	- [Nuevas columnas y atributos](#tca)
+- [Prevencion de Fraude](#cybersource)
+	- [Consideraciones generales](#cons_generales)
+	- [Consideraciones para vertical retail](#cons_retail)
+- [Características](#features)
+	- [Consulta de transacciones](#constrans)
+	- [Devoluciones](#devoluciones)
+- [Tablas de referencia](#tablasProv)
 - [Tabla de errores](#codigoerrores)
+- [Versiones disponibles](#availableversions)
 
 <a name="consideracionesgenerales"></a>
 ## Consideraciones Generales
@@ -35,16 +41,32 @@ Descomentar: <em>extension=php_soap.dll</em> y <em>extension=php_openssl.dll</em
 
 <a name="configuracion"></a>
 ##Configuración
-Para llegar al menu de configuración ir a <em>Módulos</em> y en la lista buscar el ítem llamado <strong>Todo Pago</strong>. La configuración esta separada en 2 tabs: Configuración general y configuración de medios de pago.<br />
-## Configuración general
-El Plug-in esta separado en configuarción general y 3 sub-menues.
+
+<a name="confplugin"></a>
+####Configuración plug in
+Para llegar al menu de configuración ir a <em>Módulos</em> y en la lista buscar el ítem llamado <strong>Todo Pago.
+El Plug-in esta separado en configuarción general y 3 sub-menues.</strong>
 <sub><em>Menú principal</em></sub>
 ![imagen de configuracion](https://raw.githubusercontent.com/TodoPago/imagenes/master/README.img/general.jpg)
 <a name="confplanes"></a>
 <br />
+[<sub>Volver a inicio</sub>](#inicio)
 
-<a name="credenciales"></a>
-##Credenciales
+<a name="formulario"></a>
+####Formulario de pago integrado
+El plugin tiene dos opciones de formulario para emplear en el proceso de pago. 
+El formulario externo, que redirecciona a un formulario externo en Todo Pago y el fomulario integrado que permite hacer el pago dentro del e-commerce.  
+
+En la pagina de admin del plugin, en la seccion "CONFIGURACION - FORMULARIO HIBRIDO" se puede habilitar uno de los formulario.
+![imagen de configuracion](https://raw.githubusercontent.com/TodoPago/imagenes/master/prestashop/admin-formulario-hibrido.png)
+
+El formulario seleccionado se mostrara en la etapa final del proceso de pago "Confirmar pago".
+![imagen de configuracion](https://raw.githubusercontent.com/TodoPago/imagenes/master/prestashop/formulario-hibrido.png)
+
+[<sub>Volver a inicio</sub>](#inicio)
+
+<a name="getcredentials"></a>
+####Credenciales
 
 En la secciones de ambientes de developers y produccion, se debe ingresar el MerchantID, Authorization y Security de Todo Pago.<br>
 Estos se pueden obtener desde la pagina de Todo Pago o desde el boton "Obtener credenciales".<br> 
@@ -56,35 +78,8 @@ Al Ingresar el usuario de todo pago se completan los campos con los datos del am
 
 Nota: El boton "Obtener credenciales" se habilita si el ambiente en cuestion se encuentra seleccionado en General->Ejecucion en produccion.
 
-
-<a name="devoluciones"></a>
-##Devoluciones
-TodoPago permite realizar la devolucion total o parcial de dinero de una orden de compra realizada.
-
-Para ello se debe habilitar desde Admin la opcion de devoluciones, ir a Pedido->Devoluciones de Mercancía.
-
-![imagen de configuracion](https://raw.githubusercontent.com/TodoPago/imagenes/master/prestashop/admin-enable-devoluciones.png)
-
-Para realizar una devolucion parcial o total, Prestashop tiene en la seccion "Pedido->Pedidos->Ver Orden". Dos botones "Reembolso parcial" el cual permite devolver un monto especifico y "Devolver productos" que permite devolver el total del monto.
-
-![imagen de configuracion](https://raw.githubusercontent.com/TodoPago/imagenes/master/prestashop/funcionalidad-devolucion.png)
-
-[<sub>Volver a inicio</sub>](#inicio)
-<a name="formulario"></a>
-##Formulario de pago integrado
-El plugin tiene dos opciones de formulario para emplear en el proceso de pago. 
-El formulario externo, que redirecciona a un formulario externo en Todo Pago y el fomulario integrado que permite hacer el pago dentro del e-commerce.  
-
-En la pagina de admin del plugin, en la seccion "CONFIGURACION - FORMULARIO HIBRIDO" se puede habilitar uno de los formulario.
-![imagen de configuracion](https://raw.githubusercontent.com/TodoPago/imagenes/master/prestashop/admin-formulario-hibrido.png)
-
-El formulario seleccionado se mostrara en la etapa final del proceso de pago "Confirmar pago".
-![imagen de configuracion](https://raw.githubusercontent.com/TodoPago/imagenes/master/prestashop/formulario-hibrido.png)
-
-
-[<sub>Volver a inicio</sub>](#inicio)
 <a name="tca"></a>
-## Nuevas columnas y atributos
+#### Nuevas columnas y atributos
 El plug in creará nuevas tablas y registros en tablas existentes para lograr las nuevas funcionalidades y su persistencia dentro del framework 
 
 #####Tablas:
@@ -103,7 +98,7 @@ Los valores de configuración se encuentran guardados en la tabla <i>configurati
 
 <a name="cons_generales"></a>
 ####Consideraciones Generales (para todas los verticales, por defecto RETAIL)
-El plug in toma valores estándar del framework para validar los datos del comprador. Para ello se utilizan las clases Customer, Address y State para recuperar los registros almacenados en la base de datos que corresponden al cliente que efectúa la compra y Cart para recuperar el carrito en el que se almacena los datos relativos a la compra en sí.
+El plugin toma valores estándar del framework para validar los datos del comprador. Para ello se utilizan las clases Customer, Address y State para recuperar los registros almacenados en la base de datos que corresponden al cliente que efectúa la compra y Cart para recuperar el carrito en el que se almacena los datos relativos a la compra en sí.
 
 ```php
    $cart = $this->context->cart;
@@ -154,11 +149,41 @@ nota: la funcion $cart->getProducts() devuelve un array con el listado de los pr
 <strong>Provincias:</strong> uno de los datos requeridos para prevención común a todos los verticales  es el campo provinicia/state tanto del comprador como del lugar de envío, para tal fin el plug in utiliza el valor del campo id_state, que figura en el registro Address recuperado, para recuperar el objeto State correspondiente a ese id, y así obtener el iso_code. El formato de estos datos deben ser tal cual la tabla de referencia (tabla provincias). En Prestashop el listado se encuentra en Localización -> Provincias.
 <br />
 <strong>Celular:</strong> se utiliza el atributo phone_mobile del registro Address recuperado.
+[<sub>Volver a inicio</sub>](#inicio)
 
-<a name="tablas"></a>
+<a name="features"></a>
+## Características
+ - [Consulta de transacciones](#constrans)
+ - [Devoluciones](#devoluciones)
+ 
+<br />
+<a name="constrans"></a>
+####Consulta de transacciones
+El plugin genera un nuevo tab con el nombre "Todopago" en la pagina de detalle de pedido "Pedidos->Pedidos->Detalle". 
+Esa permite consultar online las características de la transacción en el sistema de Todo Pago.
+
+![imagen de configuracion](https://raw.githubusercontent.com/TodoPago/imagenes/master/prestashop/estado-orden-tp.png)
+
+[<sub>Volver a inicio</sub>](#inicio)
+
+<a name="devoluciones"></a>
+####Devoluciones
+TodoPago permite realizar la devolucion total o parcial de dinero de una orden de compra realizada.
+
+Para ello se debe habilitar desde Admin la opcion de devoluciones, ir a Pedido->Devoluciones de Mercancía.
+
+![imagen de configuracion](https://raw.githubusercontent.com/TodoPago/imagenes/master/prestashop/admin-enable-devoluciones.png)
+
+Para realizar una devolucion parcial o total, Prestashop tiene en la seccion "Pedido->Pedidos->Ver Orden". Dos botones "Reembolso parcial" el cual permite devolver un monto especifico y "Devolver productos" que permite devolver el total del monto.
+
+![imagen de configuracion](https://raw.githubusercontent.com/TodoPago/imagenes/master/prestashop/funcionalidad-devolucion.png)
+
+[<sub>Volver a inicio</sub>](#inicio)
+
+<a name="tablasProv"></a>
 ## Tablas de Referencia
+######[Provincias](#p)
 
-####Provincias
 <table>
 <tr><th>Provincia</th><th>Código</th></tr>
 <tr><td>CABA</td><td>C</td></tr>
@@ -241,6 +266,28 @@ nota: la funcion $cart->getProducts() devuelve un array con el listado de los pr
 <tr><td>99997</td><td>Lo sentimos, en este momento la operación no puede ser realizada. Por favor intentá más tarde.</td></tr>
 <tr><td>99998</td><td>Lo sentimos, la operación fue rechazada. Comunicate con la entidad emisora de la tarjeta para verificar el incoveniente o seleccioná otro medio de pago.</td></tr>
 <tr><td>99999</td><td>Lo sentimos, la operación no pudo completarse. Comunicate con la entidad emisora de la tarjeta para verificar el incoveniente o seleccioná otro medio de pago.</td></tr>
+</table>
+
+[<sub>Volver a inicio</sub>](#inicio)
+
+<a name="availableversions"></a>
+## Versiones Disponibles##
+<table>
+  <thead>
+    <tr>
+      <th>Version del Plugin</th>
+      <th>Estado</th>
+      <th>Versiones Compatibles</th>
+    </tr>
+  <thead>
+  <tbody>
+    <tr>
+      <td><a href="https://github.com/TodoPago/Plugin-PrestaShop/archive/master.zip">v1.4.x - v1.6.x</a></td>
+      <td>Stable (Current version)</td>
+      <td>PrestaShop v1.6.x<br />
+      </td>
+    </tr>
+  </tbody>
 </table>
 
 [<sub>Volver a inicio</sub>](#inicio)
