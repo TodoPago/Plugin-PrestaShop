@@ -62,7 +62,7 @@ class TodoPago extends PaymentModule
 		//acerca del modulo en si
 		$this->name = 'todopago';
 		$this->tab = 'payments_gateways';
-		$this->version = '1.6.8';
+		$this->version = '1.6.10';
 		$this->author = 'Todo Pago';
 		$this->need_instance = 0;
 		$this->bootstrap = true;//para que use bootstrap
@@ -200,7 +200,7 @@ class TodoPago extends PaymentModule
 		$this->context->smarty->assign(array(
 			'module_dir' 	 	  => $this->_path,
 			'version'    	 	  => $this->version,
-			'url_base'			  => _PS_BASE_URL_.__PS_BASE_URI__,
+			'url_base'			  => "//".Tools::getHttpHost(false).__PS_BASE_URI__,
 			'config_general' 	  => $this->renderConfigForms(),
 			//'config_mediosdepago' => $this->renderMediosdePagoForm(),
 		));
@@ -846,40 +846,56 @@ class TodoPago extends PaymentModule
 		$connector = new TodoPago\Sdk($this->getAuthorization(), $mode);
 		
 		$opciones = array('MERCHANT'=>Configuration::get($prefijo.'_ID_SITE'), 'OPERATIONID'=>$order_id);
+
+		$this->log->info('DisplayAdminOrderContentOrder - GetStatus - Params:'.json_encode($opciones));
+
 		$status = $connector->getStatus($opciones);
 		
-		$this->log->info('DisplayAdminOrderContentOrder - $status:'.json_encode($status));
+		$this->log->info('DisplayAdminOrderContentOrder - GetStatus - Response:'.json_encode($status));
 
 		$rta = '';
 
 		//si hay un status para esta orden
-		if(isset($statusTransaccion['Operations']) && is_array($statusTransaccion['Operations'])){
+		if(isset($status['Operations']) && is_array($status['Operations'])){
 			foreach($status['Operations'] as $key => $value){
 				if($key == "REFUNDS"){
 					$rta .=$key.": <br>";
 					if(is_array($value)){
 						$rta .="&ensp;&ensp;Order Id   -   Amount   -  Date.<br>";
 						foreach ($value as $key => $refundsList){
-							foreach($refundsList as $key => $value){
-								$rta .="&ensp;&ensp;".$value['ID']." - ".$value['AMOUNT']." - ".$value['DATE']."<br>";
+							if(isset($refundsList["ID"])) {
+								$rta .="&ensp;&ensp;".$refundsList['ID']." - ".$refundsList['AMOUNT']." - ".$refundsList['DATETIME']."<br>";					
+							} else {	
+								foreach($refundsList as $key => $value){
+									$rta .="&ensp;&ensp;".$value['ID']." - ".$value['AMOUNT']." - ".$value['DATETIME']."<br>";
+								}
 							}
-						}
+					    }
 					}else{
-						$rta .="No tiene devoliciones<br>";
+						$rta .="No tiene devoluciones<br>";
 					}
 					
 				}else{
+					if(is_array($value)) $value = implode("-",$value);
 					$rta .= $key .": ". $value."<br>";
 				}
 			}
-		}
-		else
-		{
+		}else{
 			$rta = "No hay datos para esta orden";
 		}
 		
+		//aca hago el codigo de la devolucion
+		$id_order_cart = Tools::getValue('id_order');
+		$res = Db::getInstance()->executeS("SELECT total_products_wt, total_shipping, total_paid FROM "._DB_PREFIX_."orders WHERE id_order=".$id_order_cart);
+
 		$this->smarty->assign(array(
-				'status' => $rta
+				'status' => $rta,
+				'precio' => number_format($res[0]['total_products_wt'],2),
+				'envio' => number_format($res[0]['total_shipping'],2),
+				'total' => number_format($res[0]['total_paid'],2),
+				'url_base_ajax' => "//".Tools::getHttpHost(false).__PS_BASE_URI__,
+				'url_refund' => $this->context->link->getModuleLink('todopago', 'payment', array ('paso' => '3'), true),
+				'order_id' => $id_order_cart
 			)
 		);
 	  

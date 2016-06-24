@@ -2,13 +2,16 @@
 //importo archivo con SDK
 include_once dirname(__FILE__)."/../vendor/autoload.php";
 use TodoPago\Sdk;
-	
-//común a todas los métodos
-$http_header = array('Authorization'=>'TODOPAGO 0129b065cfb744718166913eba827a2f',
- 'user_agent' => 'PHPSoapClient');
- 	
-$operationid = rand(1,10000000);
 
+//común a todas los métodos
+$http_header = array('Authorization'=>'TODOPAGO 108fc2b7c8a640f2bdd3ed505817ffde',
+ 'user_agent' => 'PHPSoapClient');
+ 
+//creo instancia de la clase TodoPago
+$connector = new Sdk($http_header, "test");
+
+$operationid = rand(1,10000000); 
+ 
 //opciones para el método sendAuthorizeRequest
 $optionsSAR_comercio = array (
 	'Security'=>'0129b065cfb744718166913eba827a2f',
@@ -88,52 +91,57 @@ $optionsGAMP = array("MERCHANT"=>35);
 //opciones para el método getStatus 
 $optionsGS = array('MERCHANT'=>'35', 'OPERATIONID'=>'02');
 
-//$date1 = date("c", time()-60*60*24*30);
-//$date2 = date("c", time());
-//$optionsRDT = array('MERCHANT'=>35, "STARTDATE" => $date1, "ENDDATE" => $date2);
+$date1 = date("Y-m-d", time()-60*60*24*30);
+$date2 = date("Y-m-d", time());
+$optionsRDT = array('MERCHANT'=>2658, "STARTDATE" => $date1, "ENDDATE" => $date2);
+
+
+$devol = array(
+	"Security" => "108fc2b7c8a640f2bdd3ed505817ffde",
+	"Merchant" => "2669",
+	"RequestKey" => "0d801e1c-e6b1-672c-b717-5ddbe5ab97d6",
+	"AMOUNT" => 1.00
+);
+
+$anul = array(
+	"Security" => "108fc2b7c8a640f2bdd3ed505817ffde",
+	"Merchant" => "2669",
+	"RequestKey" => "0d801e1c-e6b1-672c-b717-5ddbe5ab97d6",
+);
+
 
 //creo instancia de la clase TodoPago
 $connector = new Sdk($http_header, "test");
 	
 //ejecuto los métodos
-// $rta = $connector->sendAuthorizeRequest($optionsSAR_comercio, $optionsSAR_operacion);
-// $rta2 = $connector->getAuthorizeAnswer($optionsGAA);
-// $rta3 = $connector->getStatus($optionsGS);
-// $rta4 = $connector->getAllPaymentMethods($optionsGAMP);
-// $rta5 = $connector->getByRangeDateTime($optionsRDT);
+$rta = $connector->sendAuthorizeRequest($optionsSAR_comercio, $optionsSAR_operacion);
+$rta2 = $connector->getAuthorizeAnswer($optionsGAA);
+$rta3 = $connector->getStatus($optionsGS);
+$rta4 = $connector->getAllPaymentMethods($optionsGAMP);
+$rta5 = $connector->getByRangeDateTime($optionsRDT);
+$rta6 = $connector->returnRequest($devol);
+$rta7 = $connector->voidRequest($anul);
 
 //Print values
-// echo "<h3>var_dump de la respuesta de Send Authorize Request</h3>";
-// var_dump($rta);
-// echo "<h3>var_dump de la respuesta de Get Authorize Answer</h3>";
-// var_dump($rta2);
-// echo "<h3>var_dump de la respuesta de Get Status</h3>";
-// var_dump($rta3);
-// echo "<h3>var_dump de la respuesta de GetAllPaymentMethods</h3>";
-// var_dump($rta4);
-// echo "<h3>var_dump de la respuesta de GetByRangeDateTime</h3>";
-// var_dump($rta5);
+echo "<h3>var_dump de la respuesta de Send Authorize Request</h3>";
+var_dump($rta);
+echo "<h3>var_dump de la respuesta de Get Authorize Answer</h3>";
+var_dump($rta2);
+echo "<h3>var_dump de la respuesta de Get Status</h3>";
+var_dump($rta3);
+echo "<h3>var_dump de la respuesta de GetAllPaymentMethods</h3>";
+var_dump($rta4);
+echo "<h3>var_dump de la respuesta de GetByRangeDateTime</h3>";
+var_dump($rta5);
+echo "<h3>var_dump de la respuesta de returnRequest</h3>";
+var_dump($rta6);
+echo "<h3>var_dump de la respuesta de voidRequest</h3>";
+var_dump($rta7);
 
-
-$u1 = new TodoPago\Data\User(array("user" => "rbianchi@easytech.com.ar", "password" => "1379Qwerty"));
-//$u2 = new TodoPago\Data\User("rbianchi@easytech.com.ar", "1379Qwerty");
-//$u3 = new TodoPago\Data\User();
-//$u3->setUser("rbianchi@easytech.com.ar");
-//$u3->setPassword("1379Qwerty");
-
-
-//var_dump($u2);
+$u1 = new TodoPago\Data\User();
+$u1->setUser("ejemplo@todopago.com.ar");
+$u1->setPassword("password");
 
 //ejecuto los métodos
 $rta = $connector->getCredentials($u1);
-
 var_dump($rta);
-//error_log(print_r($rta,TRUE),3,"C:/UwAmp/bin/apache/logs/php_error_log.log");
-error_log($rta->getUser(),3,"C:/UwAmp/bin/apache/logs/php_error_log.log");
-error_log("\n",3,"C:/UwAmp/bin/apache/logs/php_error_log.log");
-error_log($rta->getPassword(),3,"C:/UwAmp/bin/apache/logs/php_error_log.log");
-error_log("\n",3,"C:/UwAmp/bin/apache/logs/php_error_log.log");
-error_log($rta->getMerchant(),3,"C:/UwAmp/bin/apache/logs/php_error_log.log");
-error_log("\n",3,"C:/UwAmp/bin/apache/logs/php_error_log.log");
-error_log($rta->getApikey(),3,"C:/UwAmp/bin/apache/logs/php_error_log.log");
-

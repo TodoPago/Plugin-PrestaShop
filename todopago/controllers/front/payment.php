@@ -36,6 +36,8 @@ use TPProductoControlFraude as ProductoControlFraude;
 require_once (dirname(__FILE__) . '../../../classes/Transaccion.php');
 require_once (dirname(__FILE__) . '../../../classes/Productos.php');
 require_once (dirname(__FILE__) . '../../../lib/ControlFraude/ControlFraudeFactory.php');
+require_once dirname(__FILE__) . '/../../../../config/config.inc.php';
+require_once (dirname(__FILE__) . '/../../vendor/autoload.php');
 
 class TodoPagoPaymentModuleFrontController extends ModuleFrontController
 {
@@ -52,10 +54,15 @@ class TodoPagoPaymentModuleFrontController extends ModuleFrontController
 
         //variables a usar
         $cart = $this->context->cart;
+
+        if($cart->id == null && Tools::getValue('order') != null) {
+            $order = new Order((int)Tools::getValue('order'));
+            $cart = new Cart((int)$order->id_cart);
+        }
+
         $total = $cart->getOrderTotal(true, Cart::BOTH);
         $cliente = new Customer($cart->id_customer);//recupera al objeto cliente
         $paso = (int) Tools::getValue('paso');
-        $this->tranEstado = $this->_tranEstado($cart->id);
 		
         try 
         {
@@ -67,13 +74,14 @@ class TodoPagoPaymentModuleFrontController extends ModuleFrontController
                 throw new Exception('Carrito vacio');
             
             //si ya existe una orden para este carrito
-            if ($cart->OrderExists() == true)
+            if ($cart->OrderExists() == true && $paso != 3)
                 throw new Exception('Ya existe una orden para el carro id '.$cart->id);
             
 			//Prefijo que se usa para la peticion al webservice, dependiendo del modo en el que este seteado el modulo
-			$prefijo = $this->module->getPrefijoModo();			
+			$prefijo = $this->module->getPrefijoModo();
 			$connector = $this->prepare_connector($prefijo);
-			
+			$this->tranEstado = $this->_tranEstado($cart->id);
+
             switch ($paso)
             {
                 case 1: 
@@ -82,6 +90,11 @@ class TodoPagoPaymentModuleFrontController extends ModuleFrontController
                 case 2:
                     $this->second_step_todopago($prefijo, $cart, $connector);        
                 break;
+                case 3: 
+                    $order  = Tools::getValue('order');
+                    $amount = Tools::getValue('amount');
+                    $this->doRefund($order, $amount);
+                    die;
                 default:
                     $this->module->log->info('Redireccionando al paso 1');
                     Tools::redirect($this->context->link->getModuleLink('todopago', 'payment', array ('paso' => '1'), true));
@@ -502,8 +515,15 @@ class TodoPagoPaymentModuleFrontController extends ModuleFrontController
     }
 
     public function voidPaymentTP($OrderId){
-        $merchant = Configuration::get($prefijo.'_ID_SITE');
-        $security = Configuration::get($prefijo.'_SECURITY');
+        
+        if(Configuration::get('TODOPAGO_MODO') == ""){
+            $merchant = Configuration::get('TODOPAGO_TEST_ID_SITE');
+            $security = Configuration::get('TODOPAGO_TEST_SECURITY');  
+        }else{
+            $merchant = Configuration::get('TODOPAGO_PRODUCCION_ID_SITE');
+            $security = Configuration::get('TODOPAGO_PRODUCCION_SECURITY');
+        }
+
         $orderIdTransaccion = $OrderId;
 
         $requestKey = $this->getRequestKeyTransaccion($orderIdTransaccion);
@@ -514,21 +534,25 @@ class TodoPagoPaymentModuleFrontController extends ModuleFrontController
             "RequestKey" => $requestKey
         );
 
+        $prefijo = $this->module->getPrefijoModo();
+        $connector = $this->prepare_connector($prefijo);
+
         $refResponse = $connector->voidRequest($options);
 
-        if($refResponse['StatusCode'] == 2011){
-            return true;
-        }
-
-        return false;
+        return $refResponse;
     }
 
     public function partialRefundTP($OrderId, $amount){
-        $merchant = Configuration::get($prefijo.'_ID_SITE');
-        $security = Configuration::get($prefijo.'_SECURITY');
-        $orderIdTransaccion = $OrderId;
-        $paymentAmount = $amount; 
 
+        if(Configuration::get('TODOPAGO_MODO') == ""){
+            $merchant = Configuration::get('TODOPAGO_TEST_ID_SITE');
+            $security = Configuration::get('TODOPAGO_TEST_SECURITY');  
+        }else{
+            $merchant = Configuration::get('TODOPAGO_PRODUCCION_ID_SITE');
+            $security = Configuration::get('TODOPAGO_PRODUCCION_SECURITY');
+        }
+
+        $orderIdTransaccion = $OrderId;
         //getRequestKey
         $requestKey = $this->getRequestKeyTransaccion($orderIdTransaccion);
 
@@ -536,15 +560,47 @@ class TodoPagoPaymentModuleFrontController extends ModuleFrontController
             "Security" => $security,
             "Merchant" => $merchant, 
             "RequestKey" => $requestKey, 
-            "AMOUNT" => $paymentAmount 
+            "AMOUNT" => $amount 
         );
-        
+
+        $prefijo = $this->module->getPrefijoModo();
+        $connector = $this->prepare_connector($prefijo);
+
         $refResponse = $connector->returnRequest($options);
 
-        if($refResponse['StatusCode'] == 2011){
-            return true;
-        }
+        return $refResponse;
+    }
 
-        return false;
+    public function doRefund($OrderId, $amount){
+        if($amount != 0 && isset($OrderId) && !empty($OrderId)){
+            
+            //valida formato moneda
+            if(preg_match("/^-?[0-9]+(?:\.[0-9]{1,2})?$/", $amount)){
+                //verifica si es toal o parcial
+                $res = Db::getInstance()->executeS("SELECT total_paid FROM "._DB_PREFIX_."orders WHERE id_order=".$OrderId);
+                //get credenciales
+                if(number_format($res[0]['total_paid'], 2) == $amount){
+                    //es devolucion total
+                    $response = $this->voidPaymentTP($OrderId);
+                }else{
+                    //devolucion parcial
+                    $response = $this->partialRefundTP($OrderId, $amount);
+                }
+
+            }else{
+                $response = array(  
+                    "StatusCode" => '',
+                    "StatusMessage" => "Formato de moneda invalido"
+                );
+            }
+            echo json_encode($response);
+        }else{
+            $response = array(  
+                "StatusCode" => '',
+                "StatusMessage" => "Ingrese el monto a devolver"
+            );
+            
+            echo json_encode($response);
+        } 
     }
 }

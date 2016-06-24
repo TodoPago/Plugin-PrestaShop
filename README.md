@@ -168,13 +168,8 @@ Esa permite consultar online las características de la transacción en el siste
 
 <a name="devoluciones"></a>
 ####Devoluciones
-TodoPago permite realizar la devolucion total o parcial de dinero de una orden de compra realizada.
 
-Para ello se debe habilitar desde Admin la opcion de devoluciones, ir a Pedido->Devoluciones de Mercancía.
-
-![imagen de configuracion](https://raw.githubusercontent.com/TodoPago/imagenes/master/prestashop/admin-enable-devoluciones.png)
-
-Para realizar una devolucion parcial o total, Prestashop tiene en la seccion "Pedido->Pedidos->Ver Orden". Dos botones "Reembolso parcial" el cual permite devolver un monto especifico y "Devolver productos" que permite devolver el total del monto.
+Para realizar una devolucion parcial o total, Prestashop tiene en la seccion "Pedido->Pedidos->Ver Orden->TP devoluciones" la funcionalidad necesaria.
 
 ![imagen de configuracion](https://raw.githubusercontent.com/TodoPago/imagenes/master/prestashop/funcionalidad-devolucion.png)
 

@@ -78,6 +78,7 @@
 	</div>
 </div>
 <script language="javascript">
+		var countLoad = 0;
 		$(document).ready(function(){
 			$(".alert").hide();
 		});
@@ -124,7 +125,6 @@
 
 		function billeteraPaymentResponse(response){
 			//wallet
-			
 		}
 
 		function customPaymentSuccessResponse(response){
@@ -136,12 +136,14 @@
 
 		}
 
-		function initLoading() {
-			
+		function initLoading() {	
 		}
 
 		function stopLoading() {
-			
+			if(countLoad > 1){
+				$("#btnConfirmarPagoValida").attr("disabled","disabled");
+			}
+			countLoad++;
 		}
 	
 </script>

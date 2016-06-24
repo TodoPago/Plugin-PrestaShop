@@ -22,10 +22,15 @@
 *  @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
 *  International Registered Trademark & Property of PrestaShop SA
 *}
-
 <li>
 	<a href="#todopago">
 		<i class="icon-truck "></i>
 		{l s='Todo Pago'}
+	</a>
+</li>
+<li>
+	<a href="#todopago-devolucion">
+		<i class="icon-exchange"></i>
+		{l s='TP Devoluciones'}
 	</a>
 </li>

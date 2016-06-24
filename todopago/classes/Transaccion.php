@@ -3,7 +3,7 @@
  * Clase en donde se guardan las transacciones
  */
 
-class TPTransaccion extends \ObjectModel{
+class TPTransaccion extends ObjectModel{
 	public $id_cart;
 	public $detalle;
 	
