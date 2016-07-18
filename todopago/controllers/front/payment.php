@@ -60,6 +60,10 @@ class TodoPagoPaymentModuleFrontController extends ModuleFrontController
             $cart = new Cart((int)$order->id_cart);
         }
 
+        if($cart->id == null && Tools::getValue('cart') != null) {
+            $cart = new Cart((int)Tools::getValue('cart'));
+        }
+
         $total = $cart->getOrderTotal(true, Cart::BOTH);
         $cliente = new Customer($cart->id_customer);//recupera al objeto cliente
         $paso = (int) Tools::getValue('paso');
@@ -194,7 +198,7 @@ class TodoPagoPaymentModuleFrontController extends ModuleFrontController
         $this->_guardarTransaccion($cart, $respuesta['StatusMessage'], $respuesta['RequestKey']);//guardo la request key y otros datos importantes
         
         $now = new DateTime();
-        $this->_tranUpdate($cart->id, array("first_step" => $now->format('Y-m-d H:i:s'), "params_SAR" => json_encode($options), "response_SAR" => json_encode($respuesta), "request_key" => $respuesta['RequestKey'], "public_request_key" => $respuesta['PublicRequestKey']));
+        $this->_tranUpdate($cart->id, array("first_step" => $now->format('Y-m-d H:i:s'), "params_SAR" => pSql(json_encode($options)), "response_SAR" => json_encode($respuesta), "request_key" => $respuesta['RequestKey'], "public_request_key" => $respuesta['PublicRequestKey']));
         
 		return $respuesta;
 	}
@@ -256,7 +260,7 @@ class TodoPagoPaymentModuleFrontController extends ModuleFrontController
         $this->module->log->info('response GAA - '.json_encode($respuesta));
 
         $now = new DateTime();
-        $this->_tranUpdate($cartId, array("second_step" => $now->format('Y-m-d H:i:s'), "params_GAA" => json_encode($options), "response_GAA" => json_encode($respuesta), "answer_key" => $answerKey));
+        $this->_tranUpdate($cartId, array("second_step" => $now->format('Y-m-d H:i:s'), "params_GAA" => pSql(json_encode($options)), "response_GAA" => json_encode($respuesta), "answer_key" => $answerKey));
         		
 		return $respuesta;
 	}
@@ -438,6 +442,10 @@ class TodoPagoPaymentModuleFrontController extends ModuleFrontController
                     'AMOUNT' => $this->context->cart->getOrderTotal(true, Cart::BOTH)
                 )
         );
+
+        if(Configuration::get($this->module->getPrefijo('PREFIJO_CONFIG').'_CUOTASENABLE') == 1) {
+            $params['operacion']['MAXINSTALLMENTS'] = Configuration::get($this->module->getPrefijo('PREFIJO_CONFIG').'_CUOTASCANT');
+        }
         
         $params['operacion'] = array_merge_recursive($params['operacion'], $this->_getParamsControlFraude($cliente, $cart));
         return $params;        

@@ -137,7 +137,52 @@ class Formulario {
 										'label' =>'Developers'
 								)
 						)
-				)
+				),
+				array(
+						'type' => 'switch',
+						'label' =>'Limitar cuotas',
+						'name' =>  'cuotasenable',
+						'desc' => 'Activa o desactiva el límite máximo de cuotas a mostrar en el formulario de pago',
+						'is_bool' => true,
+						'values' => array(
+								array(
+										'id' => 'active_on',
+										'value' => true,
+										'label' =>'SI'
+								),
+								array(
+										'id' => 'active_off',
+										'value' => false,
+										'label' =>'NO'
+								)
+						),
+						'required' => false
+				),
+				array(
+						'type' => 'select',
+						'label' =>'Cuotas máximas',
+						'name' =>  'cuotascant',
+						'desc' => 'Cantidad máxima de cuotas a desplegar en el formulario de pago',
+						'required' => false,
+						'options' => array(
+								'query' => array(
+									array("id_option" => 1,  "name" => "01"),
+									array("id_option" => 2,  "name" => "02"),
+									array("id_option" => 3,  "name" => "03"),
+									array("id_option" => 4,  "name" => "04"),
+									array("id_option" => 5,  "name" => "05"),
+									array("id_option" => 6,  "name" => "06"),
+									array("id_option" => 7,  "name" => "07"),
+									array("id_option" => 8,  "name" => "08"),
+									array("id_option" => 9,  "name" => "09"),
+									array("id_option" => 10, "name" => "10"),
+									array("id_option" => 11, "name" => "11"),
+									array("id_option" => 12, "name" => "12"),
+								),
+								'id' => 'id_option',
+								'name' => 'name'
+						)
+				),
 		);
 	}
 	

@@ -132,7 +132,7 @@
 		}
 
 		function customPaymentErrorResponse(response) {
-			window.location.href = urlBase+"paso=2&estado=0&cart="+orderId+"&fc=module&module=todopago&controller=payment";
+			window.location.href = urlBase+"paso=2&estado=0&cart="+orderId+"&fc=module&module=todopago&controller=payment&Answer=error";
 
 		}
 
