@@ -4,11 +4,14 @@ namespace TodoPago;
 require_once(dirname(__FILE__)."/Client.php");
 require_once(dirname(__FILE__)."/Utils/FraudControlValidator.php");
 
-define('TODOPAGO_VERSION','1.5.1');
+define('TODOPAGO_VERSION','1.8.0');
 define('TODOPAGO_ENDPOINT_TEST','https://developers.todopago.com.ar/');
 define('TODOPAGO_ENDPOINT_PROD','https://apis.todopago.com.ar/');
 define('TODOPAGO_ENDPOINT_TENATN', 't/1.1/');
 define('TODOPAGO_ENDPOINT_SOAP_APPEND', 'services/');
+
+define('TODOPAGO_ENDPOINT_TEST_FORM','https://developers.todopago.com.ar/resources/TPHybridForm-v0.1.js');
+define('TODOPAGO_ENDPOINT_PROD_FORM','https://forms.todopago.com.ar/resources/TPHybridForm-v0.1.js');
 
 define('TODOPAGO_WSDL_AUTHORIZE', dirname(__FILE__).'/Authorize.wsdl');
 define('TODOPAGO_WSDL_OPERATIONS',dirname(__FILE__).'/Operations.wsdl');
@@ -38,6 +41,21 @@ class Sdk
 		$this->header_http = $this->getHeaderHttp($header_http_array);
 	
 	}
+
+	public function getEndpointForm($mode = null) {
+		if($mode == "test") {
+			$endpoint = TODOPAGO_ENDPOINT_TEST_FORM;
+		} else if($mode == "prod") {
+			$endpoint = TODOPAGO_ENDPOINT_PROD_FORM;
+		} else {
+			if($this->end_point == TODOPAGO_ENDPOINT_PROD) {
+				$endpoint = TODOPAGO_ENDPOINT_PROD_FORM;
+			} else {
+				$endpoint = TODOPAGO_ENDPOINT_TEST_FORM;
+			}
+		}
+		return $endpoint;
+ 	}
 
 	private function getHeaderHttp($header_http_array){
 		$header = "";
@@ -91,10 +109,6 @@ class Sdk
 	public function sendAuthorizeRequest($options_comercio, $options_operacion){
 		// parseo de los valores enviados por el e-commerce/custompage
 		$authorizeRequest = $this->parseToAuthorizeRequest($options_comercio, $options_operacion);
-		
-		if(is_object($authorizeRequest->Payload)) {
-			return $this->parseAuthorizeRequestResponseToArray($authorizeRequest->Payload);
-		}
 		
 		$authorizeRequestResponse = $this->getAuthorizeRequestResponse($authorizeRequest);
 
@@ -195,16 +209,6 @@ class Sdk
 		unset($optionsAuthorize['ECOMMERCENAME']);
 		unset($optionsAuthorize['ECOMMERCEVERSION']);
 		unset($optionsAuthorize['CMSVERSION']);
-
-		try {
-			$validator = new \TodoPago\Utils\FraudControlValidator($optionsAuthorize);
-			$optionsAuthorize = $validator->execute();			
-		} catch (\Exception $e) {
-			$res = new \StdClass();
-			$res->StatusCode = 99977;
-			$res->StatusMessage = $e->getMessage();
-			return $res;
-		}
 
 		foreach($optionsAuthorize as $key => $value){
 			$xmlPayload .= "<" . $key . ">" . $value . "</" . $key . ">";

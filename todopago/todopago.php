@@ -115,7 +115,7 @@ class TodoPago extends PaymentModule
 	public function configureLog() {
 		$cart = $this->context->cart;
 		$endpoint = ($this->getModo())?"TODOPAGO_ENDPOINT_PROD":"TODOPAGO_ENDPOINT_TEST";
-		$logger = new TodoPagoLogger();
+		$logger = new \TodoPago\Logger\TodoPagoLogger();
 		$logger->setPhpVersion(phpversion());
 		$logger->setCommerceVersion(_PS_VERSION_);
 		$logger->setPluginVersion($this->version);

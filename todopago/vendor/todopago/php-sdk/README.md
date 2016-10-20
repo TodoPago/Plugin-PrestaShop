@@ -12,6 +12,7 @@ Todo Pago - módulo SDK-PHP para conexión con gateway de pago
     + [Ejemplo](#ejemplo)
     + [Modo test](#test)
  + [Datos adicionales para prevención de fraude](#datosadicionales) 
+    + [Datos de referencia](#datosreferencia) 
  + [Características](#caracteristicas)
     + [Status de la operación](#status)
     + [Consulta de operaciones por rango de tiempo](#statusdate)
@@ -19,9 +20,10 @@ Todo Pago - módulo SDK-PHP para conexión con gateway de pago
     + [Devolucion parcial](#devolucionparcial)
     + [Formulario hibrido](#formhidrido)
     + [Obtener Credenciales](#credenciales)
+    + [Limites de cuotas a mostrar en formulario](#minmaxcuotas)
  + [Diagrama de secuencia](#secuencia)
  + [Tablas de referencia](#tablareferencia)		
- + [Tabla de errores](#codigoerrores)		 
+ + [Tabla de errores](#codigoerrores)
 
 <a name="instalacion"></a>		
 ## Instalación		
@@ -122,7 +124,7 @@ array (size=2)
 En este caso hay que llamar a **getAuthorizeAnswer()**, enviando como parámetro un array como se describe a continuación.		
 ```php		
 $optionsQuery = array (		
-		'Security'   => '1234567890ABCDEF1234567890ABCDEF', // Token de seguridad, provisto por TODO PAGO. MANDATORIO.		
+		'Security'   => '1234567890ABCDEF1234567890ABCDEF', // Token de seguridad, provisto por TODO PAGO. MANDATORIO
 		'Merchant'   => '12345678',		
 		'RequestKey' => '0123-1234-2345-3456-4567-5678-6789',		
 		'AnswerKey'  => '1111-2222-3333-4444-5555-6666-7777' // *Importante		
@@ -152,7 +154,9 @@ array(
           'PAYMENTMETHODNAME'      => 'VISA',		
           'TICKETNUMBER'           => '12',		
           'CARDNUMBERVISIBLE'      => '450799******4905',		
-          'AUTHORIZATIONCODE'      => 'TEST38'), 		
+          'AUTHORIZATIONCODE'      => 'TEST38',
+          'INSTALLMENTPAYMENTS'    => '5'
+        ), 		
       'Request' => 		
         array (		
           'MERCHANT'               => '12345678',		
@@ -224,7 +228,7 @@ $optionsSAR_operacion = array(
 	'CSSTEMAIL'=>'jose@gmail.com', //Mail del destinatario, MANDATORIO.		
 	'CSSTFIRSTNAME'=>'Jose', //Nombre del destinatario. MANDATORIO.		
 	'CSSTLASTNAME'=>'Perez', //Apellido del destinatario. MANDATORIO.		
-	'CSSTPHONENUMBER'=>'541155893737', //Número de teléfono del destinatario. MANDATORIO.		
+	'CSSTPHONENUMBER'=>'541155893737', //Número de teléfono del destinatario. MANDATORIO.
 	'CSSTPOSTALCODE'=>'1414', //Código postal del domicilio de envío. MANDATORIO.		
 	'CSSTSTATE'=>'D', //Provincia de envío. MANDATORIO. Son de 1 caracter		
 	'CSSTSTREET1'=>'San Martín 123', //Domicilio de envío. MANDATORIO.		
@@ -242,7 +246,81 @@ $optionsSAR_operacion = array(
 	'CSITQUANTITY'=>'1', //Cantidad del producto. MANDATORIO.		
 	'CSITUNITPRICE'=>'1254.40', //Formato Idem CSITTOTALAMOUNT. MANDATORIO.		
 	...........................................................		
-```		
+```	
+
+
+<a name="datosreferencia"></a>    
+#### Datos de referencia   
+
+<table style="max-width:200px;">
+<tr><th>Nombre del campo</th><th>Required/Optional</th><th>Data Type</th><th>Mínimo</th><th>Comentarios</th></tr>
+<tr><td style="max-width:200px;">CSBTCITY</td><td>Required</td><td>String (50)</td><td>1</td><td>Ciudad / Debe comenzar con una letra</td></tr>
+<tr><td>CSBTCOUNTRY</td><td>Required</td><td>String (2)</td><td>1</td><td>Código ISO</td></tr>
+<tr><td> CSBTCUSTOMERID</td><td>Required</td><td>String (50)</td><td>1</td><td>Identificador del usuario unico logueado al portal (No puede ser una direccion de email)</td></tr>
+<tr><td> CSBTEMAIL</td><td>Required</td><td>String (100)</td><td>1</td><td>Correo electrónico del comprador con formato válido (solo letras (a-z), números, puntos y sin espacios)</td></tr>
+<tr><td>CSBTFIRSTNAME</td><td>Required</td><td>String (60)</td><td>1</td><td>Nombre del tarjeta habiente / Sin caracteres especiales como acentos invertidos, sólo letras, números y espacios</td></tr>
+<tr><td>CSBTIPADDRESS</td><td>Required</td><td>String (15)</td><td>1</td><td>"End Customer´s IP address, such as 10.1.27.63, reported by your Web server via socket information."</td></tr>
+<tr><td> CSBTLASTNAME</td><td>Required</td><td>String (60)</td><td>1</td><td>Apellido del tarjetahabiente / Sin caracteres especiales como acentos invertidos, sólo letras, números y espacios</td></tr> 
+<tr><td>CSBTPHONENUMBER</td><td>Required</td><td>String (15)</td><td>6</td><td>Número de telefono</td></tr>
+<tr><td>CSBTPOSTALCODE</td><td>Required</td><td>String (10)</td><td>1</td><td>Codigo Postal</td></tr> 
+<tr><td>CSBTSTATE</td><td>Required</td><td>String (2)</td><td>1</td><td>Estado (Si el country = US, el campo se valida para un estado valido en USA)</td></tr>
+<tr><td>CSBTSTREET1</td><td>Required</td><td>String (60)</td><td>1</td><td>Calle Numero interior Numero Exterior</td></tr> 
+<tr><td>CSBTSTREET2</td><td>Optional</td><td>String (60)</td><td></td><td>Barrio</td></tr>
+<tr><td>CSITPRODUCTCODE</td><td>Conditional</td><td>String (255)</td><td></td><td></td> </tr>
+<tr><td>CSITPRODUCTDESCRIPTION</td><td>Conditional</td><td>String (255)</td><td></td><td>Descripción general del producto</td></tr> 
+<tr><td>CSITPRODUCTNAME</td><td>Conditional</td><td>String (255)</td><td></td><td>Nombre en catalogo del producto</td></tr>
+<tr><td>CSITPRODUCTSKU</td><td>Conditional</td><td>String (255)</td><td></td><td>SKU en catalogo</td></tr> 
+<tr><td>CSITQUANTITY</td><td>Conditional</td><td>Integer (10)</td><td></td><td>Cantidad productos del mismo tipo agregados al carrito</td></tr> 
+<tr><td>CSITTOTALAMOUNT</td><td>Conditional</td><td></td><td></td><td>"Precio total = Precio unitario * quantity / CSITTOTALAMOUNT = CSITUNITPRICE * CSITQUANTITY ""999999.CC"" Es mandatorio informar los decimales, usando el punto como separador de decimales. No se permiten comas, ni como separador de miles ni como separador de decimales."</td></tr>
+<tr><td>CSITUNITPRICE</td><td>Conditional</td><td>String (15)</td><td></td><td>"Precio Unitaro del producto / ""999999.CC"" Es mandatorio informar los decimales, usando el punto como separador de decimales. No se permiten comas, ni como separador de miles ni como separador de decimales."</td></tr> 
+<tr><td>CSPTCURRENCY</td><td>Required</td><td>String (5)</td><td>1</td><td>Currencies=>'032'(Peso Argentino)</td></tr> 
+<tr><td>CSPTGRANDTOTALAMOUNT</td><td>Required</td><td>Decimal (15)</td><td>1</td><td>"Cantidad total de la transaccion./""999999.CC"" Con decimales obligatorios, usando el puntos como separador de decimales. No se permiten comas, ni como separador de miles ni como separador de decimales."</td></tr> 
+<tr><td>CSSTCITY</td><td>Required</td><td>String (50)</td><td>1</td><td>Ciudad / Debe comenzar con una letra</td>
+<tr><td> CSSTCOUNTRY</td><td>Required</td><td>String (2)</td><td>1</td><td>Código ISO</td></tr>
+<tr><td>CSSTEMAIL</td><td>Required</td><td>String (100)</td><td>1</td><td>Correo electrónico del comprador con formato válido (solo letras (a-z), números, puntos y sin espacios)</td></tr> 
+<tr><td>CSSTFIRSTNAME</td><td>Required</td><td>String (60)</td><td>1</td><td>Nombre del tarjeta habiente / Sin caracteres especiales como acentos invertidos, sólo letras, números y espacios</td></tr> 
+<tr><td>CSSTLASTNAME</td><td>Required</td><td>String (60)</td><td>1</td><td>Apellido del tarjetahabiente / Sin caracteres especiales como acentos invertidos, sólo letras, números y espacios</td></tr> 
+<tr><td>CSSTPHONENUMBER</td><td>Required</td><td>String (15)</td><td>6</td><td>"Número de telefono. Cuidar el hecho que por default algunos comercios envían ""54"", contando entonces con 2 de los 6 caracteres requeridos."</td></tr> 
+<tr><td>CSSTPOSTALCODE</td><td>Required</td><td>String (10)</td><td>1</td><td>Código Postal</td></tr>
+<tr><td>CSSTSTATE</td><td>Required</td><td>String (2)</td><td>1</td><td>Estado (Si el country = US, el campo se valida para un estado v lido en USA)</td><tr> 
+<tr><td>CSSTSTREET1</td><td>Required</td><td>String (60)</td><td>1</td><td>Calle Numero interior Numero Exterior / Para los casos que no son de envío a domicilio, jam s enviar la dirección propia del comercio o correo donde se retire la mercadería, en ese caso replicar los datos de facturación.</td></tr>
+<tr><td> CSSTSTREET2</td><td>Optional</td><td>String (60)</td><td></td><td>Barrio</td></tr> 
+<tr><td>CSMDD1 </td><td>Required</td><td>String (255)</td><td>1</td><td>Incluir numero de comercio proveniente del campo NROCOMERCIO del API DECIDIR</td></tr> 
+<tr><td>CSMDD2</td><td>Required</td><td>String (255)</td><td>1</td><td>Incluir el nombre del comercio, Decidir puede obtener este dato del portal de configuracion de comercios</td></tr>
+<tr><td> CSMDD3</td><td>Required (Catalogo)</td><td>String (255)</td><td>1</td><td>"Valores ejemplo: (retail, digital goods, services, travel, ticketing) Es recomendable que el API de decidir fije opciones seleccionables y no sean de captura libre para el comercio"</td></tr> 
+<tr><td>CSMDD4</td><td>Optional (Catalogo)</td><td>String (255)</td><td></td><td>"Valores ejemplo: (Visa, Master Card, Tarjeta Shopping, Banelco...) Es recomendable que el API de decidir fije opciones seleccionables y no sean de captura libre para el comercio. Se tienen que incluir todos los medios de pago aceptados"</td></tr>
+<tr><td> CSMDD5</td><td>Optional</td><td>String (255)</td><td></td><td>Valor numerico que detalle el numero de cuotas</td></tr>
+<tr><td>CSMDD6</td><td>Optional (Catalogo)</td><td>String (255)</td><td></td><td>"Valores ejemplo: (Web, Call Center, Mobile, Kiosko) Es recomendable que el API de decidir fije opciones seleccionables y no sean de captura libre para el comercio."</td></tr> 
+<tr><td>CSMDD7</td><td>Optional</td><td>String (255)</td><td></td><td>Numero de dias que tiene registrado un cliente en el portal del comercio.</td></tr>
+<tr><td>CSMDD8</td><td>Optional</td><td>String (255)</td><td></td><td>Valor Boleano para indicar si el usuario esta comprando como invitado en la pagina del comercio. Valores posibles (S/N)</td></tr> 
+<tr><td>CSMDD9</td><td>Optional</td><td>String (255)</td><td></td><td>Valor del password del usuario registrado en el portal del comercio. Incluir el valor en hash</td></tr> 
+<tr><td>CSMDD10</td><td>Optional</td><td>String (255)</td><td></td><td>Conteo de transacciones realizadas por el mismo usuario registrado en el portal del comercio</td></tr>
+<tr><td>CSMDD11</td><td>Optional</td><td>String (255)</td><td></td><td>Incluir numero de telefono adicional del comprador</td></tr> 
+<tr><td>CSMDD12</td><td>Optional</td><td>String (255)</td><td></td><td>Numero de dias que tiene el comercio para hacer la entrega</td></tr> 
+<tr><td>CSMDD13</td><td>Optional (Catalogo)</td><td>String (255)</td><td></td><td>"Valores ejemplo: (domicilio, click and collect, carrier) Es recomendable que el API de decidir fije opciones seleccionables y no sean de captura libre para el comercio."</td></tr> 
+<tr><td>CSMDD14</td><td>Optional</td><td>String (255)</td><td></td><td>Valor booleano para identificar si el cliente requiere un comprobante fiscal o no S / N</td></tr>
+<tr><td>CSMDD15</td><td>Optional</td><td>String (255)</td><td></td><td>Incluir numero de cliente frecuente</td></tr>
+<tr><td>CSMDD16</td><td>Optional</td><td>String (255)</td><td></td><td>Incluir numero de cupon de descuento</td></tr>
+<tr><td>CSMDD35</td><td>Conditional (Transaccion con Visa)</td><td>String (255)</td><td></td><td>Tipo de documento solicitado por el comercio al cliente</td></tr>
+<tr><td>CSMDD36</td><td>Conditional (Transaccion con Visa)</td><td>String (255)</td><td></td><td>Numero de documento solicitado por el comercio al cliente</td></tr>
+<tr><td>CSMDD37</td><td>Conditional (Transaccion con Visa)</td><td>String (255)</td><td></td><td>Numero de puerta</td></tr>
+<tr><td> CSMDD38</td><td>onditional (Transaccion con Visa)</td><td>String (255)</td><td></td><td>Fecha de nacimiento del comprador, dato solicitado por el comercio. DECIDIR tiene el formato exacto de como se debe de capturar</td></tr>
+<tr><td>CSMDD39</td><td>Conditional (Transaccion con Visa)</td><td>String (255)</td><td></td><td>Valor numero correspondiente a la validacion de cada uno de los datos anteriores ejemplo: 1012</td></tr>
+<tr><td> CSMDD40</td><td>Optional</td><td>String(1)</td><td></td><td>"Valor para identificar si la transaccion ha sido reportada como fraude por parte del emisor. Incluir el parametro con valor = S Este parametro lo genera decidir a partir de la respuesta del emisor. En caso de una transaccion aceptada por el emisor o con rechazo diferente a fraude, NO INCLUIR"</td></tr> 
+<tr><td>CSMDD41</td><td>Optional</td><td>String(1)</td><td></td><td>Datos proporcionado por DECIDIR en el form. De pago. Valores posibles S/N</td></tr> 
+<tr><td>CSMDD42</td><td>Optional</td><td>String(1)</td><td></td><td>Datos proporcionado por DECIDIR en el form. De pago. Valores posibles S/N</td></tr>
+<tr><td>CSMDD80</td><td>Required </td><td>Integer (20)</td><td></td><td>Número de cuenta del vendedor</td></tr>
+<tr><td> CSMDD81</td><td>Required </td><td>String(255)</td><td></td><td>Mail del vendedor en TP</td></tr>
+<tr><td> CSMDD82</td><td>Required </td><td>Integer (6)</td><td></td><td>Rubro asignado por el analista de riesgos de Back Office</td></tr>
+<tr><td>CSMDD83</td><td>Required </td><td>Integer (2)</td><td></td><td>Antigüedad de la cuenta vendedor</td></tr> 
+<tr><td>CSMDD84</td><td>Required </td><td>String (15)</td><td></td><td>Consumidor Final / Profesional / Empresa</td></tr> 
+<tr><td>CSMDD85</td><td>Required </td><td>Integer(1)</td><td></td><td>0 (No se le pidió) / 1 (Se le pidió y se validó) / 2 (Uso Futuro)</td></tr>
+<tr><td> CSMDD86</td><td>Requerido (para Billetera)</td><td>Integer(20)</td><td></td><td>Número de cuenta del comprador</td></tr>
+<tr><td>CSMDD87</td><td>Requerido (para Billetera)</td><td>Integer (3)</td><td></td><td>Antigüedad de la cuenta comprador (Meses)</td></tr> 
+<tr><td>CSMDD88</td><td>Requerido (para Billetera)</td><td>Integer (3)</td><td></td><td>Cantidad de tarjetas Habilitadas de la Billetera</td></tr> 
+<tr><td>CSMDD89</td><td>Requerido (para Billetera)</td><td>Integer (2)</td><td></td><td>Nivel de Riesgo asignado al Medio de Pago que Utiliza</td></tr>
+</table>
+
 
 [<sub>Volver a inicio</sub>](#inicio)
 <br>
@@ -391,6 +469,16 @@ El endpoint depende del entorno:
 + Desarrollo: https://developers.todopago.com.ar/resources/TPHybridForm-v0.1.js
 + Produccion: https://forms.todopago.com.ar/resources/TPHybridForm-v0.1.js
 
+También se provee un método en la SDK para obtener el endpoint de la libreria Javascript:
+
+```php
+
+$sdk = new \TodoPago\Sdk($http_header, $mode);
+
+$js = $sdk->getEndpointForm();
+
+```
+
 **Restricciones y libertades en la implementación**
 
 + Ninguno de los campos del formulario podrá contar con el atributo name.
@@ -422,6 +510,7 @@ El formulario implementado debe contar al menos con los siguientes campos.
 	<select id="tipoDocCbx"></select>
 	<input id="nroDocTxt"/>
 	<input id="emailTxt"/><br/>
+	<button id="MY_btnPagarConBilletera"/>
 	<button id="MY_btnConfirmarPago"/>
 </body>
 ```
@@ -438,7 +527,9 @@ window.TPFORMAPI.hybridForm.initForm({
     callbackValidationErrorFunction: 'validationCollector',
 	callbackCustomSuccessFunction: 'customPaymentSuccessResponse',
 	callbackCustomErrorFunction: 'customPaymentErrorResponse',
+        callbackBilleteraFunction: 'billeteraPaymentResponse',
 	botonPagarId: 'MY_btnConfirmarPago',
+	botonPagarConBilleteraId: 'MY_btnPagarConBilletera',
 	modalCssClass: 'modal-class',
 	modalContentCssClass: 'modal-content',
 	beforeRequest: 'initLoading',
@@ -456,6 +547,8 @@ window.TPFORMAPI.hybridForm.setItem({
 //callbacks de respuesta del pago
 function validationCollector(parametros) {
 }
+function billeteraPaymentResponse(response) {
+}
 function customPaymentSuccessResponse(response) {
 }
 function customPaymentErrorResponse(response) {
@@ -468,7 +561,8 @@ function stopLoading() {
 
 **Callbacks**<br>
 El formulario define callbacks javascript, que son llamados según el estado y la informacion del pago realizado:
-+ customPaymentSuccessResponse: Devuelve response si el pago se realizo correctamente.
++ billeteraPaymentResponse: Devuelve response si el pago con billetera se realizó correctamente.
++ customPaymentSuccessResponse: Devuelve response si el pago se realizó correctamente.
 + customPaymentErrorResponse: Si hubo algun error durante el proceso de pago, este devuelve el response con el codigo y mensaje correspondiente.
 
 **Ejemplo de Implementación**:
@@ -519,6 +613,27 @@ $rta->getApikey();
 
 [<sub>Volver a inicio</sub>](#inicio)
 <br>
+
+<a name="minmaxcuotas"></a>
+####Límites de cuotas a mostrar en formulario
+Mediante esta funcionalidad, se permite setear el número mínimo y máximo de cuotas que se desplegará en el formulario de pago.
+
+Para hacer uso de esta funcionalidad debe agregarse en el parámetro **optionsSAR_operacion** del método **sendAuthorizeRequest** el campo **MININSTALLMENTS** y **MAXINSTALLMENTS** con el valor mínimo y máximo de cuotas a ofrecer respectivamente. En caso que no se especifiquen estos valores se mostrarán cuotas de 1 a 12.
+
+#####Ejemplo
+
+```php		
+$optionsSAR_operacion = array(		
+	...........................................................................	
+	'MININSTALLMENTS' => 3, 	
+	'MAXINSTALLMENTS' => 8, //Nro maximo de cuotas a mostrar en el formulario, OPCIONAL.
+	...........................................................	
+);
+```
+
+[<sub>Volver a inicio</sub>](#inicio)
+<br>
+
 
 <a name="secuencia"></a>
 ##Diagrama de secuencia
@@ -618,3 +733,4 @@ $rta->getApikey();
 </table>
 
 [<sub>Volver a inicio</sub>](#inicio)
+

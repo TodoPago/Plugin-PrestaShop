@@ -73,6 +73,7 @@
 			
 			<div id="tp-bt-wrapper">
 				<button id="btnConfirmarPagoValida" class="tp-button button btn-sm btn btn-success">Pagar</button>
+				<button id="btn_Billetera" class="tp-button button btn-sm btn btn-success"/>Billetera</button>
 			</div>
 		</div>	
 	</div>
@@ -97,6 +98,7 @@
             callbackCustomSuccessFunction: 'customPaymentSuccessResponse',
             callbackCustomErrorFunction: 'customPaymentErrorResponse',
             botonPagarId: 'btnConfirmarPagoValida',
+            botonPagarConBilleteraId: 'btn_Billetera',
             modalCssClass: 'modal-class',
             modalContentCssClass: 'modal-content',
             beforeRequest: 'initLoading',
@@ -124,7 +126,7 @@
 		}
 
 		function billeteraPaymentResponse(response){
-			//wallet
+			window.location.href = urlBase+"paso=2&estado=1&cart="+orderId+"&fc=module&module=todopago&controller=payment&Answer="+response.AuthorizationKey;
 		}
 
 		function customPaymentSuccessResponse(response){
@@ -132,18 +134,13 @@
 		}
 
 		function customPaymentErrorResponse(response) {
-			window.location.href = urlBase+"paso=2&estado=0&cart="+orderId+"&fc=module&module=todopago&controller=payment&Answer=error";
-
+			window.location.href = urlBase+"paso=2&estado=0&cart="+orderId+"&fc=module&module=todopago&controller=payment&Answer=error&Message="+response.ResultMessage+"&Code="+response.ResultCode;
 		}
 
 		function initLoading() {	
 		}
 
 		function stopLoading() {
-			if(countLoad > 1){
-				$("#btnConfirmarPagoValida").attr("disabled","disabled");
-			}
-			countLoad++;
 		}
 	
 </script>

@@ -61,7 +61,11 @@ En la pagina de admin del plugin, en la seccion "CONFIGURACION - FORMULARIO HIBR
 ![imagen de configuracion](https://raw.githubusercontent.com/TodoPago/imagenes/master/prestashop/admin-formulario-hibrido.png)
 
 El formulario seleccionado se mostrara en la etapa final del proceso de pago "Confirmar pago".
-![imagen de configuracion](https://raw.githubusercontent.com/TodoPago/imagenes/master/prestashop/formulario-hibrido.png)
+![imagen de configuracion](https://raw.githubusercontent.com/TodoPago/imagenes/master/prestashop/formulario-hibrido-billetera.png)
+
+El formulario tiene dos formas de pago, ingresando los datos de una tarjeta ó utilizando la billetera de Todopago. Al ir a "Pagar con Billetera" desplegara una ventana que permitira ingresar a billetera y realizar el pago.
+
+![imagen de configuracion](https://raw.githubusercontent.com/TodoPago/imagenes/master/prestashop/form-lightbox-billetera.png)
 
 [<sub>Volver a inicio</sub>](#inicio)
 

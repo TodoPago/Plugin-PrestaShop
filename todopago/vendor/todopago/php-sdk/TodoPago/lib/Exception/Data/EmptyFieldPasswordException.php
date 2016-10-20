@@ -1,6 +1,6 @@
 <?php
 
-namespace TodoPago\Exception\Data
+namespace TodoPago\Exception\Data;
 
 class EmptyFieldUserException extends EmptyFieldException {
 	

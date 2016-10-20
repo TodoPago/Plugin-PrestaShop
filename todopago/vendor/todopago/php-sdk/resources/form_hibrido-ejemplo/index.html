@@ -51,6 +51,7 @@
 					<input id="emailTxt"/><br/>
 				</div>
 				<div id="tp-bt-wrapper">
+					<button id="MY_btnPagarConBilletera" class="tp-button"/>
 					<button id="MY_btnConfirmarPago" class="tp-button"/>
 				</div>
 			</div>	
@@ -70,6 +71,7 @@
 		    callbackValidationErrorFunction: 'validationCollector',
 	            callbackCustomSuccessFunction: 'customPaymentSuccessResponse',
 	            callbackCustomErrorFunction: 'customPaymentErrorResponse',
+                    callbackBilleteraFunction: 'billeteraPaymentResponse',
 	            botonPagarId: 'MY_btnConfirmarPago',
 	            botonPagarConBilleteraId: 'MY_btnPagarConBilletera',
 	            modalCssClass: 'modal-class',

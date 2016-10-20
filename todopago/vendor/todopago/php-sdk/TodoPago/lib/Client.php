@@ -44,7 +44,7 @@ class Client extends \SoapClient
         if( $output === false)
         {
 			$err = 'Curl error: ' . curl_error($soap_do);
-			throw new Exception($err);
+			throw new \Exception($err);
         }
 
         curl_close($soap_do);

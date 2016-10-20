@@ -8,16 +8,16 @@
     "packages": [
         {
             "name": "todopago/php-sdk",
-            "version": "V1.5.1",
+            "version": "V1.8.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/TodoPago/SDK-PHP.git",
-                "reference": "b97d03f9c38db8b676980322b4dec394da29d8d1"
+                "reference": "71f0b7e15178f48cd375c276034395673ead8e5c"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/TodoPago/SDK-PHP/zipball/b97d03f9c38db8b676980322b4dec394da29d8d1",
-                "reference": "b97d03f9c38db8b676980322b4dec394da29d8d1",
+                "url": "https://api.github.com/repos/TodoPago/SDK-PHP/zipball/71f0b7e15178f48cd375c276034395673ead8e5c",
+                "reference": "71f0b7e15178f48cd375c276034395673ead8e5c",
                 "shasum": ""
             },
             "require": {
@@ -31,7 +31,7 @@
             },
             "notification-url": "https://packagist.org/downloads/",
             "description": "SDK para TodoPago",
-            "time": "2016-06-24 23:09:44"
+            "time": "2016-10-20 19:45:40"
         }
     ],
     "packages-dev": [],

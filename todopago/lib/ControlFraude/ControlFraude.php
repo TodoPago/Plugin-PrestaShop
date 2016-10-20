@@ -71,17 +71,24 @@ abstract class ControlFraude {
             $code[]  = $this->getCategoryArray($item['id_product']);
 
             //obtengo el string para CSITPRODUCTDESCRIPTION
-            $prodDescription = $this->getProdDescription($item['id_product']);
+            $prodDescription = TodoPago\Sdk::sanitizeValue($this->getProdDescription($item['id_product']));
+            $prodDescription = trim($prodDescription);
+
             if($prodDescription == null || $prodDescription == ""){
             	if($item['description_short'] == null || $item['description_short'] == ""){
-            		$prodDescription = $item['name'];
+            		$prodDescription = TodoPago\Sdk::sanitizeValue($item['name']);
+            		$prodDescription = trim($prodDescription);
             	}else{
-            		$prodDescription = $item['description_short'];	
+            		$prodDescription = TodoPago\Sdk::sanitizeValue($item['description_short']);	
+            		$prodDescription = trim($prodDescription);
             	}
             }
+
+            if( empty($prodDescription) ){ $prodDescription = "product";  }  
+
             $prodDescription = str_replace("#","",$prodDescription);
             $prodDescription = strip_tags($prodDescription);
-            $desc = TodoPago\Sdk::sanitizeValue($prodDescription);
+            $desc = $prodDescription;
 
             $desc = substr($desc,0,50);
             $description[]   = $desc;

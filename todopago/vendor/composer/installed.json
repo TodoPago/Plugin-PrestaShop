@@ -1,23 +1,23 @@
 [
     {
         "name": "todopago/php-sdk",
-        "version": "V1.5.1",
-        "version_normalized": "1.5.1.0",
+        "version": "V1.8.0",
+        "version_normalized": "1.8.0.0",
         "source": {
             "type": "git",
             "url": "https://github.com/TodoPago/SDK-PHP.git",
-            "reference": "b97d03f9c38db8b676980322b4dec394da29d8d1"
+            "reference": "71f0b7e15178f48cd375c276034395673ead8e5c"
         },
         "dist": {
             "type": "zip",
-            "url": "https://api.github.com/repos/TodoPago/SDK-PHP/zipball/b97d03f9c38db8b676980322b4dec394da29d8d1",
-            "reference": "b97d03f9c38db8b676980322b4dec394da29d8d1",
+            "url": "https://api.github.com/repos/TodoPago/SDK-PHP/zipball/71f0b7e15178f48cd375c276034395673ead8e5c",
+            "reference": "71f0b7e15178f48cd375c276034395673ead8e5c",
             "shasum": ""
         },
         "require": {
             "php": ">=5.3"
         },
-        "time": "2016-06-15 18:44:16",
+        "time": "2016-10-20 19:45:40",
         "type": "library",
         "installation-source": "dist",
         "autoload": {

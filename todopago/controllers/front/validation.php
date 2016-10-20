@@ -34,10 +34,14 @@ class TodoPagoValidationModuleFrontController extends ModuleFrontController
 	public function postProcess()
 	{
 		$prefijo= $this->module->getPrefijo('CONFIG_ESTADOS');
-		$orderState = Configuration::get($prefijo.'_APROBADA');//Order State si la transaccion es aprobada
+		if(Tools::getValue("error") == "true") {
+			$orderState = Configuration::get($prefijo.'_DENEGADA');//Order State si la transaccion es aprobada
+		} else {
+			$orderState = Configuration::get($prefijo.'_APROBADA');//Order State si la transaccion es denegada
+		}
 		$cart = $this->context->cart;//recupero el carrito
 		$transaccion = TPTransaccion::getRespuesta($cart->id);
-		
+
 		//si no hay un cliente registrado, o una direccion de entrega, o direccion de contacto o el modulo no esta activo
 		if ($cart->id_customer == 0 || $cart->id_address_delivery == 0 || $cart->id_address_invoice == 0 || !$this->module->active || 
 				 !$this->module->isActivo())
@@ -83,18 +87,23 @@ class TodoPagoValidationModuleFrontController extends ModuleFrontController
 	
 		$this->module->log->info('Creada orden id '.(int)$this->module->currentOrder.' para carro id '.$cart->id);
 		$this->module->log->info('Status: '.json_encode($transaccion));
-		$this->module->log->info('Actualizando registro OrderPayment para orden id '.(int)$this->module->currentOrder.' con OPERATIONID='.$transaccion['OPERATIONID'].' CARDNUMBERVISIBLE='.$transaccion['CARDNUMBERVISIBLE'].' PAYMENTMETHODNAME='.$transaccion['PAYMENTMETHODNAME']);
+		//$this->module->log->info('Actualizando registro OrderPayment para orden id '.(int)$this->module->currentOrder.' con OPERATIONID='.$transaccion['OPERATIONID'].' CARDNUMBERVISIBLE='.$transaccion['CARDNUMBERVISIBLE'].' PAYMENTMETHODNAME='.$transaccion['PAYMENTMETHODNAME']);
 		
 		try
-		{
-			$this->_addPaymentDetalle((int)$this->module->currentOrder, $transaccion);
+		{	if(Tools::getValue("error") != "true") {
+				$this->_addPaymentDetalle((int)$this->module->currentOrder, $transaccion);
+			}
 		}
 		catch (Exception $e)
 		{
 			$this->module->log->error('EXCEPCION',$e);//guardo el mensaje
 		}
-				
-		Tools::redirect('index.php?controller=order-confirmation&id_cart='.(int)$cart->id.'&id_module='.(int)$this->module->id.'&id_order='.$this->module->currentOrder.'&key='.$customer->secure_key);
+		
+		if(Tools::getValue("error") != "true") {
+			Tools::redirect('index.php?controller=order-confirmation&id_cart='.(int)$cart->id.'&id_module='.(int)$this->module->id.'&id_order='.$this->module->currentOrder.'&key='.$customer->secure_key);
+		} else {
+			Tools::redirect('index.php?controller=history');
+		}
 	}
 	
 	/**

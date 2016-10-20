@@ -1,4 +1,5 @@
 <?php
+namespace TodoPago\Logger;
 
 require_once dirname(__FILE__)."/log4php/Logger.php";
 
@@ -77,38 +78,38 @@ class TodoPagoLogger {
 	}
 	
 	public function getLogger($payment) {
-		TPLogger::configure($this->config);
+		\TPLogger::configure($this->config);
 		
 		if($this->php_version != null)
-			LoggerMDC::put('php_version', $this->php_version);
+			\LoggerMDC::put('php_version', $this->php_version);
 		else
-			throw new Exception("Logger Configuracion incompleta");
+			throw new \Exception("Logger Configuracion incompleta");
 		if($this->commerce_version != null)
-			LoggerMDC::put('commerce_version', $this->commerce_version);
+			\LoggerMDC::put('commerce_version', $this->commerce_version);
 		else
-			throw new Exception("Logger Configuracion incompleta");
+			throw new \Exception("Logger Configuracion incompleta");
 		if($this->plugin_version != null)
-			LoggerMDC::put('plugin_version', $this->plugin_version);
+			\LoggerMDC::put('plugin_version', $this->plugin_version);
 		else
-			throw new Exception("Logger Configuracion incompleta");
+			throw new \Exception("Logger Configuracion incompleta");
 		if($payment) {
 			if($this->end_point != null)
-				LoggerMDC::put('end_point', $this->end_point);
+				\LoggerMDC::put('end_point', $this->end_point);
 			else
-				throw new Exception("Logger Configuracion incompleta");
+				throw new \Exception("Logger Configuracion incompleta");
 			if($this->customer != null)
-				LoggerMDC::put('customer', $this->customer);
+				\LoggerMDC::put('customer', $this->customer);
 			else
-				throw new Exception("Logger Configuracion incompleta");
+				throw new \Exception("Logger Configuracion incompleta");
 			if($this->order != null)
-				LoggerMDC::put('order', $this->order);
+				\LoggerMDC::put('order', $this->order);
 			else
-				throw new Exception("Logger Configuracion incompleta");
+				throw new \Exception("Logger Configuracion incompleta");
 		}
 			
 		if($payment)
-			return TPLogger::getLogger("todopagopayment");
-		return TPLogger::getLogger("todopagoadmin");
+			return \TPLogger::getLogger("todopagopayment");
+		return \TPLogger::getLogger("todopagoadmin");
 	}
 	
 	public function setPhpVersion($php_version) {

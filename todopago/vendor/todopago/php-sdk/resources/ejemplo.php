@@ -4,7 +4,7 @@ include_once dirname(__FILE__)."/../vendor/autoload.php";
 use TodoPago\Sdk;
 
 //común a todas los métodos
-$http_header = array('Authorization'=>'TODOPAGO 108fc2b7c8a640f2bdd3ed505817ffde',
+$http_header = array('Authorization'=>'PRISMA f3d8b72c94ab4a06be2ef7c95490f7d3',
  'user_agent' => 'PHPSoapClient');
  
 //creo instancia de la clase TodoPago
@@ -14,18 +14,20 @@ $operationid = rand(1,10000000);
  
 //opciones para el método sendAuthorizeRequest
 $optionsSAR_comercio = array (
-	'Security'=>'0129b065cfb744718166913eba827a2f',
+	'Security'=>'f3d8b72c94ab4a06be2ef7c95490f7d3',
 	'EncodingMethod'=>'XML',
-	'Merchant'=>35,
+	'Merchant'=>2153,
 	'URL_OK'=>"http://".$_SERVER['SERVER_NAME'].":".$_SERVER['SERVER_PORT'].str_replace ($_SERVER['DOCUMENT_ROOT'], '', dirname($_SERVER['SCRIPT_FILENAME']))."/exito.php?operationid=$operationid",
 	'URL_ERROR'=>"http://".$_SERVER['SERVER_NAME'].":".$_SERVER['SERVER_PORT'].str_replace ($_SERVER['DOCUMENT_ROOT'], '', dirname($_SERVER['SCRIPT_FILENAME']))."/error.php?operationid=$operationid"
 );
 
 $optionsSAR_operacion = array (
-	'MERCHANT'=> "35",
+	'MERCHANT'=> "2153",
 	'OPERATIONID'=>"50",
 	'CURRENCYCODE'=> 032,
 	'AMOUNT'=>"54",
+	'MININSTALLMENTS' => 3, //Nro minimo de cuotas a mostrar en el formulario, OPCIONAL.	
+	'MAXINSTALLMENTS' => 8, //Nro maximo de cuotas a mostrar en el formulario, OPCIONAL.
 	//Datos ejemplos CS
 	'CSBTCITY'=> "Villa General Belgrano",
 	'CSSTCITY'=> "Villa General Belgrano",

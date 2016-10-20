@@ -254,14 +254,24 @@ class TodoPagoPaymentModuleFrontController extends ModuleFrontController
         if($this->_tranEstado($cartId) == 3)
             throw new Exception("second_step ya realizado");
 		
-        $options = $this->_getRequestOptionsPasoDos($prefijo, $cartId, $answerKey);
-        $this->module->log->info('params GAA - '.json_encode($options));
-        $respuesta = $connector->getAuthorizeAnswer($options);
-        $this->module->log->info('response GAA - '.json_encode($respuesta));
+        if($answerKey == "error") {
+            $options = $this->_getRequestOptionsPasoDos($prefijo, $cartId, $answerKey);
+            $this->module->log->info('params GAA - '.json_encode($options));
+            $this->module->log->info("GAA - NO SE HACE POR SER FORMULARIO HIBRIDO");
+            $respuesta = array(
+                "StatusCode" => Tools::getValue("Code"),
+                "StatusMessage" => Tools::getValue("Message")
+            );
+        } else {
+            $options = $this->_getRequestOptionsPasoDos($prefijo, $cartId, $answerKey);
+            $this->module->log->info('params GAA - '.json_encode($options));
+            $respuesta = $connector->getAuthorizeAnswer($options);
+            $this->module->log->info('response GAA - '.json_encode($respuesta));
+        }
 
-        $now = new DateTime();
-        $this->_tranUpdate($cartId, array("second_step" => $now->format('Y-m-d H:i:s'), "params_GAA" => pSql(json_encode($options)), "response_GAA" => json_encode($respuesta), "answer_key" => $answerKey));
-        		
+            $now = new DateTime();
+            $this->_tranUpdate($cartId, array("second_step" => $now->format('Y-m-d H:i:s'), "params_GAA" => pSql(json_encode($options)), "response_GAA" => json_encode($respuesta), "answer_key" => $answerKey));
+
 		return $respuesta;
 	}
 	
@@ -271,18 +281,17 @@ class TodoPagoPaymentModuleFrontController extends ModuleFrontController
 		$status =Tools::getValue('estado');
 		$cart = new Cart($cartId);
 
-        if ($status == 0)//si se llego a este paso mediante URL_ERROR
+        if ($status == "0")//si se llego a este paso mediante URL_ERROR
         {
-			if(isset($respuesta['Payload']['Answer'])) {
-				$this->_tranUpdate($cartId, array("first_step" => null, "second_step" => null));				
-				throw new Exception($respuesta['StatusMessage']);
-			}
-
-            //$this->_guardarTransaccion($cart, $respuesta['StatusMessage'], $respuesta['Payload']['Answer']);
+	
             $this->_guardarTransaccion($cart, $respuesta['StatusMessage'], "");
-            $respuesta = Transaccion::getOptions($cart->id);
-            $this->_tranUpdate($cartId, array("first_step" => null, "second_step" => null));
-            //throw new Exception($respuesta['StatusMessage']);
+            $this->module->log->info('Redireccionando al controller de validacion');
+            
+            Tools::redirect($this->context->link->getModuleLink(strtolower($this->module->name), 'validation', array("error" =>"true"), false));//redirijo al controller de validacion
+	
+
+
+    
         }
 		
         //en el caso de pagar con Rapipago o Pago Facil
@@ -304,7 +313,7 @@ class TodoPagoPaymentModuleFrontController extends ModuleFrontController
         {
             $this->_guardarTransaccion($cart, $respuesta['StatusMessage'], $respuesta['Payload']['Answer']);//guardo el StatusMessage y los detalles de la transaaccion
             $this->module->log->info('Redireccionando al controller de validacion');
-            Tools::redirect($this->context->link->getModuleLink(strtolower($this->module->name), 'validation', array(), false));//redirijo al controller de validacion
+            Tools::redirect($this->context->link->getModuleLink(strtolower($this->module->name), 'validation', array("error" =>"false"), false));//redirijo al controller de validacion
         }
         else 
             throw new Exception($respuesta['StatusMessage']);		
