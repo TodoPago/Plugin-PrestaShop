@@ -4,7 +4,7 @@ namespace TodoPago;
 require_once(dirname(__FILE__)."/Client.php");
 require_once(dirname(__FILE__)."/Utils/FraudControlValidator.php");
 
-define('TODOPAGO_VERSION','1.8.0');
+define('TODOPAGO_VERSION','1.8.1');
 define('TODOPAGO_ENDPOINT_TEST','https://developers.todopago.com.ar/');
 define('TODOPAGO_ENDPOINT_PROD','https://apis.todopago.com.ar/');
 define('TODOPAGO_ENDPOINT_TENATN', 't/1.1/');
@@ -139,7 +139,7 @@ class Sdk
 		);
 
 		// Fix bug #49853 - https://bugs.php.net/bug.php?id=49853
-		if(version_compare(PHP_VERSION, '5.3.10') == -1) {
+		if(version_compare(PHP_VERSION, '5.3.10') != 1) {
 			$clientSoap = new Client($local_wsdl, array(
 					'local_cert'=>($this->local_cert), 
 					'connection_timeout' => $this->connection_timeout,

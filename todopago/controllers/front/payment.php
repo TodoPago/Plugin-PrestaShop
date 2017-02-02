@@ -289,9 +289,6 @@ class TodoPagoPaymentModuleFrontController extends ModuleFrontController
             
             Tools::redirect($this->context->link->getModuleLink(strtolower($this->module->name), 'validation', array("error" =>"true"), false));//redirijo al controller de validacion
 	
-
-
-    
         }
 		
         //en el caso de pagar con Rapipago o Pago Facil
@@ -511,11 +508,25 @@ class TodoPagoPaymentModuleFrontController extends ModuleFrontController
     
     private function _isAmountIgual($cart, $amount)
     {
-        if ($cart->getOrderTotal(true, Cart::BOTH) == $amount)
-            return true;
-        else
+
+        if ($cart->getOrderTotal(true, Cart::BOTH) == $amount){
+
+            return true; 
+
+        }elseif($cart->getOrderTotal(true, Cart::BOTH) < $amount){
+
+            $realAmount = $amount - ($amount - $cart->getOrderTotal(true, Cart::BOTH));                            
+
+            if($cart->getOrderTotal(true, Cart::BOTH) == $realAmount){
+                return true;    
+            }
+
             return false;
+        }else{
+	    return false;	
+	}
     }
+
     //obtengo RequestKey de la orden
     private function getRequestKeyTransaccion($IdOrder){
 

@@ -34,11 +34,22 @@ class TodoPagoValidationModuleFrontController extends ModuleFrontController
 	public function postProcess()
 	{
 		$prefijo= $this->module->getPrefijo('CONFIG_ESTADOS');
+
 		if(Tools::getValue("error") == "true") {
-			$orderState = Configuration::get($prefijo.'_DENEGADA');//Order State si la transaccion es aprobada
-		} else {
-			$orderState = Configuration::get($prefijo.'_APROBADA');//Order State si la transaccion es denegada
+			if(Configuration::get($prefijo.'_DENEGADA') != ""){
+				$orderState = Configuration::get($prefijo.'_DENEGADA');
+			}else{
+				$orderState = Configuration::get('PS_OS_CANCELED');	
+			}
+			
+		}else{
+			if(Configuration::get($prefijo.'_APROBADA') != ""){
+				$orderState = Configuration::get($prefijo.'_APROBADA');
+			}else{
+				$orderState = Configuration::get('PS_OS_PAYMENT');	
+			}
 		}
+
 		$cart = $this->context->cart;//recupero el carrito
 		$transaccion = TPTransaccion::getRespuesta($cart->id);
 
