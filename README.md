@@ -1,5 +1,5 @@
 <a name="inicio"></a>
-Prestashop - módulo Todo Pago (v1.4.x a 1.6.x)
+Prestashop - módulo Todo Pago (v1.4.x a 1.9.x)
 ==========
 
 **Para reinstalar debe desinstalar cualquier versión anterior antes de copiar el plugin a la carpeta modules de Prestashop. De lo contrario fallará la instalacion de la nueva versión**
@@ -281,7 +281,7 @@ Para realizar una devolucion parcial o total, Prestashop tiene en la seccion "Pe
   <thead>
   <tbody>
     <tr>
-      <td><a href="https://github.com/TodoPago/Plugin-PrestaShop/archive/master.zip">v1.4.x - v1.6.x</a></td>
+      <td><a href="https://github.com/TodoPago/Plugin-PrestaShop/archive/master.zip">v1.4.x - v1.9.x</a></td>
       <td>Stable (Current version)</td>
       <td>PrestaShop v1.6.x<br />
       </td>

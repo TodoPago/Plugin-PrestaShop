@@ -340,6 +340,9 @@ class Formulario {
 			});
 		}
 
+		if(!isset($approvalsStatus)){
+			$approvalsStatus = array();
+		}
 		return array(
 					array(
 							'type' => 'select',

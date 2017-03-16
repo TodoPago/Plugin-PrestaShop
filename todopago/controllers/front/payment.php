@@ -96,8 +96,9 @@ class TodoPagoPaymentModuleFrontController extends ModuleFrontController
                 break;
                 case 3: 
                     $order  = Tools::getValue('order');
+                    $orderIdTPOperation = Tools::getValue('orderOperation');
                     $amount = Tools::getValue('amount');
-                    $this->doRefund($order, $amount);
+                    $this->doRefund($order, $orderIdTPOperation, $amount);
                     die;
                 default:
                     $this->module->log->info('Redireccionando al paso 1');
@@ -108,9 +109,16 @@ class TodoPagoPaymentModuleFrontController extends ModuleFrontController
         catch (Exception $e)
         {
             $this->module->log->error('EXCEPCION',$e);
-            $template='payment_error';
+
+            if (version_compare(_PS_VERSION_, '1.7.0.0') >= 0){
+
+                Tools::redirect($this->context->link->getModuleLink('todopago', 'pagemessagereturn', array('step' => 'first')));
+            }else{
+                $template='payment_error';
+            }    
+
         }
-        
+
         //asigno las variables que se van a a ver en la template de payment (payment.tpl)
         $this->context->smarty->assign(array(
             'nombre' => Configuration::get($this->module->getPrefijo('PREFIJO_CONFIG').'_NOMBRE'),//nombre con el que aparece este modulo de pago en el frontend
@@ -130,9 +138,23 @@ class TodoPagoPaymentModuleFrontController extends ModuleFrontController
             $this->context->smarty->assign(array(
                     'payment' => $smarty
             ));
+        }   
+
+        if (version_compare(_PS_VERSION_, '1.7.0.0') >= 0){
+            $embebed = $this->_getEmbebedSettings();
+
+            if($embebed['enabled'] == 1){
+                //prueb redirect a form hibrido
+                Tools::redirect($this->context->link->getModuleLink('todopago', 'tppaymentform', array('order' => $cart->id)));
+
+            }else{
+                //form externo
+                Tools::redirect($smarty['redir']);
+            }
+
+        }else{
+            $this->setTemplate($template.'.tpl');
         }
-        
-        $this->setTemplate($template.'.tpl');//plantilla que se va a usar.
     }
     
 	protected function prepare_connector($prefijo)
@@ -178,6 +200,15 @@ class TodoPagoPaymentModuleFrontController extends ModuleFrontController
 	{
         $respuesta = $connector->sendAuthorizeRequest($options['comercio'], $options['operacion']);//me comunico con el webservice
         $this->module->log->info('response SAR - '.json_encode($respuesta));
+
+        //validate states set
+        if(Configuration::get($prefijo.'_APROBADA') == " " || Configuration::get($prefijo.'_DENEGADA') == " " || 
+                Configuration::get($prefijo.'_PROCESO') == " " || Configuration::get($prefijo.'_PENDIENTE') == " "){
+
+            $this->module->log->info('Los estados del proceso de pago de Todopago no estan definidos');
+            throw new Exception("Los estados de la compra de Todopago no estan definidos");
+        }   
+
         if ($respuesta['StatusCode']  != $this->codigoAprobacion)//Si la transacción salió mal
         {
 			if(($respuesta['StatusCode']  == 702)&&(!$this->first_step)) {
@@ -220,7 +251,6 @@ class TodoPagoPaymentModuleFrontController extends ModuleFrontController
         } else {
             $template = 'payment_execution';
         }            
-
         return array($smarty,$template);		
 	}
 	
@@ -257,7 +287,7 @@ class TodoPagoPaymentModuleFrontController extends ModuleFrontController
         if($answerKey == "error") {
             $options = $this->_getRequestOptionsPasoDos($prefijo, $cartId, $answerKey);
             $this->module->log->info('params GAA - '.json_encode($options));
-            $this->module->log->info("GAA - NO SE HACE POR SER FORMULARIO HIBRIDO");
+            $this->module->log->info("GAA - NO SE HACE PORQUE NO HAY ANSWERKEY - FORMULARIO NO PAGADO O ERROR");
             $respuesta = array(
                 "StatusCode" => Tools::getValue("Code"),
                 "StatusMessage" => Tools::getValue("Message")
@@ -271,7 +301,7 @@ class TodoPagoPaymentModuleFrontController extends ModuleFrontController
 
             $now = new DateTime();
             $this->_tranUpdate($cartId, array("second_step" => $now->format('Y-m-d H:i:s'), "params_GAA" => pSql(json_encode($options)), "response_GAA" => json_encode($respuesta), "answer_key" => $answerKey));
-
+    
 		return $respuesta;
 	}
 	
@@ -286,9 +316,9 @@ class TodoPagoPaymentModuleFrontController extends ModuleFrontController
 	
             $this->_guardarTransaccion($cart, $respuesta['StatusMessage'], "");
             $this->module->log->info('Redireccionando al controller de validacion');
-            
+
             Tools::redirect($this->context->link->getModuleLink(strtolower($this->module->name), 'validation', array("error" =>"true"), false));//redirijo al controller de validacion
-	
+
         }
 		
         //en el caso de pagar con Rapipago o Pago Facil
@@ -309,11 +339,15 @@ class TodoPagoPaymentModuleFrontController extends ModuleFrontController
         if ($respuesta['StatusCode'] == $this->codigoAprobacion && $this->_isAmountIgual($cart, $respuesta['Payload']['Request']['AMOUNT']))//Si todo salio bien
         {
             $this->_guardarTransaccion($cart, $respuesta['StatusMessage'], $respuesta['Payload']['Answer']);//guardo el StatusMessage y los detalles de la transaaccion
-            $this->module->log->info('Redireccionando al controller de validacion');
-            Tools::redirect($this->context->link->getModuleLink(strtolower($this->module->name), 'validation', array("error" =>"false"), false));//redirijo al controller de validacion
-        }
-        else 
-            throw new Exception($respuesta['StatusMessage']);		
+            $this->module->log->info('Redireccionando al controller de validacion ok');
+
+            Tools::redirect($this->context->link->getModuleLink(strtolower($this->module->name), 'validation', array(), false));//redirijo al controller de validacion
+        } else {
+            $this->_guardarTransaccion($cart, $respuesta['StatusMessage'], "");
+            $this->module->log->info('Redireccionando al controller de validacion error');
+
+            Tools::redirect($this->context->link->getModuleLink(strtolower($this->module->name), 'validation', array("error" =>"true"), false));//redirijo al controller de validacion            
+        }	
 		
 	}
 	
@@ -404,7 +438,7 @@ class TodoPagoPaymentModuleFrontController extends ModuleFrontController
     {
         $prefijo = $this->module->getPrefijo('CONFIG_EMBEBED');
         return array(
-            'enabled' => (string) Configuration::get($prefijo.'_EMBEBED'),
+            'enabled' => (Configuration::get($prefijo.'_EMBEBED') == 1 ? 1: 0),
             'backgroundColor' => (string) Configuration::get($prefijo.'_BACKGROUNDCOLOR'),
             'border' => (string) Configuration::get($prefijo.'_BORDER'),
             'buttonBackgroundColor' => (string) Configuration::get($prefijo.'_BUTTONBACKGROUNDCOLOR'),
@@ -434,7 +468,7 @@ class TodoPagoPaymentModuleFrontController extends ModuleFrontController
                     'URL_ERROR' => $this->context->link->getModuleLink(strtolower($this->module->name), 'payment', array('paso' => '2', 'estado' => '0', 'cart' => $cartId), true),
                 )
         );
-        
+
         return $params;        
     }
     
@@ -508,25 +542,11 @@ class TodoPagoPaymentModuleFrontController extends ModuleFrontController
     
     private function _isAmountIgual($cart, $amount)
     {
-
-        if ($cart->getOrderTotal(true, Cart::BOTH) == $amount){
-
-            return true; 
-
-        }elseif($cart->getOrderTotal(true, Cart::BOTH) < $amount){
-
-            $realAmount = $amount - ($amount - $cart->getOrderTotal(true, Cart::BOTH));                            
-
-            if($cart->getOrderTotal(true, Cart::BOTH) == $realAmount){
-                return true;    
-            }
-
+        if ($cart->getOrderTotal(true, Cart::BOTH) == $amount)
+            return true;
+        else
             return false;
-        }else{
-	    return false;	
-	}
     }
-
     //obtengo RequestKey de la orden
     private function getRequestKeyTransaccion($IdOrder){
 
@@ -542,7 +562,7 @@ class TodoPagoPaymentModuleFrontController extends ModuleFrontController
         }
     }
 
-    public function voidPaymentTP($OrderId){
+    public function voidPaymentTP($orderIdTransaccion){
         
         if(Configuration::get('TODOPAGO_MODO') == ""){
             $merchant = Configuration::get('TODOPAGO_TEST_ID_SITE');
@@ -551,8 +571,6 @@ class TodoPagoPaymentModuleFrontController extends ModuleFrontController
             $merchant = Configuration::get('TODOPAGO_PRODUCCION_ID_SITE');
             $security = Configuration::get('TODOPAGO_PRODUCCION_SECURITY');
         }
-
-        $orderIdTransaccion = $OrderId;
 
         $requestKey = $this->getRequestKeyTransaccion($orderIdTransaccion);
 
@@ -565,12 +583,17 @@ class TodoPagoPaymentModuleFrontController extends ModuleFrontController
         $prefijo = $this->module->getPrefijoModo();
         $connector = $this->prepare_connector($prefijo);
 
+        //log devolucion request
+        $this->module->log->info('Devolución total datos:' . json_encode($options));
+
         $refResponse = $connector->voidRequest($options);
+
+        $this->module->log->info('Respuesta Devolución total:' . json_encode($refResponse));
 
         return $refResponse;
     }
 
-    public function partialRefundTP($OrderId, $amount){
+    public function partialRefundTP($orderIdTransaccion, $amount){
 
         if(Configuration::get('TODOPAGO_MODO') == ""){
             $merchant = Configuration::get('TODOPAGO_TEST_ID_SITE');
@@ -580,7 +603,6 @@ class TodoPagoPaymentModuleFrontController extends ModuleFrontController
             $security = Configuration::get('TODOPAGO_PRODUCCION_SECURITY');
         }
 
-        $orderIdTransaccion = $OrderId;
         //getRequestKey
         $requestKey = $this->getRequestKeyTransaccion($orderIdTransaccion);
 
@@ -594,25 +616,31 @@ class TodoPagoPaymentModuleFrontController extends ModuleFrontController
         $prefijo = $this->module->getPrefijoModo();
         $connector = $this->prepare_connector($prefijo);
 
+        $this->module->log->info('Devolución parcial datos:' . json_encode($options));
+
         $refResponse = $connector->returnRequest($options);
+
+        $this->module->log->info('Respuesta Devolución parcial:' . json_encode($refResponse));
 
         return $refResponse;
     }
 
-    public function doRefund($OrderId, $amount){
-        if($amount != 0 && isset($OrderId) && !empty($OrderId)){
-            
+    public function doRefund($orderId, $orderIdTPOperation, $amount){
+
+        if(isset($orderId) && is_numeric($amount) && $amount != 0){    
+
             //valida formato moneda
             if(preg_match("/^-?[0-9]+(?:\.[0-9]{1,2})?$/", $amount)){
                 //verifica si es toal o parcial
-                $res = Db::getInstance()->executeS("SELECT total_paid FROM "._DB_PREFIX_."orders WHERE id_order=".$OrderId);
+                $res = Db::getInstance()->executeS("SELECT total_paid FROM "._DB_PREFIX_."orders WHERE id_order=".$orderId);
                 //get credenciales
+
                 if(number_format($res[0]['total_paid'], 2) == $amount){
                     //es devolucion total
-                    $response = $this->voidPaymentTP($OrderId);
+                    $response = $this->voidPaymentTP($orderIdTPOperation);
                 }else{
                     //devolucion parcial
-                    $response = $this->partialRefundTP($OrderId, $amount);
+                    $response = $this->partialRefundTP($orderIdTPOperation, $amount);
                 }
 
             }else{
@@ -621,6 +649,7 @@ class TodoPagoPaymentModuleFrontController extends ModuleFrontController
                     "StatusMessage" => "Formato de moneda invalido"
                 );
             }
+
             echo json_encode($response);
         }else{
             $response = array(  
@@ -630,5 +659,6 @@ class TodoPagoPaymentModuleFrontController extends ModuleFrontController
             
             echo json_encode($response);
         } 
+
     }
 }

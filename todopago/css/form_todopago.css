@@ -69,3 +69,20 @@
 #MY_btnConfirmarPago{
 	display:none;
 }
+
+#numeroTarjetaTxt, #codigoSeguridadTxt, #apynTxt, #nroDocTxt, #emailTxt{
+	background-color: #fff;
+    border: 1px solid #d6d4d4;
+    height: 30px;
+    width: 150px;
+}
+
+#mesTxt, #anioTxt{
+	background-color: #fff;
+    border: 1px solid #d6d4d4;
+    height: 30px;
+}
+
+.pei-box{
+	margin:5px 0 0 0;
+}

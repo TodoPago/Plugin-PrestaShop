@@ -24,6 +24,7 @@
 *  International Registered Trademark & Property of PrestaShop SA
 */
 
+
 if (!defined('_PS_VERSION_'))
 	exit;
 
@@ -62,7 +63,7 @@ class TodoPago extends PaymentModule
 		//acerca del modulo en si
 		$this->name = 'todopago';
 		$this->tab = 'payments_gateways';
-		$this->version = '1.8.2';
+		$this->version = '1.9.0';
 		$this->author = 'Todo Pago';
 		$this->need_instance = 0;
 		$this->bootstrap = true;//para que use bootstrap
@@ -93,16 +94,16 @@ class TodoPago extends PaymentModule
 		include(dirname(__FILE__).'/sql/install.php');//script sql con la creacion de la tabla transaction
 		
 		return parent::install() &&
-		//registro los hooks que voy a utilizar
-					$this->registerHook('displayPayment') && //muestra el payment en la lista de pagos disponibles
-					$this->registerHook('displayPaymentReturn') && //muestra un mensaje una vez que termina todo el proceso de pago y verificacion
 					$this->registerHook('displayBackOfficeHeader') && //para insertar /js/back.js
 					$this->registerHook('displayHeader') && //para insertar /js/front.js
 					$this->registerHook('displayAdminProductsExtra') && //para crear la tab y mostrar contenido en ella
             		$this->registerHook('actionProductUpdate') && //se llama cuando se actualiza un producto, asi podemos recuperar lo que se ingreso en la tab
             		$this->registerHook('displayAdminOrderContentOrder') && //muestra contenido en el detalle de la orden
 					$this->registerHook('displayAdminOrderTabOrder') &&
-					$this->unregisterHook('displayAdminProductsExtra'); //muestra una tab en el detalle de la orden
+					$this->unregisterHook('displayAdminProductsExtra') && //muestra una tab en el detalle de la orden
+					$this->registerHook('displayPayment') && 
+					$this->registerHook('displayPaymentReturn') &&
+					$this->registerHook('paymentOptions'); 
 	}
 
 	public function uninstall()
@@ -156,29 +157,29 @@ class TodoPago extends PaymentModule
 		$prefijo = 'TODOPAGO';
 		$variables = parse_ini_file('config.ini');
 		
-		foreach ( TodoPago\Formulario::getFormInputsNames( TodoPago\Formulario::getConfigFormInputs() ) as $nombre)
+		foreach ( TodoPago\Formulario::getFormInputsNames( TodoPago\Formulario::getConfigFormInputs(null, null) ) as $nombre)
 		{
-			Configuration::updateValue($prefijo.'_'.strtoupper( $nombre ));
+			Configuration::updateValue($prefijo.'_'.strtoupper( $nombre ),'');
 		}
 		foreach ( TodoPago\Formulario::getFormInputsNames( TodoPago\Formulario::getAmbienteFormInputs('test') ) as $nombre)
-		{
-			Configuration::updateValue($prefijo.'_'.$variables['CONFIG_TEST'].'_'.strtoupper( $nombre ));
+		{	
+			Configuration::updateValue($prefijo.'_'.$variables['CONFIG_TEST'].'_'.strtoupper( $nombre ),'');
 		}
 		foreach ( TodoPago\Formulario::getFormInputsNames( TodoPago\Formulario::getAmbienteFormInputs('produccion') ) as $nombre)
 		{
-			Configuration::updateValue($prefijo.'_'.$variables['CONFIG_PRODUCCION'].'_'.strtoupper( $nombre ));
+			Configuration::updateValue($prefijo.'_'.$variables['CONFIG_PRODUCCION'].'_'.strtoupper( $nombre ),'');
 		}
 		foreach ( TodoPago\Formulario::getFormInputsNames( TodoPago\Formulario::getEstadosFormInputs(NULL) ) as $nombre)
 		{
-			Configuration::updateValue($prefijo.'_'.$variables['CONFIG_ESTADOS'].'_'.strtoupper( $nombre ));
+			Configuration::updateValue($prefijo.'_'.$variables['CONFIG_ESTADOS'].'_'.strtoupper( $nombre ),'');
 		}		
 		foreach( TodoPago\Formulario::getFormInputsNames( TodoPago\Formulario::getServicioConfFormInputs()) as $nombre)
 		{
-			Configuration::updateValue($prefijo.'_'.strtoupper( $nombre ));
+			Configuration::updateValue($prefijo.'_'.strtoupper( $nombre ),'');
 		}
 		foreach( TodoPago\Formulario::getFormInputsNames( TodoPago\Formulario::getEmbebedFormInputs()) as $nombre)
 		{
-			Configuration::updateValue($prefijo.'_'.strtoupper( $nombre ));
+			Configuration::updateValue($prefijo.'_'.strtoupper( $nombre ),'');
 		}		
 	}
 	
@@ -576,12 +577,11 @@ class TodoPago extends PaymentModule
 		
 		if ($nombre!=NULL && isset($nombre))//si se busca un valor especifico
 		{
-			return Db::getInstance()->getValue($sql.' WHERE name="'.$prefijo.'_'.$nombre.'"');
+			//$resultOrderState = Db::getInstance()->getValue($sql.' WHERE name="'.$prefijo.'_'.$nombre.'"');
+			$resultOrderState = Db::getInstance()->executeS($sql.' WHERE name="'.$prefijo.'_'.$nombre.'"');
 		}
-		else
-		{
-			return Db::getInstance()->executeS($sql.' WHERE name LIKE \''.$prefijo.'%\'');
-		}
+
+		return $resultOrderState;
 	}
 	
 	public function getOrderStateOptions()
@@ -592,7 +592,7 @@ class TodoPago extends PaymentModule
 				ON (os.'.OrderState::$definition['primary'].' = osl.'.OrderState::$definition['primary'].' AND osl.`id_lang` = '.(int)$this->context->language->id.')
 			WHERE deleted = 0');
 		$options = array();
-	
+
 		//ingreso la opcion por defecto
 		$options[] = array(
 					'id_option' => NULL,
@@ -664,67 +664,113 @@ class TodoPago extends PaymentModule
 		$this->context->controller->addJS($this->local_path.'js/back.js', 'all');
 	}
 	
-	/**
-	 * Muestra el medio de pago en la lista
-	 */
+	public function hookPaymentOptions($params)
+	{
+		if (!$this->active || !$this->isActivo()) {
+	            return;
+	        }
+
+        if (!$this->checkCurrency($params['cart'])) {
+            return;
+        }
+
+        $cart = $this->context->cart;
+
+        $newOption = new PrestaShop\PrestaShop\Core\Payment\PaymentOption();
+
+		$newOption->setCallToActionText('Todo Pago')
+                    ->setAction($this->context->link->getModuleLink($this->name, 'payment', array(), true))
+                    ->setInputs([])
+                    ->setAdditionalInformation($this->context->smarty->fetch('module:todopago/views/templates/hook/todopago_payment_intro.tpl'));
+
+        $payment_options = [
+        	$newOption
+        ];
+
+        return $payment_options;
+	}
+
 	public function hookDisplayPayment()
 	{
 		//si el modulo no esta activo
 		if (!$this->active ||  !$this->isActivo())
 			return;
-			
+
 		$this->smarty->assign(array(
 			'nombre' => Configuration::get($this->getPrefijo('PREFIJO_CONFIG').'_NOMBRE'),//nombre que se muestra al momento de elegir los metodos de pago 
+			'activo' => $this->isActivo(),
 			'this_path' => $this->_path,
 			'this_path_ejemplo' => $this->_path,
 			'this_path_ssl' => Tools::getShopDomainSsl(true, true).__PS_BASE_URI__.'modules/'.$this->name.'/',
 		));
 		return $this->display(__FILE__, 'payment.tpl');//asigno el template que quiero usar
 	}
-	
-	/**
-	 * Muestra datos relativos a la compra, una vez realizada
-	 * @param unknown $params viene desde OrderConfirmationController
-	 */
-	public function hookDisplayPaymentReturn($params)
-	{
-		/* $params  (desde OrderConfirmationController):
-		 * 		getOrdersTotalPaid()
-		 * 		currency -> sign
-		 * 		order
-		 * 		currency
-		 */
-		//si el modulo no esta activo
-		if (!$this->active || !$this->isActivo())
-			return;
-		
-		$cart_id = $this->context->cart->id;
-		$order= $params['objOrder'];
-		$detallesOrden=TPTransaccion::getOptions($order->id_cart);
-		
-		$state = $order->getCurrentState();//recupero el estado de la orden
-		$estadoDenegada = $this->getOrderStatesModulo('DENEGADA');
-		$customer = new Customer($order->id_customer);//recupera al objeto cliente
 
-		if ($state != $estadoDenegada)//si el estado de la orden no es denegada
-		{
-			$this->smarty->assign(array(//muestro: total a pagar, status y numero de referencia de orden
-				'total_to_pay' => Tools::displayPrice($params['total_to_pay'], $params['currencyObj'], false),
-				'status' => 'ok',
-				'reference' => $order->reference,
-				'mensaje' => $detallesOrden['status'],
-				'customer' => $customer->email
-			));
-		}
-		else
-		{
-			$this->smarty->assign(array(
-				'status' => 'failed',
-				'status_desc' => $state
-				)
-			);
-		}
-		return $this->display(__FILE__, 'payment_return.tpl');//asigno el template que quiero usar
+	public function hookDisplayPaymentReturn($params)
+	{	
+		if (!$this->active) {
+            return;
+        }
+
+			//si el modulo no esta activo
+			if (!$this->active || !$this->isActivo())
+				return;
+
+			if (version_compare(_PS_VERSION_, '1.7.0.0') < 0) {
+				$order = $params['objOrder'];
+			}else{
+				$order= $params['order'];	
+			}	
+
+			$detallesOrden = TPTransaccion::getOptions($order->id_cart);
+			$state = $order->getCurrentState();//recupero el estado de la orden
+			$estadoDenegada = $this->getOrderStatesModulo('DENEGADA');
+			$customer = new Customer($order->id_customer);//recupera al objeto cliente
+
+			if ($state != $estadoDenegada[0]['value'])//si el estado de la orden no es denegada
+			{	
+				if (version_compare(_PS_VERSION_, '1.7.0.0') >= 0) {
+					$total = "ARS ".number_format((float)$params['order']->total_paid, 2, '.', '');
+				}else{
+					$total = Tools::displayPrice($params['total_to_pay'], $params['currencyObj'], false);
+				}
+				
+				$this->smarty->assign(array(//muestro: total a pagar, status y numero de referencia de orden
+					'total_to_pay' => $total,
+					'status' => 'ok',
+					'reference' => $order->reference,
+					'mensaje' => $detallesOrden['status'],
+					'customer' => $customer->email
+				));
+
+				$status = "ok";
+
+			}else{
+				$this->smarty->assign(array(
+					'status' => 'failed',
+					'status_desc' => $state
+					)
+				);
+
+				$status = "failed";
+			}
+
+			if (version_compare(_PS_VERSION_, '1.7.0.0') < 0) {
+
+				return $this->display(__FILE__, 'payment_return.tpl');//asigno el template que quiero usar
+			}else{
+				//$total_to_pay = Tools::displayPrice($order->total_paid_real, $params['currencyObj'], false);
+				if (version_compare(_PS_VERSION_, '1.7.0.0') >= 0) {
+					$total_to_pay = "ARS ".number_format((float)$params['order']->total_paid, 2, '.', '');
+				}else{
+					$total_to_pay = Tools::displayPrice($params['total_to_pay'], $params['currencyObj'], false);
+				}
+				
+				$reference = $order->reference;
+				$customer_mail = $customer->email;
+				
+				return Tools::redirect($this->context->link->getModuleLink('todopago', 'pagemessagereturn', array('step' => 'second', 'status' => $status, 'total_to_pay' => $total_to_pay, 'reference' => $reference, 'customer' => $customer_mail)));
+			}	
 	}
 	
 	/**
@@ -895,7 +941,8 @@ class TodoPago extends PaymentModule
 				'total' => number_format($res[0]['total_paid'],2),
 				'url_base_ajax' => "//".Tools::getHttpHost(false).__PS_BASE_URI__,
 				'url_refund' => $this->context->link->getModuleLink('todopago', 'payment', array ('paso' => '3'), true),
-				'order_id' => $id_order_cart
+				'order_id' => $id_order_cart,
+				'orderIdTPOperation' => $order_id
 			)
 		);
 	  

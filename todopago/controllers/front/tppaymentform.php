@@ -13,18 +13,29 @@ Class todopagoTppaymentformModuleFrontController extends ModuleFrontController
 
 	public function initContent()
 	{	
-		global $smarty;
-
 	    parent::initContent();
-	    $this->setTemplate('tppaymentform.tpl');
 
-		$smarty->assign(array(
+		$this->context->smarty->assign(array(
 			'jslinkForm' => $this->getAmbientUrlForm(),
 			'publicKey' => $this->getPublicKey(),
 			'email' => $this->getMail(),
 			'name' => $this->getCompleteName(),
-			'orderId' => Tools::getValue('order')
+			'orderId' => Tools::getValue('order'),
+			'urlBase' => $this->context->link->getModuleLink('todopago', 'payment', array(), true)
 		));
+
+		if (version_compare(_PS_VERSION_, '1.7.0.0') >= 0 ) {
+			$this->setTemplate('module:todopago/views/templates/front/tppayment.tpl');
+		} else {
+			$this->setTemplate('tppaymentform.tpl');
+		}
+	}
+
+	public function setMedia()
+	{
+	    parent::setMedia();
+
+	    $this->addCSS('modules/'.$this->module->name.'/css/form_todopago.css');
 	}
 
 	public function getPublicKey()

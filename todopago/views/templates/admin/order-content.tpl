@@ -34,6 +34,7 @@
 				data: { 
 			        'amount': $("#input-amount-dev").val(),
 			        'order': {$order_id},
+			        'orderOperation': {$orderIdTPOperation}
 			    },
 			 	url: "{$url_refund}",
 			 	beforeSend: function(){

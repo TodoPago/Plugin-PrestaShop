@@ -34,26 +34,14 @@
 	<p class="warning">{l s='Your shopping cart is empty.' mod='todopago'}</p>
 {else}
 	<h4>{l s='Detalles de la compra:' mod='todopago'}</h4>
-		<ul>
-					<li>{l s='Cart id: %s' sprintf=$cart_id mod='todopago'}</li>
-					<li>{l s='Total:' mod='todopago'} <span id="amount" class="price">{displayPrice price=$total}</span></li>
-					<li>{l s='Mail del cliente: %s' sprintf=$cliente mod='todopago'}</li>
-		</ul>
-<!--	<form action="{$link->getModuleLink('todopago', 'validation', [], false)|escape:'html'}" method="post">
-		<p class="cart_navigation" id="cart_navigation">
-				<input type="submit" value="{l s='Descontar cantidad' mod='todopago'}" class="button btn btn-default button-medium"/>
-			<a href="{$link->getPageLink('order', true, NULL, "step=3")|escape:'html'}">{l s='Otros metodos de pago' mod='todopago'}</a>
-		</p>
-	</form>
--->
+	<ul>
+		<li>{l s='Cart id: %s' sprintf=$cart_id mod='todopago'}</li>
+		<li>{l s='Total:' mod='todopago'} <span id="amount" class="price">{displayPrice price=$total}</span></li>
+		<li>{l s='Mail del cliente: %s' sprintf=$cliente mod='todopago'}</li>
+	</ul>
 
 	<div class="cart_navigation clearfix">
 		{if isset ($payment) && $payment['status'] == 1} <!-- Si el pago fue autorizado -->
-			<!-- <a href="{$payment['redir']}">		-->	
-				<!--button id="callForm" type="submit" class="button btn btn-default button-medium">
-					<span>{l s='Confirmar compra' mod='todopago'}<i class="icon-chevron-right right"></i></span>
-				</button-->
-			<!-- </a> -->
 			<a href="index.php?fc=module&module=todopago&controller=tppaymentform&order={l s=$cart_id}" class="button btn btn-default button-medium">
 				<span>{l s='Confirmar compra' mod='todopago'}<i class="icon-chevron-right right"></i></span>
 			</a>
@@ -64,31 +52,4 @@
 			{l s='Otros metodos de pago' mod='todopago'}
 		</a>
 	</div>	
-
-<!--script src="http://payment.com.ar/embeded/1.0/paymentnew.js"></script>
-<script>        
-  new Payment().openForm({
-        publicKey: '{$payment['RequestKey']}',
-        idRequest:'{$payment['RequestKey']}',
-        idButton: 'callForm',
-        preventSubmitSuccess: true,
-        callback: function (data) {
-
-          if(data.success == 'OK') {
-              alert('Llego mensaje: '+data.success+ ' con codigo: '+ data.status )
-          } else if(data.success == 'FAIL') {
-              alert('Llego mensaje: '+data.success+ ' con codigo: '+ data.status )
-          } 
-
-        },
-        style: {
-            backgroundColor: '{$payment['embebed']['backgroundColor']}',
-            border: '{$payment['embebed']['border']}',
-            buttonBackgroundColor: '{$payment['embebed']['buttonBackgroundColor']}',
-            buttonColor: '{$payment['embebed']['buttonColor']}',
-            buttonBorder: '{$payment['embebed']['buttonBorder']}'
-        }
-    });                
-
-</script-->
 {/if}

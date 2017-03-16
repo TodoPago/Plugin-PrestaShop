@@ -1,7 +1,5 @@
 <link rel="stylesheet" type="text/css" href="{$content_dir}modules/todopago/css/form_todopago.css">
-<script language="javascript" src="{$jslinkForm}" />
-<script language="javascript">
-</script>
+<script language="javascript" src="{$jslinkForm}"></script>
 
 {capture name=path}
 	<a href="{$link->getPageLink('order', true, NULL, "step=3")|escape:'html':'UTF-8'}" title="{l s='Go back to the Checkout' mod='formulario todopago'}">{l s='Checkout' mod='formulario todopago'}</a><span class="navigation-pipe">{$navigationPipe}</span>Formulario de Todopago
@@ -32,7 +30,12 @@
 				<select id="promosCbx" class="select-control"></select>
 				<label id="labelPromotionTextId"></label>
 			</div>
-			
+
+			<div class="input-group input-group-sm">
+				<input type="checkbox" id="peiCbx"/>
+				<label id="labelPeiCheckboxId"></label>	
+			</div>
+
 			<div class="input-group input-group-sm">
 				<input id="numeroTarjetaTxt" class="form-control fixed-width-xl">
 			</div>
@@ -71,6 +74,12 @@
 				<input id="emailTxt" class="form-control"/><br/>
 			</div>
 			
+			<!-- Para los casos en el que el comercio opera con PEI -->
+			<div class="pei-box">
+				<input id="peiTokenTxt"/>
+				<label id="labelPeiTokenTextId"></label>
+			</div>
+		
 			<div id="tp-bt-wrapper">
 				<button id="btnConfirmarPagoValida" class="tp-button button btn-sm btn btn-success">Pagar</button>
 				<button id="btn_Billetera" class="tp-button button btn-sm btn btn-success"/>Billetera</button>
@@ -82,6 +91,7 @@
 		var countLoad = 0;
 		$(document).ready(function(){
 			$(".alert").hide();
+			$.uniform.restore();
 		});
 
 		//securityRequesKey, esta se obtiene de la respuesta del SAR
@@ -134,13 +144,19 @@
 		}
 
 		function customPaymentErrorResponse(response) {
-			window.location.href = urlBase+"paso=2&estado=0&cart="+orderId+"&fc=module&module=todopago&controller=payment&Answer=error&Message="+response.ResultMessage+"&Code="+response.ResultCode;
+			if(response.AuthorizationKey)
+				window.location.href = urlBase+"paso=2&estado=1&cart="+orderId+"&fc=module&module=todopago&controller=payment&Answer="+response.AuthorizationKey;
+			else
+				window.location.href = urlBase+"paso=2&estado=0&cart="+orderId+"&fc=module&module=todopago&controller=payment&Answer=error&Message="+response.ResultMessage+"&Code="+response.ResultCode;
 		}
 
 		function initLoading() {	
+			$.uniform.restore();
 		}
 
 		function stopLoading() {
+			if(document.getElementById("peiCbx").attributes.checked.value == 'checked') {
+				document.getElementById("peiCbx").checked = true;
+			}
 		}
-	
 </script>

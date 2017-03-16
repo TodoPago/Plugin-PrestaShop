@@ -31,11 +31,14 @@
 		<!-- <br/> - {l s='Mensaje: %s' sprintf=$mensaje mod='todopago'} -->
 		<br/> - {l s='Mail del cliente: %s' sprintf=$customer mod='todopago'}
 	</p>
+
 {else}
-	<h3>Ocurrio un error</h3>
+
+	<h3>Ocurrio un error y no se pudo realizar el pago</h3>
 	<p class="warning">
-		{l s='Por favor intente nuevamente.' mod='todopago'}
+		{l s='Por favor intente nuevamente en unos minutos.' mod='todopago'}
 		<br/>
-		<!-- {l s='Status order: %s' sprintf=$status_desc mod='todopago'} --!> <!-- Muestra el status order de la compra --!>
+		{l s='Status order: %s' sprintf=$status_desc mod='todopago'}
 	</p>
+
 {/if}

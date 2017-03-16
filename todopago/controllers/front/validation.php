@@ -28,28 +28,19 @@
  * @since 1.6.0
  */
 require_once (dirname(__FILE__) . '../../../classes/Transaccion.php');
+require_once dirname(__FILE__) . '/../../../../config/config.inc.php';
+
 class TodoPagoValidationModuleFrontController extends ModuleFrontController
 {
 	//valida que todo este bien
 	public function postProcess()
 	{
 		$prefijo= $this->module->getPrefijo('CONFIG_ESTADOS');
-
 		if(Tools::getValue("error") == "true") {
-			if(Configuration::get($prefijo.'_DENEGADA') != ""){
-				$orderState = Configuration::get($prefijo.'_DENEGADA');
-			}else{
-				$orderState = Configuration::get('PS_OS_CANCELED');	
-			}
-			
-		}else{
-			if(Configuration::get($prefijo.'_APROBADA') != ""){
-				$orderState = Configuration::get($prefijo.'_APROBADA');
-			}else{
-				$orderState = Configuration::get('PS_OS_PAYMENT');	
-			}
+			$orderState = Configuration::get($prefijo.'_DENEGADA');//Order State si la transaccion es aprobada
+		} else {
+			$orderState = Configuration::get($prefijo.'_APROBADA');//Order State si la transaccion es denegada
 		}
-
 		$cart = $this->context->cart;//recupero el carrito
 		$transaccion = TPTransaccion::getRespuesta($cart->id);
 
@@ -80,25 +71,16 @@ class TodoPagoValidationModuleFrontController extends ModuleFrontController
 		$currency = $this->context->currency;//recupero la moneda de la compra
 		$total = (float)$cart->getOrderTotal(true, Cart::BOTH);//recupero el total de la compra
 		
-		/* VERIFICACION DE LA ORDEN.
-			Los parametros enviados a la funcion validateOrder son:
-				* id del carrito
-				* Order Status correspondiente a este metodo de pago (sacado de la tabla configuration)
-				* monto total de la orden
-				* metodo de pago / nombre del modulo
-				* mensaje : null
-				* variables extra: null
-				* moneda en la que se hace el pago
-				* dont_touch_amount
-				* secure_key del cliente
-				* shop / tienda: null
-		*/
-		
-		$this->module->validateOrder((int)$cart->id, $orderState, $total, $this->module->displayName, NULL, NULL, (int)$currency->id, false, $customer->secure_key);
+		$statusOrder = $orderState;
+
 	
+	
+		$mailVars = array();
+
+        $this->module->validateOrder((int)$cart->id, $statusOrder, $total, $this->module->name, NULL, $mailVars, (int)$currency->id, false, $customer->secure_key, NULL);
+
 		$this->module->log->info('Creada orden id '.(int)$this->module->currentOrder.' para carro id '.$cart->id);
 		$this->module->log->info('Status: '.json_encode($transaccion));
-		//$this->module->log->info('Actualizando registro OrderPayment para orden id '.(int)$this->module->currentOrder.' con OPERATIONID='.$transaccion['OPERATIONID'].' CARDNUMBERVISIBLE='.$transaccion['CARDNUMBERVISIBLE'].' PAYMENTMETHODNAME='.$transaccion['PAYMENTMETHODNAME']);
 		
 		try
 		{	if(Tools::getValue("error") != "true") {
@@ -110,11 +92,8 @@ class TodoPagoValidationModuleFrontController extends ModuleFrontController
 			$this->module->log->error('EXCEPCION',$e);//guardo el mensaje
 		}
 		
-		if(Tools::getValue("error") != "true") {
-			Tools::redirect('index.php?controller=order-confirmation&id_cart='.(int)$cart->id.'&id_module='.(int)$this->module->id.'&id_order='.$this->module->currentOrder.'&key='.$customer->secure_key);
-		} else {
-			Tools::redirect('index.php?controller=history');
-		}
+		Tools::redirect('index.php?controller=order-confirmation&id_cart='.(int)$cart->id.'&id_module='.(int)$this->module->id.'&id_order='.$this->module->currentOrder.'&key='.$customer->secure_key);
+
 	}
 	
 	/**
