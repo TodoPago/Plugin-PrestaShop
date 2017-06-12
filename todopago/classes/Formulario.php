@@ -2,8 +2,8 @@
 
 namespace TodoPago;
 
-require_once(dirname(__FILE__).'../../../../config/config.inc.php');
-require_once(dirname(__FILE__).'../../../../init.php');
+require_once(dirname(__FILE__).'/../../../config/config.inc.php');
+require_once(dirname(__FILE__).'/../../../init.php');
 
 class Formulario {
 	/**
@@ -59,7 +59,7 @@ class Formulario {
 	/**
 	 * @return un array con los campos del formulario
 	 */
-	public static function getConfigFormInputs($segmentoOptions, $canalOptions)
+	public static function getConfigFormInputs($segmentoOptions, $canalOptions, $timeoutValue=0)
 	{
 		return array(
 				array(
@@ -182,6 +182,33 @@ class Formulario {
 								'id' => 'id_option',
 								'name' => 'name'
 						)
+				),
+				array(
+						'type' => 'switch',
+						'label' =>'Configurar tiempo de expiración del formulario de pago personalizado',
+						'name' => 'timeout',
+						'desc' => '',
+						'is_bool' => true,
+						'values' => array(
+								array(
+										'id' => 'active_on',
+										'value' => true,
+										'label' =>'Si'
+								),
+								array(
+										'id' => 'active_off',
+										'value' => false,
+										'label' =>'No'
+								)
+						)
+				),
+				array(
+					'type' => 'html',
+					'label' => 'Tiempo de expiración del formulario de pago',
+					'name' => 'timeout_ms',
+					'desc' => 'Tiempo maximo en el que se puede realizar el pago en el formulario en milisegundos. Por defecto si no se envia el valor es de 1800000 (30 minutos). Valor mínimo: 300000 (5 minutos). Máximo: 21600000 (6hs)',
+					'required' => false,
+					'html_content' => '<input type="number" name="timeout_ms" min=300000 max="21600000" value="'. $timeoutValue .'" style="display: block; height: 31px; padding: 6px 8px; font-size: 12px; line-height: 1.42857; color: #555; background-color: #F5F8F9; background-image: none; border: 1px solid #C7D6DB; border-radius: 3px;" >'
 				),
 		);
 	}
@@ -639,6 +666,13 @@ class Formulario {
 				$valueField = \Tools::getValue($nombre);
 			}
 			
+			if($nombre=='timeout_ms' AND ($valueField<300000 OR $valueField>21600000)
+			 ){
+				continue;
+			}
+			
+			
+
 			\Configuration::updateValue( $prefijo.'_'.strtoupper( $nombre ), $valueField);
 
 		}

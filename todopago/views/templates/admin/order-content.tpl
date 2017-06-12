@@ -34,7 +34,7 @@
 				data: { 
 			        'amount': $("#input-amount-dev").val(),
 			        'order': {$order_id},
-			        'orderOperation': {$orderIdTPOperation}
+			        'orderOperation': {$orderIdTPOperation},
 			    },
 			 	url: "{$url_refund}",
 			 	beforeSend: function(){
@@ -108,6 +108,10 @@
 				<tr class="table-tr">
 					<td class="table-td">Transporte:</td>
 					<td class="table-td">{$envio} ARS</td>
+				</tr>
+				<tr class="table-tr">
+					<td class="table-td">Otros :</td>
+					<td class="table-td">{$other} ARS</td>
 				</tr>
 				<tr class="table-tr">
 					<td class="table-td"><strong>Total:<strong></td>

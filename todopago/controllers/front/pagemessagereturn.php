@@ -20,10 +20,15 @@ Class todopagoPagemessagereturnModuleFrontController extends ModuleFrontControll
 				'status' => Tools::getValue('status'),
 				'total' => Tools::getValue('total_to_pay'),
 				'reference' => Tools::getValue('reference'),
-				'customer' => Tools::getValue('customer')
+				'customer' => Tools::getValue('customer'),
+				'message' => Tools::getValue('message'),
 			));
 
-		$this->setTemplate('module:todopago/views/templates/front/page_message_return.tpl');
+	    if (version_compare(_PS_VERSION_, '1.7.0.0') < 0) {
+	    	$this->setTemplate('returnerror.tpl');
+	    }else{
+			$this->setTemplate('module:todopago/views/templates/front/page_message_return.tpl');
+		}
 	}
 
 	public function setMedia()

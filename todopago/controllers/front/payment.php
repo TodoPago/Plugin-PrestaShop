@@ -311,14 +311,12 @@ class TodoPagoPaymentModuleFrontController extends ModuleFrontController
 		$status =Tools::getValue('estado');
 		$cart = new Cart($cartId);
 
+
         if ($status == "0")//si se llego a este paso mediante URL_ERROR
         {
-	
             $this->_guardarTransaccion($cart, $respuesta['StatusMessage'], "");
             $this->module->log->info('Redireccionando al controller de validacion');
-
-            Tools::redirect($this->context->link->getModuleLink(strtolower($this->module->name), 'validation', array("error" =>"true"), false));//redirijo al controller de validacion
-
+            Tools::redirect($this->context->link->getModuleLink(strtolower($this->module->name), 'validation', array("error" =>"true", "message"=>$respuesta['StatusMessage']), false));//redirijo al controller de validacion
         }
 		
         //en el caso de pagar con Rapipago o Pago Facil
@@ -345,8 +343,7 @@ class TodoPagoPaymentModuleFrontController extends ModuleFrontController
         } else {
             $this->_guardarTransaccion($cart, $respuesta['StatusMessage'], "");
             $this->module->log->info('Redireccionando al controller de validacion error');
-
-            Tools::redirect($this->context->link->getModuleLink(strtolower($this->module->name), 'validation', array("error" =>"true"), false));//redirijo al controller de validacion            
+            Tools::redirect($this->context->link->getModuleLink(strtolower($this->module->name), 'validation', array("error" =>"true","message"=>$respuesta['StatusMessage']), false));//redirijo al controller de validacion            
         }	
 		
 	}
@@ -487,6 +484,11 @@ class TodoPagoPaymentModuleFrontController extends ModuleFrontController
             $params['operacion']['MAXINSTALLMENTS'] = Configuration::get($this->module->getPrefijo('PREFIJO_CONFIG').'_CUOTASCANT');
         }
         
+        $timeout=Configuration::get($this->module->getPrefijo('PREFIJO_CONFIG').'_TIMEOUT');
+        if(!empty($timeout)){
+            $params['operacion']['TIMEOUT']=Configuration::get($this->module->getPrefijo('PREFIJO_CONFIG').'_TIMEOUT_MS');
+        }
+
         $params['operacion'] = array_merge_recursive($params['operacion'], $this->_getParamsControlFraude($cliente, $cart));
         return $params;        
     }
@@ -542,11 +544,25 @@ class TodoPagoPaymentModuleFrontController extends ModuleFrontController
     
     private function _isAmountIgual($cart, $amount)
     {
-        if ($cart->getOrderTotal(true, Cart::BOTH) == $amount)
-            return true;
-        else
+
+        if ($cart->getOrderTotal(true, Cart::BOTH) == $amount){
+
+            return true; 
+
+        }elseif($cart->getOrderTotal(true, Cart::BOTH) < $amount){
+
+            $realAmount = $amount - ($amount - $cart->getOrderTotal(true, Cart::BOTH));                            
+
+            if($cart->getOrderTotal(true, Cart::BOTH) == $realAmount){
+                return true;    
+            }
+
             return false;
+        }else{
+	    return false;	
+	}
     }
+
     //obtengo RequestKey de la orden
     private function getRequestKeyTransaccion($IdOrder){
 
@@ -626,7 +642,6 @@ class TodoPagoPaymentModuleFrontController extends ModuleFrontController
     }
 
     public function doRefund($orderId, $orderIdTPOperation, $amount){
-
         if(isset($orderId) && is_numeric($amount) && $amount != 0){    
 
             //valida formato moneda

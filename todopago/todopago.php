@@ -63,9 +63,8 @@ class TodoPago extends PaymentModule
 		//acerca del modulo en si
 		$this->name = 'todopago';
 		$this->tab = 'payments_gateways';
-		$this->version = '1.9.0';
+		$this->version = '1.10.0';
 		$this->author = 'Todo Pago';
-		$this->need_instance = 0;
 		$this->bootstrap = true;//para que use bootstrap
 		parent::__construct();
 		
@@ -95,7 +94,7 @@ class TodoPago extends PaymentModule
 		
 		return parent::install() &&
 					$this->registerHook('displayBackOfficeHeader') && //para insertar /js/back.js
-					$this->registerHook('displayHeader') && //para insertar /js/front.js
+					//$this->registerHook('displayHeader') && //para insertar /js/front.js
 					$this->registerHook('displayAdminProductsExtra') && //para crear la tab y mostrar contenido en ella
             		$this->registerHook('actionProductUpdate') && //se llama cuando se actualiza un producto, asi podemos recuperar lo que se ingreso en la tab
             		$this->registerHook('displayAdminOrderContentOrder') && //muestra contenido en el detalle de la orden
@@ -104,6 +103,8 @@ class TodoPago extends PaymentModule
 					$this->registerHook('displayPayment') && 
 					$this->registerHook('displayPaymentReturn') &&
 					$this->registerHook('paymentOptions'); 
+					$this->registerHook('displayPDFInvoice') && //en la factura muestra costo financiero
+					$this->registerHook('displayAdminOrder');  //en el detalle del pedido muestra costo financiero
 	}
 
 	public function uninstall()
@@ -114,6 +115,8 @@ class TodoPago extends PaymentModule
 	}
 	
 	public function configureLog() {
+		require_once (dirname(__FILE__) . '/lib/Logger/logger.php');
+		
 		$cart = $this->context->cart;
 		$endpoint = ($this->getModo())?"TODOPAGO_ENDPOINT_PROD":"TODOPAGO_ENDPOINT_TEST";
 		$logger = new \TodoPago\Logger\TodoPagoLogger();
@@ -343,8 +346,8 @@ class TodoPago extends PaymentModule
 		switch ($tabla)
 		{
 			case 'config':
-				$form_fields = TodoPago\Formulario::getFormFields('general ', TodoPago\Formulario::getConfigFormInputs($this->getOptions($this->segmento), $this->getOptions($this->canal)));
 				$prefijo = $this->getPrefijo('PREFIJO_CONFIG');
+				$form_fields = TodoPago\Formulario::getFormFields('general ', TodoPago\Formulario::getConfigFormInputs($this->getOptions($this->segmento), $this->getOptions($this->canal), Configuration::get($prefijo.'_TIMEOUT_MS')));
 				break;
 			
 			case 'login':
@@ -658,6 +661,60 @@ class TodoPago extends PaymentModule
 		return $connector->getAllPaymentMethods($opciones);
 	}
 	
+	public function hookdisplayAdminOrder($params)
+	{
+		
+		$order=new Order($params['id_order']); //Busca orden
+
+		//Busca costo financiero
+		$dbquery = new DbQuery();
+		$dbquery->select('response_GAA')
+		->from('todopago_transaccion')
+		->where('id_orden='.(int)$order->id_cart);
+		$transaccion = Db::getInstance()->getValue($dbquery);			
+		$gaaResponse=json_decode($transaccion, true);		
+
+		if($gaaResponse['Payload']['Request']['AMOUNTBUYER']>$gaaResponse['Payload']['Request']['AMOUNT']){ //Si la transacción tiene costo financiero
+			$cf=$gaaResponse['Payload']['Request']['AMOUNTBUYER']-$gaaResponse['Payload']['Request']['AMOUNT'];
+		}else{
+			$cf=0;
+		}
+		$this->smarty->assign(array(
+			'total_paid_tax_incl' => $order->total_paid_tax_incl,
+			'id_currency' => $order->id_currency,
+			'cf' => $cf,
+
+		));
+		return $this->display(__FILE__, 'views/templates/admin/otros-cargos.tpl');
+		
+	}
+
+	public function hookdisplayPDFInvoice($params)
+	{
+		$order=new Order($params['object']->id_order); //Busca orden
+
+		//Busca costo financiero
+		$dbquery = new DbQuery();
+		$dbquery->select('response_GAA')
+		->from('todopago_transaccion')
+		->where('id_orden='.(int)$order->id_cart);
+		$transaccion = Db::getInstance()->getValue($dbquery);			
+		$gaaResponse=json_decode($transaccion, true);		
+
+		if($gaaResponse['Payload']['Request']['AMOUNTBUYER']>$gaaResponse['Payload']['Request']['AMOUNT']){ //Si la transacción tiene costo financiero
+			$cf=$gaaResponse['Payload']['Request']['AMOUNTBUYER'] - $gaaResponse['Payload']['Request']['AMOUNT'];
+		}else{
+			$cf=0;
+		}
+		
+		$this->smarty->assign(array(
+			'costo_financiero' => $cf
+			)
+		);
+		return $this->display(__FILE__, 'views/templates/admin/pdf_invoice_otros_cargos.tpl');
+
+	}
+
 	public function hookDisplayBackOfficeHeader()
 	{
 		$this->context->controller->addCSS($this->local_path.'css/back.css', 'all');
@@ -893,11 +950,11 @@ class TodoPago extends PaymentModule
 		
 		$opciones = array('MERCHANT'=>Configuration::get($prefijo.'_ID_SITE'), 'OPERATIONID'=>$order_id);
 
-		$this->log->info('DisplayAdminOrderContentOrder - GetStatus - Params:'.json_encode($opciones));
+		$this->log->info('GetStatus - Params:'.json_encode($opciones));
 
 		$status = $connector->getStatus($opciones);
 		
-		$this->log->info('DisplayAdminOrderContentOrder - GetStatus - Response:'.json_encode($status));
+		$this->log->info('GetStatus - Response:'.json_encode($status));
 
 		$rta = '';
 
@@ -932,13 +989,26 @@ class TodoPago extends PaymentModule
 		
 		//aca hago el codigo de la devolucion
 		$id_order_cart = Tools::getValue('id_order');
-		$res = Db::getInstance()->executeS("SELECT total_products_wt, total_shipping, total_paid FROM "._DB_PREFIX_."orders WHERE id_order=".$id_order_cart);
+		$res = Db::getInstance()->executeS("SELECT total_products_wt, total_shipping, total_paid, id_cart FROM "._DB_PREFIX_."orders WHERE id_order=".$id_order_cart);
+
+		//Busca costo financiero
+		$dbquery = new DbQuery();
+		$dbquery->select('response_GAA')
+		->from('todopago_transaccion')
+		->where('id_orden='.$res[0]['id_cart']);
+		$transaccion = Db::getInstance()->getValue($dbquery);		
+
+		$gaaResponse=json_decode($transaccion, true);		
+
+		$cf=$gaaResponse['Payload']['Request']['AMOUNTBUYER'] - $gaaResponse['Payload']['Request']['AMOUNT'];
+
 
 		$this->smarty->assign(array(
 				'status' => $rta,
 				'precio' => number_format($res[0]['total_products_wt'],2),
 				'envio' => number_format($res[0]['total_shipping'],2),
 				'total' => number_format($res[0]['total_paid'],2),
+				'other' => $cf,
 				'url_base_ajax' => "//".Tools::getHttpHost(false).__PS_BASE_URI__,
 				'url_refund' => $this->context->link->getModuleLink('todopago', 'payment', array ('paso' => '3'), true),
 				'order_id' => $id_order_cart,

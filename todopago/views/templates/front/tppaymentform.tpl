@@ -136,7 +136,10 @@
 		}
 
 		function billeteraPaymentResponse(response){
-			window.location.href = urlBase+"paso=2&estado=1&cart="+orderId+"&fc=module&module=todopago&controller=payment&Answer="+response.AuthorizationKey;
+			if(response.AuthorizationKey)
+				window.location.href = urlBase+"paso=2&estado=1&cart="+orderId+"&fc=module&module=todopago&controller=payment&Answer="+response.AuthorizationKey;
+			else
+				window.location.href = urlBase+"paso=2&estado=0&cart="+orderId+"&fc=module&module=todopago&controller=payment&Answer=error&Message="+response.ResultMessage+"&Code="+response.ResultMessage;
 		}
 
 		function customPaymentSuccessResponse(response){
@@ -147,7 +150,7 @@
 			if(response.AuthorizationKey)
 				window.location.href = urlBase+"paso=2&estado=1&cart="+orderId+"&fc=module&module=todopago&controller=payment&Answer="+response.AuthorizationKey;
 			else
-				window.location.href = urlBase+"paso=2&estado=0&cart="+orderId+"&fc=module&module=todopago&controller=payment&Answer=error&Message="+response.ResultMessage+"&Code="+response.ResultCode;
+				window.location.href = urlBase+"paso=2&estado=0&cart="+orderId+"&fc=module&module=todopago&controller=payment&Answer=error&Message="+response.ResultMessage+"&Code="+response.ResultMessage;
 		}
 
 		function initLoading() {	

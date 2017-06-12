@@ -36,24 +36,22 @@ La versión de este plug in esta testeada en PHP 5.3 en adelante y Prestashop 1.
 
 Observación:
 Descomentar: <em>extension=php_soap.dll</em> y <em>extension=php_openssl.dll</em> del php.ini, ya que para la conexión al gateway se utiliza la clase <em>SoapClient</em> del API de PHP.
-<br />
 [<sub>Volver a inicio</sub>](#inicio)
 
 <a name="configuracion"></a>
-##Configuración
+## Configuración
 
 <a name="confplugin"></a>
-####Configuración plug in
+#### Configuración plug in
 Para llegar al menu de configuración ir a <em>Módulos</em> y en la lista buscar el ítem llamado <strong>Todo Pago.
 El Plug-in esta separado en configuarción general y 3 sub-menues.</strong>
 <sub><em>Menú principal</em></sub>
 ![imagen de configuracion](https://raw.githubusercontent.com/TodoPago/imagenes/master/README.img/general.jpg)
 <a name="confplanes"></a>
-<br />
 [<sub>Volver a inicio</sub>](#inicio)
 
 <a name="formulario"></a>
-####Formulario de pago integrado
+#### Formulario de pago integrado
 El plugin tiene dos opciones de formulario para emplear en el proceso de pago. 
 El formulario externo, que redirecciona a un formulario externo en Todo Pago y el fomulario integrado que permite hacer el pago dentro del e-commerce.  
 
@@ -70,7 +68,7 @@ El formulario tiene dos formas de pago, ingresando los datos de una tarjeta ó u
 [<sub>Volver a inicio</sub>](#inicio)
 
 <a name="getcredentials"></a>
-####Credenciales
+#### Credenciales
 
 En la secciones de ambientes de developers y produccion, se debe ingresar el MerchantID, Authorization y Security de Todo Pago.<br>
 Estos se pueden obtener desde la pagina de Todo Pago o desde el boton "Obtener credenciales".<br> 
@@ -86,13 +84,12 @@ Nota: El boton "Obtener credenciales" se habilita si el ambiente en cuestion se 
 #### Nuevas columnas y atributos
 El plug in creará nuevas tablas y registros en tablas existentes para lograr las nuevas funcionalidades y su persistencia dentro del framework 
 
-#####Tablas:
+##### Tablas:
 1. <i>todopago_transacciones</i>, para guardar un registro de las ordenes que utilizaron este método de pago.
 2. <i>todopago_productos</i>, para guardar la información necesaria en la [Prevención del Fraude](#cybersource).
 
-#####Registros:
+##### Registros:
 Los valores de configuración se encuentran guardados en la tabla <i>configuration</i>
-<br/>
 [<sub>Volver a inicio</sub>](#inicio)
 
 <a name="cybersource"></a>
@@ -101,7 +98,7 @@ Los valores de configuración se encuentran guardados en la tabla <i>configurati
 - [Consideraciones para vertical RETAIL](#cons_retail)
 
 <a name="cons_generales"></a>
-####Consideraciones Generales (para todas los verticales, por defecto RETAIL)
+#### Consideraciones Generales (para todas los verticales, por defecto RETAIL)
 El plugin toma valores estándar del framework para validar los datos del comprador. Para ello se utilizan las clases Customer, Address y State para recuperar los registros almacenados en la base de datos que corresponden al cliente que efectúa la compra y Cart para recuperar el carrito en el que se almacena los datos relativos a la compra en sí.
 
 ```php
@@ -125,7 +122,7 @@ El plugin toma valores estándar del framework para validar los datos del compra
 ```
 También se utiliza la clase <em>Customer</em> para obtener el password del usuario (comprador) y la tabla <em>Orders</em>, donde se consultan las transacciones facturadas al comprador.
 <a name="cons_retail"></a>
-####Consideraciones para vertical RETAIL
+#### Consideraciones para vertical RETAIL
 Las consideración para el caso de empresas del rubro <strong>RETAIL</strong> son similares a las <em>consideraciones generales</em> con la diferencia de se utiliza el atributo id_address_delivery en lugar de id_address_invoice para recuperar el registro de la tabla address
 
 ```php
@@ -149,7 +146,7 @@ Las consideración para el caso de empresas del rubro <strong>RETAIL</strong> so
 ```
 nota: la funcion $cart->getProducts() devuelve un array con el listado de los productos, que se usan para conseguir la información que se debe enviar mediante la función <strong>_getProductsDetails()</strong>.
 
-####Muy Importante
+#### Muy Importante
 <strong>Provincias:</strong> uno de los datos requeridos para prevención común a todos los verticales  es el campo provinicia/state tanto del comprador como del lugar de envío, para tal fin el plug in utiliza el valor del campo id_state, que figura en el registro Address recuperado, para recuperar el objeto State correspondiente a ese id, y así obtener el iso_code. El formato de estos datos deben ser tal cual la tabla de referencia (tabla provincias). En Prestashop el listado se encuentra en Localización -> Provincias.
 <br />
 <strong>Celular:</strong> se utiliza el atributo phone_mobile del registro Address recuperado.
@@ -159,10 +156,9 @@ nota: la funcion $cart->getProducts() devuelve un array con el listado de los pr
 ## Características
  - [Consulta de transacciones](#constrans)
  - [Devoluciones](#devoluciones)
- 
-<br />
+
 <a name="constrans"></a>
-####Consulta de transacciones
+#### Consulta de transacciones
 El plugin genera un nuevo tab con el nombre "Todopago" en la pagina de detalle de pedido "Pedidos->Pedidos->Detalle". 
 Esa permite consultar online las características de la transacción en el sistema de Todo Pago.
 
@@ -171,7 +167,7 @@ Esa permite consultar online las características de la transacción en el siste
 [<sub>Volver a inicio</sub>](#inicio)
 
 <a name="devoluciones"></a>
-####Devoluciones
+#### Devoluciones
 
 Para realizar una devolucion parcial o total, Prestashop tiene en la seccion "Pedido->Pedidos->Ver Orden->TP devoluciones" la funcionalidad necesaria.
 
@@ -181,7 +177,7 @@ Para realizar una devolucion parcial o total, Prestashop tiene en la seccion "Pe
 
 <a name="tablasProv"></a>
 ## Tablas de Referencia
-######[Provincias](#p)
+###### [Provincias](#p)
 
 <table>
 <tr><th>Provincia</th><th>Código</th></tr>
