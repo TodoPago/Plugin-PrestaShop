@@ -183,8 +183,8 @@ class TodoPagoPaymentModuleFrontController extends ModuleFrontController
 		if($this->tranEstado == 0) 
 			$this->_tranCrear($cart->id, array());
 		
-        if($this->_tranEstado($cart->id) == 3)
-            throw new Exception("second_step ya realizado");	
+//        if($this->_tranEstado($cart->id) == 3)
+//            throw new Exception("second_step ya realizado");	
 	}
 	
 	protected function get_paydata($prefijo, $cart, $cliente)
@@ -281,8 +281,8 @@ class TodoPagoPaymentModuleFrontController extends ModuleFrontController
         $answerKey = Tools::getValue('Answer');
         $cartId =Tools::getValue('cart');
 
-        if($this->_tranEstado($cartId) == 3)
-            throw new Exception("second_step ya realizado");
+//        if($this->_tranEstado($cartId) == 3)
+//            throw new Exception("second_step ya realizado");
 		
         if($answerKey == "error") {
             $options = $this->_getRequestOptionsPasoDos($prefijo, $cartId, $answerKey);

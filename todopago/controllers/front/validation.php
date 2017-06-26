@@ -102,10 +102,6 @@ class TodoPagoValidationModuleFrontController extends ModuleFrontController
 				* shop / tienda: null
 		*/
 		
-
-		$costoFinanciero = $responseGaa['Payload']['Request']['AMOUNTBUYER'] - $responseGaa['Payload']['Request']['AMOUNT'];
-		$totalInclCostoFinanciero = $total + $costoFinanciero;
-
 		$this->module->log->info('Creada orden id '.(int)$this->module->currentOrder.' para carro id '.$cart->id);
 		$this->module->log->info('Status: '.json_encode($transaccion));
 		$this->module->validateOrder((int)$cart->id, $orderState, $total, $this->module->displayName, NULL, NULL, (int)$currency->id, false, $customer->secure_key, null);
@@ -114,6 +110,12 @@ class TodoPagoValidationModuleFrontController extends ModuleFrontController
 		try
 		{	if(Tools::getValue("error") != "true") {
 				$this->_addPaymentDetalle((int)$this->module->currentOrder, $transaccion);
+				$costoFinanciero = $responseGaa['Payload']['Request']['AMOUNTBUYER'] - $responseGaa['Payload']['Request']['AMOUNT'];
+				$totalInclCostoFinanciero = $total + $costoFinanciero;
+
+				$idOrder=Order::getOrderByCartId((int)($cart->id));
+				Db::getInstance()->execute("UPDATE `"._DB_PREFIX_."orders` SET `total_paid` = '$totalInclCostoFinanciero', `total_paid_tax_incl` = '$totalInclCostoFinanciero', `total_paid_real` = '$totalInclCostoFinanciero' WHERE `id_order` = {$idOrder}");
+				Db::getInstance()->execute("UPDATE `"._DB_PREFIX_."order_invoice` SET `total_paid_tax_incl` = '$totalInclCostoFinanciero' WHERE `id_order` = {$idOrder}");
 			}
 		}
 		catch (Exception $e)
@@ -121,12 +123,6 @@ class TodoPagoValidationModuleFrontController extends ModuleFrontController
 			$this->module->log->error('EXCEPCION',$e);//guardo el mensaje
 		}
 		
-
-		$idOrder=Order::getOrderByCartId((int)($cart->id));
-		Db::getInstance()->execute("UPDATE `"._DB_PREFIX_."orders` SET `total_paid` = '$totalInclCostoFinanciero', `total_paid_tax_incl` = '$totalInclCostoFinanciero', `total_paid_real` = '$totalInclCostoFinanciero' WHERE `id_order` = {$idOrder}");
-		Db::getInstance()->execute("UPDATE `"._DB_PREFIX_."order_invoice` SET `total_paid_tax_incl` = '$totalInclCostoFinanciero' WHERE `id_order` = {$idOrder}");
-
-
 
 		if(Tools::getValue("error") != "true") {
 			Tools::redirect('index.php?controller=order-confirmation&id_cart='.(int)$cart->id.'&id_module='.(int)$this->module->id.'&id_order='.$this->module->currentOrder.'&key='.$customer->secure_key);

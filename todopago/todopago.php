@@ -63,7 +63,7 @@ class TodoPago extends PaymentModule
 		//acerca del modulo en si
 		$this->name = 'todopago';
 		$this->tab = 'payments_gateways';
-		$this->version = '1.10.0';
+		$this->version = '1.10.1';
 		$this->author = 'Todo Pago';
 		$this->bootstrap = true;//para que use bootstrap
 		parent::__construct();
