@@ -21,7 +21,7 @@ Class todopagoTppaymentformModuleFrontController extends ModuleFrontController
 			'email' => $this->getMail(),
 			'name' => $this->getCompleteName(),
 			'orderId' => Tools::getValue('order'),
-			'urlBase' => $this->context->link->getModuleLink('todopago', 'payment', array(), true)
+			'urlBase' => $this->context->link->getModuleLink('todopago', 'payment', array('paso' => '2'), true)
 		));
 
 		if (version_compare(_PS_VERSION_, '1.7.0.0') >= 0 ) {

@@ -63,9 +63,15 @@ class TodoPago extends PaymentModule
 		//acerca del modulo en si
 		$this->name = 'todopago';
 		$this->tab = 'payments_gateways';
-		$this->version = '1.10.1';
+		$this->version = '1.10.2';
 		$this->author = 'Todo Pago';
-		$this->bootstrap = true;//para que use bootstrap
+		$this->bootstrap = true;
+		$this->is_eu_compatible = 0;
+		$this->need_instance = 1;
+		$this->controllers = array('payment', 'validation');
+		$this->currencies = true;
+        	$this->currencies_mode = 'checkbox';
+
 		parent::__construct();
 		
 		//lo que se muestra en el listado de modulos en el backoffice
@@ -105,6 +111,8 @@ class TodoPago extends PaymentModule
 					$this->registerHook('paymentOptions'); 
 					$this->registerHook('displayPDFInvoice') && //en la factura muestra costo financiero
 					$this->registerHook('displayAdminOrder');  //en el detalle del pedido muestra costo financiero
+
+		return true;			
 	}
 
 	public function uninstall()
@@ -816,7 +824,6 @@ class TodoPago extends PaymentModule
 
 				return $this->display(__FILE__, 'payment_return.tpl');//asigno el template que quiero usar
 			}else{
-				//$total_to_pay = Tools::displayPrice($order->total_paid_real, $params['currencyObj'], false);
 				if (version_compare(_PS_VERSION_, '1.7.0.0') >= 0) {
 					$total_to_pay = "ARS ".number_format((float)$params['order']->total_paid, 2, '.', '');
 				}else{

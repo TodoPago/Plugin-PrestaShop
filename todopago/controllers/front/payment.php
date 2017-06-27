@@ -111,7 +111,6 @@ class TodoPagoPaymentModuleFrontController extends ModuleFrontController
             $this->module->log->error('EXCEPCION',$e);
 
             if (version_compare(_PS_VERSION_, '1.7.0.0') >= 0){
-
                 Tools::redirect($this->context->link->getModuleLink('todopago', 'pagemessagereturn', array('step' => 'first')));
             }else{
                 $template='payment_error';
@@ -144,7 +143,7 @@ class TodoPagoPaymentModuleFrontController extends ModuleFrontController
             $embebed = $this->_getEmbebedSettings();
 
             if($embebed['enabled'] == 1){
-                //prueb redirect a form hibrido
+                //prueb redirect a form hibrido  
                 Tools::redirect($this->context->link->getModuleLink('todopago', 'tppaymentform', array('order' => $cart->id)));
 
             }else{
@@ -311,7 +310,6 @@ class TodoPagoPaymentModuleFrontController extends ModuleFrontController
 		$status =Tools::getValue('estado');
 		$cart = new Cart($cartId);
 
-
         if ($status == "0")//si se llego a este paso mediante URL_ERROR
         {
             $this->_guardarTransaccion($cart, $respuesta['StatusMessage'], "");
@@ -360,7 +358,7 @@ class TodoPagoPaymentModuleFrontController extends ModuleFrontController
          * Request: contiene los campos enviados
          * Del formulario viene
          * AnswerKey: necesario para el getAuthorizeAnswer
-         */
+        */
         
         $this->module->log->info('second step');
         

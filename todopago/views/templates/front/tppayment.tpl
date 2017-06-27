@@ -1,5 +1,6 @@
 {extends file='page.tpl'}
 {block name="page_content"}
+<!-- presta 1.7 -->
 <script language="javascript" src="{$jslinkForm}" />
 <script language="javascript">
 </script>
@@ -115,15 +116,15 @@
 			}
 
 			window.billeteraPaymentResponse = function (response){
-				window.location.href = urlBase+"paso=2&estado=1&cart="+orderId+"&fc=module&module=todopago&controller=payment&Answer="+response.AuthorizationKey;
+				window.location.href = urlBase+"&estado=1&cart="+orderId+"&fc=module&module=todopago&controller=payment&Answer="+response.AuthorizationKey;
 			}
 
 			window.customPaymentSuccessResponse = function (response){
-				window.location.href = urlBase+"paso=2&estado=1&cart="+orderId+"&fc=module&module=todopago&controller=payment&Answer="+response.AuthorizationKey;
+				window.location.href = urlBase+"&estado=1&cart="+orderId+"&fc=module&module=todopago&controller=payment&Answer="+response.AuthorizationKey;
 			}
 
 			window.customPaymentErrorResponse = function (response) {
-				window.location.href = urlBase+"paso=2&estado=1&cart="+orderId+"&fc=module&module=todopago&controller=payment&Answer="+response.AuthorizationKey;
+				window.location.href = urlBase+"&estado=1&cart="+orderId+"&fc=module&module=todopago&controller=payment&Answer="+response.AuthorizationKey;
 			}
 
 			window.initLoading = function () {	
