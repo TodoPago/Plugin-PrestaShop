@@ -63,7 +63,7 @@ class TodoPago extends PaymentModule
 		//acerca del modulo en si
 		$this->name = 'todopago';
 		$this->tab = 'payments_gateways';
-		$this->version = '1.10.2';
+		$this->version = '1.11.0';
 		$this->author = 'Todo Pago';
 		$this->bootstrap = true;
 		$this->is_eu_compatible = 0;
@@ -762,7 +762,7 @@ class TodoPago extends PaymentModule
 			return;
 
 		$this->smarty->assign(array(
-			'nombre' => Configuration::get($this->getPrefijo('PREFIJO_CONFIG').'_NOMBRE'),//nombre que se muestra al momento de elegir los metodos de pago 
+			'nombre' => "TodoPago",//nombre que se muestra al momento de elegir los metodos de pago 
 			'activo' => $this->isActivo(),
 			'this_path' => $this->_path,
 			'this_path_ejemplo' => $this->_path,
@@ -772,69 +772,71 @@ class TodoPago extends PaymentModule
 	}
 
 	public function hookDisplayPaymentReturn($params)
-	{	
+	{
 		if (!$this->active) {
             return;
         }
 
-			//si el modulo no esta activo
-			if (!$this->active || !$this->isActivo())
-				return;
+		//si el modulo no esta activo
+		if (!$this->active || !$this->isActivo())
+			return;
 
-			if (version_compare(_PS_VERSION_, '1.7.0.0') < 0) {
-				$order = $params['objOrder'];
+		if (version_compare(_PS_VERSION_, '1.7.0.0') < 0) {
+			$order = $params['objOrder'];
+		}else{
+			$order= $params['order'];	
+		}	
+
+		$detallesOrden = TPTransaccion::getOptions($order->id_cart);
+		$state = $order->getCurrentState();//recupero el estado de la orden
+		$estadoDenegada = $this->getOrderStatesModulo('DENEGADA');
+		$customer = new Customer($order->id_customer);//recupera al objeto cliente
+
+
+		if ($state != $estadoDenegada[0]['value'])//si el estado de la orden no es denegada
+		{	
+			if (version_compare(_PS_VERSION_, '1.7.0.0') >= 0) {
+				$total = "ARS ".number_format((float)$params['order']->total_paid, 2, '.', '');
 			}else{
-				$order= $params['order'];	
-			}	
-
-			$detallesOrden = TPTransaccion::getOptions($order->id_cart);
-			$state = $order->getCurrentState();//recupero el estado de la orden
-			$estadoDenegada = $this->getOrderStatesModulo('DENEGADA');
-			$customer = new Customer($order->id_customer);//recupera al objeto cliente
-
-			if ($state != $estadoDenegada[0]['value'])//si el estado de la orden no es denegada
-			{	
-				if (version_compare(_PS_VERSION_, '1.7.0.0') >= 0) {
-					$total = "ARS ".number_format((float)$params['order']->total_paid, 2, '.', '');
-				}else{
-					$total = Tools::displayPrice($params['total_to_pay'], $params['currencyObj'], false);
-				}
-				
-				$this->smarty->assign(array(//muestro: total a pagar, status y numero de referencia de orden
-					'total_to_pay' => $total,
-					'status' => 'ok',
-					'reference' => $order->reference,
-					'mensaje' => $detallesOrden['status'],
-					'customer' => $customer->email
-				));
-
-				$status = "ok";
-
-			}else{
-				$this->smarty->assign(array(
-					'status' => 'failed',
-					'status_desc' => $state
-					)
-				);
-
-				$status = "failed";
+				$total = Tools::displayPrice($params['total_to_pay'], $params['currencyObj'], false);
 			}
+			
+			$this->smarty->assign(array(//muestro: total a pagar, status y numero de referencia de orden
+				'total_to_pay' => $total,
+				'status' => 'ok',
+				'reference' => $order->reference,
+				'mensaje' => $detallesOrden['status'],
+				'customer' => $customer->email
+			));
 
-			if (version_compare(_PS_VERSION_, '1.7.0.0') < 0) {
+			$status = "ok";
 
-				return $this->display(__FILE__, 'payment_return.tpl');//asigno el template que quiero usar
+		}else{
+			$this->smarty->assign(array(
+				'status' => 'failed',
+				'status_desc' => $state
+				)
+			);
+
+			$status = "failed";
+		}
+
+		if (version_compare(_PS_VERSION_, '1.7.0.0') < 0) {
+
+			return $this->display(__FILE__, 'payment_return.tpl');//asigno el template que quiero usar
+		}else{
+			
+			if (version_compare(_PS_VERSION_, '1.7.0.0') >= 0) {
+				$total_to_pay = "ARS ".number_format((float)$params['order']->total_paid, 2, '.', '');
 			}else{
-				if (version_compare(_PS_VERSION_, '1.7.0.0') >= 0) {
-					$total_to_pay = "ARS ".number_format((float)$params['order']->total_paid, 2, '.', '');
-				}else{
-					$total_to_pay = Tools::displayPrice($params['total_to_pay'], $params['currencyObj'], false);
-				}
-				
-				$reference = $order->reference;
-				$customer_mail = $customer->email;
-				
-				return Tools::redirect($this->context->link->getModuleLink('todopago', 'pagemessagereturn', array('step' => 'second', 'status' => $status, 'total_to_pay' => $total_to_pay, 'reference' => $reference, 'customer' => $customer_mail)));
-			}	
+				$total_to_pay = Tools::displayPrice($params['total_to_pay'], $params['currencyObj'], false);
+			}
+			
+			$reference = $order->reference;
+			$customer_mail = $customer->email;
+			
+			return Tools::redirect($this->context->link->getModuleLink('todopago', 'pagemessagereturn', array('step' => 'second', 'status' => $status, 'total_to_pay' => $total_to_pay, 'reference' => $reference, 'customer' => $customer_mail)));
+		}	
 	}
 	
 	/**

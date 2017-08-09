@@ -110,6 +110,11 @@ class TodoPagoPaymentModuleFrontController extends ModuleFrontController
         {
             $this->module->log->error('EXCEPCION',$e);
 
+            if(!Configuration::get('TODOPAGO_CARRITO_COMPRAS')){
+                $this->context->cart->delete();
+                Db::getInstance()->delete(_DB_PREFIX_.'todopago_transaccion','id_orden = '.$cart->id);
+            }
+
             if (version_compare(_PS_VERSION_, '1.7.0.0') >= 0){
                 Tools::redirect($this->context->link->getModuleLink('todopago', 'pagemessagereturn', array('step' => 'first')));
             }else{
@@ -120,9 +125,10 @@ class TodoPagoPaymentModuleFrontController extends ModuleFrontController
 
         //asigno las variables que se van a a ver en la template de payment (payment.tpl)
         $this->context->smarty->assign(array(
-            'nombre' => Configuration::get($this->module->getPrefijo('PREFIJO_CONFIG').'_NOMBRE'),//nombre con el que aparece este modulo de pago en el frontend
+            'nombre' => "TodoPago",//nombre con el que aparece este modulo de pago en el frontend
             'cart_id' => $cart->id,
             'nbProducts' => $cart->nbProducts(),//productos
+            'save_cart' => ((Configuration::get('TODOPAGO_CARRITO_COMPRAS'))? "1": "0"),
             'cust_currency' => $cart->id_currency,//moneda en la que paga el cliente
             'currencies' => $this->module->getCurrency((int)$cart->id_currency),//moneda
             'total' => $total,//total de la orden
@@ -182,8 +188,6 @@ class TodoPagoPaymentModuleFrontController extends ModuleFrontController
 		if($this->tranEstado == 0) 
 			$this->_tranCrear($cart->id, array());
 		
-//        if($this->_tranEstado($cart->id) == 3)
-//            throw new Exception("second_step ya realizado");	
 	}
 	
 	protected function get_paydata($prefijo, $cart, $cliente)
@@ -280,8 +284,6 @@ class TodoPagoPaymentModuleFrontController extends ModuleFrontController
         $answerKey = Tools::getValue('Answer');
         $cartId =Tools::getValue('cart');
 
-//        if($this->_tranEstado($cartId) == 3)
-//            throw new Exception("second_step ya realizado");
 		
         if($answerKey == "error") {
             $options = $this->_getRequestOptionsPasoDos($prefijo, $cartId, $answerKey);
@@ -651,9 +653,14 @@ class TodoPagoPaymentModuleFrontController extends ModuleFrontController
                 if(number_format($res[0]['total_paid'], 2) == $amount){
                     //es devolucion total
                     $response = $this->voidPaymentTP($orderIdTPOperation);
-                }else{
+                }elseif($amount < number_format($res[0]['total_paid'], 2)){
                     //devolucion parcial
                     $response = $this->partialRefundTP($orderIdTPOperation, $amount);
+                }else{
+                   $response = array(  
+                        "StatusCode" => '',
+                        "StatusMessage" => "Debe Ingresar un monto menor o igual al total de la compra sin interes"
+                    ); 
                 }
 
             }else{

@@ -38,6 +38,8 @@
 	<p class="warning">
 		{l s='Por favor intente nuevamente en unos minutos.' mod='todopago'}
 		<br/>
+		Detalles del error: {$StatusMessage}
+		<br/>
 		{l s='Status order: %s' sprintf=$status_desc mod='todopago'}
 	</p>
 

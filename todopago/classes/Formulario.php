@@ -82,13 +82,6 @@ class Formulario {
 						'required' => false
 				),
 				array(
-						'type' => 'text',
-						'label' =>'Nombre a mostrar en el front end',
-						'name' =>  'nombre',
-						'desc' => 'Nombre con el que aparecera el metodo de pago',
-						'required' => false
-				),
-				array(
 						'type' => 'select',
 						'label' =>'Segmento del comercio',
 						'name' =>  'segmento',
@@ -209,6 +202,26 @@ class Formulario {
 					'required' => false,
 					'html_content' => '<input type="number" name="timeout_ms" min=300000 max="21600000" value="'. $timeoutValue .'" style="display: block; height: 31px; padding: 6px 8px; font-size: 12px; line-height: 1.42857; color: #555; background-color: #F5F8F9; background-image: none; border: 1px solid #C7D6DB; border-radius: 3px;" >'
 				),
+				array(
+						'type' => 'switch',
+						'label' =>'Mantener carrito',
+						'name' =>  'carrito_compras',
+						'desc' => 'Mantener o vaciar el carro de compras al momento de producirse un error en el proceso de pago',
+						'is_bool' => true,
+						'values' => array(
+								array(
+										'id' => 'on',
+										'value' => true,
+										'label' =>'SI'
+								),
+								array(
+										'id' => 'off',
+										'value' => false,
+										'label' =>'NO'
+								)
+						),
+						'required' => false
+				)
 		);
 	}
 	

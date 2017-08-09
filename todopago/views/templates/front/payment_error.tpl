@@ -35,14 +35,37 @@
 {if isset($nbProducts) && $nbProducts <= 0}
 	<p class="warning">{l s='Your shopping cart is empty.' mod='todopago'}</p>
 {else}
+	{if isset($save_cart) && $save_cart == 0 }
+		<script language="javascript">
+		{literal}
+			$(document).ready(function() {
+			    $(".cart_block").remove();
+			    $(".ajax_cart_quantity").addClass("unvisible").text(0);
+				$(".ajax_cart_product_txt").addClass("unvisible");
+				$(".ajax_cart_product_txt_s").addClass("unvisible");
+				$(".ajax_cart_total").text("");
+				$("span.ajax_cart_no_product").removeClass("unvisible");
+			});
+		{/literal}
+		</script>
+
+	{/if}
+
 	<h3>Ocurrio un error</h3>
 	<b>Por favor intente nuevamente. </b>
 	</br>
 	</br>
 	<div class="cart_navigation clearfix">
-		<a href="{$link->getPageLink('order', true, NULL, "step=3")|escape:'html'}" class="button-exclusive btn btn-default">
-			<i class="icon-chevron-left"></i>
-			{l s='Otros metodos de pago' mod='todopago'}
-		</a>
+		{if isset($save_cart) && $save_cart == 1 }
+			<a href="{$link->getPageLink('order', true, NULL, "step=3")|escape:'html'}" class="button-exclusive btn btn-default">
+				<i class="icon-chevron-left"></i>
+				{l s='Otros metodos de pago' mod='todopago'}
+			</a>
+		{else}
+			<a href="{$link->getPageLink('index', true, NULL, "step=1")|escape:'html'}" class="button-exclusive btn btn-default">
+				<i class="icon-chevron-left"></i>
+				{l s='Volver al inicio' mod='todopago'}
+			</a>
+		{/if}
 	</div>	
 {/if}
