@@ -6,7 +6,8 @@
     },
     "autoload": {
         "psr-4": {
-            "TodoPago\\": "TodoPago/lib"
+            "TodoPago\\": "TodoPago/lib",
+            "TodoPago\\Test\\": "TodoPago/test"
         }
     },
     "repositories": [
@@ -17,5 +18,9 @@
         { 
             "packagist": false 
         }
-    ]
+    ],
+    "require-dev": {
+        "phpunit/phpunit": "^5.7",
+        "php-mock/php-mock-phpunit": "^1.1"
+    }
 }

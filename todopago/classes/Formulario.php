@@ -9,7 +9,7 @@ class Formulario {
 	 * Genera los form fields necesarios para crear un formulario
 	 */
 	public static function getFormFields($titulo, $inputs)
-	{	
+	{
 
 		//solo para las credenciales
 		//mejorar este codigo
@@ -29,8 +29,8 @@ class Formulario {
 							            'class' => 'button login-credencial'
 							        )
 							    )
-						)		
-								
+						)
+
 			);
 
 		}else{
@@ -46,15 +46,15 @@ class Formulario {
 										'title' => 'Guardar',
 										'class' => 'button'
 								)
-						)		
-								
+						)
+
 			);
 
 		}
 
 		return $elements;
 	}
-	
+
 	/**
 	 * @return un array con los campos del formulario
 	 */
@@ -195,6 +195,24 @@ class Formulario {
 						)
 				),
 				array(
+					'type' => 'switch',
+					'label' => 'Geolocalizacíón utilizando el servicio de Google maps',
+					'name' => 'gmaps',
+					'is_bool' => true,
+					'values' => array(
+							array(
+									'id' => 'active_on',
+									'value' => true,
+									'label' =>'Si'
+							),
+							array(
+									'id' => 'active_off',
+									'value' => false,
+									'label' =>'No'
+							)
+					)
+				),
+				array(
 					'type' => 'html',
 					'label' => 'Tiempo de expiración del formulario de pago',
 					'name' => 'timeout_ms',
@@ -224,12 +242,12 @@ class Formulario {
 				)
 		);
 	}
-	
+
 	/**
 	 * @return un array con los campos del formulario
 	 */
 	public static function getLoginCredenciales($tabla)
-	{	
+	{
 
 		return  array(
 					array(
@@ -249,7 +267,7 @@ class Formulario {
 		                    'name' => 'html_data',
 		                    'html_content' => '<div class="loader"><img class="loader-image" src="'._PS_BASE_URL_.__PS_BASE_URI__.'/modules/todopago/imagenes/loader.gif" alt="loading.."></div>
 		                    <div id="error_message"></div>'
-				    )			
+				    )
 		);
 	}
 
@@ -257,7 +275,7 @@ class Formulario {
 	 * @return un array con los campos del formulario
 	 */
 	public static function getAmbienteFormInputs($tabla)
-	{	
+	{
 
 		return  array(
 					array(
@@ -287,10 +305,10 @@ class Formulario {
 							'name' =>  'authorization',
 							'desc' => 'Codigo provisto por Todo Pago',
 							'required' => false
-					)				
+					)
 		);
 	}
-	
+
 	/**
 	 * @return un array con los campos del formulario
 	 */
@@ -367,12 +385,12 @@ class Formulario {
 				)
 		);
 	}
-	
+
 	/**
 	 * @return un array con los campos del formulario
 	 */
 	public static function getEstadosFormInputs($estadosOption)
-	{	
+	{
 		if(is_array($estadosOption)){
 			$approvalsStatus = array_filter($estadosOption, function ($item) {
 				return $item['valid_order'] == 1;
@@ -432,7 +450,7 @@ class Formulario {
 					)
 		);
 	}
-	
+
 	public static function getServicioConfFormInputs()
 	{
 		return array(
@@ -452,7 +470,7 @@ class Formulario {
 				)
 		);
 	}
-	
+
 	public static function getProductoFormInputs($segmento, $servicioOption, $deliveryOption, $envioOption, $productOption)
 	{
 /*
@@ -508,7 +526,7 @@ class Formulario {
 						'required' => false
 				)
 		);
-	
+
 */
 		if($segmento == 'retail')
 		{
@@ -524,7 +542,7 @@ class Formulario {
 									'id' => 'id_option',
 									'name' => 'name'
 							)
-					)				
+					)
 			);
 		}
 		elseif ($segmento == 'services')
@@ -541,7 +559,7 @@ class Formulario {
 									'id' => 'id_option',
 									'name' => 'name'
 							)
-					),			
+					),
 				 array(
 							'type' => 'select',
 							'label' =>'Tipo de servicio',
@@ -563,7 +581,7 @@ class Formulario {
 					)
 			);
 		}
-		
+
 		elseif ($segmento == 'digital goods')
 		{
 			return array(
@@ -578,7 +596,7 @@ class Formulario {
 									'id' => 'id_option',
 									'name' => 'name'
 							)
-					),			
+					),
 				array(
 						'type' => 'select',
 						'label' =>'Tipo de delivery',
@@ -593,7 +611,7 @@ class Formulario {
 				)
 			);
 		}
-		
+
 		elseif ($segmento == 'ticketing')
 		{
 			return array(
@@ -608,7 +626,7 @@ class Formulario {
 									'id' => 'id_option',
 									'name' => 'name'
 							)
-					),			
+					),
 				array(
 						'type' => 'select',
 						'label' =>'Tipo de envio',
@@ -631,7 +649,7 @@ class Formulario {
 			);
 		}
 	}
-	
+
 	/**
 	 * Devuelve los nombres de los inputs que existen en el form
 	 * @param array $inputs campos de un formulario
@@ -640,7 +658,7 @@ class Formulario {
 	public static function getFormInputsNames($inputs)
 	{
 		$nombres=array();
-		
+
 		foreach ($inputs as $campo)
 		{
 			if (array_key_exists('name', $campo))
@@ -648,25 +666,25 @@ class Formulario {
 				$nombres[] = $campo['name'];
 			}
 		}
-		
+
 		return $nombres;
 	}
-	
+
 	/**
 	 * Escribe en la base de datos los valores de tablas de configuraciones
 	 * @param string $prefijo prefijo con el que se identifica al formulario en la tabla de configuraciones. Ejemplo: DECIDIR_TEST
 	 * @param array $inputsName resultado de la funcion getFormInputsNames
 	 */
 	public static function postProcessFormularioConfigs($prefijo, $inputsName)
-	{	
+	{
 		foreach ($inputsName as $nombre)
-		{	
+		{
 			//mejorarlo este codigo
 			if($nombre == "authorization"){
 
 				$auth = \Tools::getValue($nombre);
 				if(json_decode($auth) == NULL) {
-					//armo json de autorization        
+					//armo json de autorization
 					$autorizationId = new \stdClass();
 					$autorizationId->Authorization = $auth;
 					$auth = json_encode($autorizationId);
@@ -677,19 +695,19 @@ class Formulario {
 			}else{
 				$valueField = \Tools::getValue($nombre);
 			}
-			
+
 			if($nombre=='timeout_ms' AND ($valueField<300000 OR $valueField>21600000)
 			 ){
 				continue;
 			}
-			
-			
+
+
 
 			\Configuration::updateValue( $prefijo.'_'.strtoupper( $nombre ), $valueField);
 
 		}
 	}
-	
+
 	/**
 	 * Trae de los valores de configuracion del modulo, listos para ser usados como fields_value en un form
 	 * @param string $prefijo prefijo con el que se identifica al formulario en la tabla de configuraciones. Ejemplo: DECIDIR_TEST
@@ -698,15 +716,15 @@ class Formulario {
 	public static function getConfigs($prefijo, $inputsName)
 	{
 		$configs = array();
-		
+
 		foreach ($inputsName as $nombre)
 		{
 			$configs[$nombre] = \Configuration::get( $prefijo.'_'.strtoupper( $nombre ));
 		}
-		
+
 		return $configs;
 	}
-	
+
 	public static function getEmbebedFormInputs()
 	{
 		/* Configuracion para el form embebed
@@ -738,5 +756,5 @@ class Formulario {
 						'required' => false
 				)
 		);
-	}	
+	}
 }

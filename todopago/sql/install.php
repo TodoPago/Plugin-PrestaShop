@@ -54,16 +54,31 @@ $sql = array(
 				`public_request_key` TEXT NULL,
 				`answer_key` TEXT NULL,
 				PRIMARY KEY (`id`)
+			)',
+		'CREATE TABLE IF NOT EXISTS `'._DB_PREFIX_.'todopago_gmaps` (
+				`id` INT NOT NULL AUTO_INCREMENT,
+				`billing_street` VARCHAR(60) NOT NULL,
+				`billing_state` VARCHAR(60) NOT NULL,
+				`billing_city` VARCHAR(64) NOT NULL,
+				`billing_country` VARCHAR(100) NOT NULL,
+				`billing_postalcode` VARCHAR(100) NOT NULL,
+				`shipping_street` VARCHAR(60) NOT NULL,
+				`shipping_state` VARCHAR(60) NOT NULL,
+				`shipping_city` VARCHAR(64) NOT NULL,
+				`shipping_country` VARCHAR(100) NOT NULL,
+				`shipping_postalcode` VARCHAR(100) NOT NULL,
+				`identify_key` VARCHAR(100) NOT NULL,
+				PRIMARY KEY (`id`)
 			)'
 );
 
 foreach ($sql as $query)
 	if (Db::getInstance()->execute($query) == false)
 		return false;
-	
+
 $query = 'SELECT codigo_producto FROM `'._DB_PREFIX_.'todopago_productos`';
 if (Db::getInstance()->execute($query) == false)
 {
 	$sqlalter = 'ALTER TABLE `'._DB_PREFIX_.'todopago_productos` ADD `codigo_producto` VARCHAR(50) NULL DEFAULT NULL';
 	Db::getInstance()->execute($sqlalter);
-}	
+}

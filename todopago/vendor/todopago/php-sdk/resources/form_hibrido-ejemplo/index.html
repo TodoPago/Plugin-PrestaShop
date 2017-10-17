@@ -24,6 +24,11 @@
 					<label id="labelPromotionTextId" class="left tp-label"></label>
 					<div class="clear"></div>
 				</div>
+				<div><!-- Para los casos en el que el comercio opera con PEI -->
+					<label id="labelPeiCheckboxId"></label>
+					<input id="peiCbx"/>
+				</div>
+
 				<div>
 					<input id="numeroTarjetaTxt"/>
 				</div>
@@ -50,6 +55,10 @@
 				<div>
 					<input id="emailTxt"/><br/>
 				</div>
+				<div><!-- Para los casos en el que el comercio opera con PEI -->
+				        <label id="labelPeiTokenTextId"></label>
+					<input id="peiTokenTxt"/>
+				</div>
 				<div id="tp-bt-wrapper">
 					<button id="MY_btnPagarConBilletera" class="tp-button"/>
 					<button id="MY_btnConfirmarPago" class="tp-button"/>
@@ -60,7 +69,7 @@
 	</body>
 	<script>
 		//PublicRequesKey, esta se obtiene de la respuesta del SAR
-		var publicKey = "taf08222e-7b32-63d4-d0a6-5cabaefb5782";
+		var publicKey = "te5ee34d6-662e-352e-ecdb-02256e6b93d3";
 		/*var mail = "prueba@tpago.com";
 		var completeName = "Juan Perez";
 		var dni = '31345234';
@@ -70,6 +79,7 @@
 		window.TPFORMAPI.hybridForm.initForm({
 		    callbackValidationErrorFunction: 'validationCollector',
 	            callbackCustomSuccessFunction: 'customPaymentSuccessResponse',
+                    callbackBilleteraFunction: 'billeteraPaymentResponse',
 	            callbackCustomErrorFunction: 'customPaymentErrorResponse',
                     callbackBilleteraFunction: 'billeteraPaymentResponse',
 	            botonPagarId: 'MY_btnConfirmarPago',

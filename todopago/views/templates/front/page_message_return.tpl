@@ -31,7 +31,7 @@
 			<p class="warning">
 				{l s='Por favor intente nuevamente en unos minutos.' mod='todopago'}
 				<br/>
-				Detalles del error: {$StatusMessage}
+				Detalles del error: {$message}
 				<br/>
 				<a href="{$link->getPageLink('index', true, NULL, 'step=3')|escape:'html'}" class="button-exclusive btn btn-default">
 					{l s='Volver a la Homepage' mod='todopago'}

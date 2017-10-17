@@ -12,7 +12,7 @@ Class todopagoTppaymentformModuleFrontController extends ModuleFrontController
 	}
 
 	public function initContent()
-	{	
+	{
 	    parent::initContent();
 
 		$this->context->smarty->assign(array(
@@ -43,7 +43,7 @@ Class todopagoTppaymentformModuleFrontController extends ModuleFrontController
 
 		$id_orden = Tools::getValue('order');
 		//$id_orden = 6;
-		$requestPublicKey = ""; 
+		$requestPublicKey = "";
 
 		$sql = 'SELECT public_request_key FROM '._DB_PREFIX_.'todopago_transaccion WHERE id_orden = '.$id_orden;
 
@@ -74,13 +74,13 @@ Class todopagoTppaymentformModuleFrontController extends ModuleFrontController
 	}
 
 	public function getAmbientUrlForm()
-	{	
-		$fileName = "TPHybridForm-v0.1.js";
-		$url = "https://forms.todopago.com.ar/resources/".$fileName;
+	{
+
+		$url = "https://forms.todopago.com.ar/resources/v2/TPBSAForm.min.js";
 		$mode = ($this->module->getModo())?"prod":"test";
-		
+
 		if($mode == "test"){
-			$url = "https://developers.todopago.com.ar/resources/".$fileName;
+			$url = "https://developers.todopago.com.ar/resources/v2/TPBSAForm.min.js";
 		}
 
 		return $url;

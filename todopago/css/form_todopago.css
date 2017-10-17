@@ -3,12 +3,27 @@
 }
 #tp-form-tph input, #tp-form-tph select {
 	margin:5px 0px 5px 0;
+	height:40px;
+	border-radius: 5px 5px 5px 5px;
+	-moz-border-radius: 5px 5px 5px 5px;
+	-webkit-border-radius: 5px 5px 5px 5px;
+	border-color: rgba(194, 194, 194, 0.8);
+
 }
 #tp-logo{
 	background-image: url("../imagenes/logo_tp.png");
 	background-repeat: no-repeat;
 	height:40px;
 	width:110px;
+}
+input{
+
+}
+#mesCbx{
+	width:60px;
+}
+#anioCbx{
+	width:70px;
 }
 .modal-class {
 
@@ -33,9 +48,7 @@
 #codigoSeguridadTxt{
 	max-width: 122px;
 }
-#promosCbx{
-	min-width:61px;
-}
+
 .date-group{
 }
 .date-group .col-sm-1{
@@ -59,29 +72,11 @@
 .tp-label{
 	/*margin:12px 0 0 10px;*/
 }
-.select-control{
-	color: #9c9b9b;
-    vertical-align: middle;
-    background-color: #fff;
-    border: 1px solid #d6d4d4;
-    height: 30px;
-}
+
 #MY_btnConfirmarPago{
 	display:none;
 }
 
-#numeroTarjetaTxt, #codigoSeguridadTxt, #apynTxt, #nroDocTxt, #emailTxt{
-	background-color: #fff;
-    border: 1px solid #d6d4d4;
-    height: 30px;
-    width: 150px;
-}
-
-#mesTxt, #anioTxt{
-	background-color: #fff;
-    border: 1px solid #d6d4d4;
-    height: 30px;
-}
 
 .pei-box{
 	margin:5px 0 0 0;
