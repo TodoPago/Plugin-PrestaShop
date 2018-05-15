@@ -1,83 +1,519 @@
-#tp-form-tph{
-	margin:5px 0px 5px 20px;
-}
-#tp-form-tph input, #tp-form-tph select {
-	margin:5px 0px 5px 0;
-	height:40px;
-	border-radius: 5px 5px 5px 5px;
-	-moz-border-radius: 5px 5px 5px 5px;
-	-webkit-border-radius: 5px 5px 5px 5px;
-	border-color: rgba(194, 194, 194, 0.8);
+/*-------------------------------------*/
+/*GENERAL CONFIGURATION*/
+/*-------------------------------------*/
 
-}
-#tp-logo{
-	background-image: url("../imagenes/logo_tp.png");
-	background-repeat: no-repeat;
-	height:40px;
-	width:110px;
-}
-input{
-
-}
-#mesCbx{
-	width:60px;
-}
-#anioCbx{
-	width:70px;
-}
-.modal-class {
-
-}
-.modal-content {
-
-}
-#tp-bt-wrapper{
-	margin:15px 0px 0px 0;
-}
-.tp-button{
-}
-#tp-content-form{
-	margin: 4px 0 0 0;
-}
-#tp-content-form h5{
-	margin: 16px 0 4px 1px;
-}
-#mesTxt, #anioTxt{
-	max-width: 66px;
-}
-#codigoSeguridadTxt{
-	max-width: 122px;
+@font-face {
+    font-family: Lato;
+    font-style: normal;
+    font-weight: 200;
+    src: local('Lato'), local('Lato-Regular'), url(lato-regular.ttf) format('ttf');
 }
 
-.date-group{
-}
-.date-group .col-sm-1{
-	margin:0 -16px 0 0;
-}
-#labelCodSegTextId{
-	margin:18px 0 0 9px;
-}
-#MY_btnPagarConBilletera{
-	margin: 0 0 0 10px;
-}
-.left{
-	float:left;
-}
-.right{
-	float:right;
-}
-.clear{
-	clear:both;
-}
-.tp-label{
-	/*margin:12px 0 0 10px;*/
+html, body, button, input, select {
+    font-family: 'Lato', sans-serif !important;
 }
 
-#MY_btnConfirmarPago{
-	display:none;
+input, select {
+    height: 35px;
+    max-height: 35px;
+    border-radius: 4px
 }
 
+@keyframes barFill {
+    0% {
+        width: 0;
+    }
+    100% {
+        width: 100%;
+    }
+}
 
-.pei-box{
-	margin:5px 0 0 0;
+.tp_wrapper {
+    outline: 0;
+    font-size: 100%;
+    color: #909090;
+    width: 70%;
+    margin: 0 auto;
+}
+
+/*-------------------------------------*/
+/*GRID CONFIGURATION*/
+/*-------------------------------------*/
+
+.tp_col {
+    overflow-x: hidden;
+}
+
+/*-------------------------------------*/
+/*REUSABLE COMPONENTS*/
+/*-------------------------------------*/
+.tp_btn:link,
+.tp_btn:hover {
+    color: #fff;
+}
+
+.tp_btn {
+    width: 75%;
+    padding: 7px 40px;
+    font-weight: bold;
+    border: 0;
+    border-radius: 4px;
+    background-color: #EA3297;
+    color: #fff;
+    display: inline-block;
+    text-align: center;
+    cursor: pointer;
+    margin: 0 0 0 12%;
+}
+
+.tp_btn:hover {
+    background-color: #ee0075;
+    color: #fff;
+}
+
+.tp_btn .tp_btn_sm {
+    width: 70%;
+}
+
+.tp_btn .tp_btn_lg {
+    width: 100%;
+}
+
+section {
+    margin-bottom: 20px;
+    padding: 25px;
+    border: 1px solid transparent;
+    border-radius: 10px;
+    -webkit-box-shadow: 0 0 2px rgba(131, 121, 112, 0.4);
+    box-shadow: 0 0 2px rgba(131, 121, 112, 0.4);
+}
+
+.tp_color_text {
+    color: #EA3297;
+}
+
+.tp_color_text:hover {
+    color: red;
+}
+
+.element_invisible {
+    overflow: hidden;
+    visibility: hidden;
+    height: 1px;
+    position: absolute;
+}
+
+h1 {
+    font-size: 140%;
+}
+
+.text_small {
+    display: inline-block;
+    float: left;
+    font-size: 8px;
+    margin-bottom: 6px;
+    text-align: left !important;
+}
+
+h3 {
+    font-size: 17px;
+}
+
+.tp-title-right > label {
+    float: right;
+}
+
+.tp-title {
+    height: 10px;
+    max-height: 17px;
+}
+
+.billetera_virtual_tp,
+.billetera_tp,
+.billeterafm_tp {
+    border: 1px solid #c4c4c44d;
+}
+
+.billeterafm_tp {
+    display: none;
+}
+
+.tp-error {
+    font-size: 11px;
+    margin-top: 3px;
+    color: #EA3297;
+    line-height: 1;
+}
+
+.tp-error-title {
+    max-height: 20px;
+}
+
+.tp-input-row {
+    max-height: 40px;
+}
+
+#promosLbl {
+    font-size: 25px;
+    margin: 13px 0 0 6px;
+    font-weight: normal;
+    text-align: left !important;
+}
+
+#promosLbl br {
+    display: none;
+}
+
+#tpForm {
+    display: none;
+}
+
+.payment-method {
+    display: none;
+}
+
+button {
+    cursor: pointer !important;
+}
+
+p {
+    margin-bottom: 0.2em !important;
+}
+
+.tp-flex {
+    display: flex;
+}
+
+.tp-center {
+    align-content: center;
+    justify-content: center;
+}
+
+#tp-tarjeta-logo {
+    display: none;
+    width: 30px;
+    transform: translateY(-120%);
+    /*z-index: 2;*/
+    margin-left: 26%;
+    position: absolute
+}
+
+#tp-powered {
+    display: flex;
+    height: 40px !important;
+    float: right;
+}
+
+#tp-powered img {
+    margin: 0 0 0 5px;
+    height: 30px !important;
+}
+
+.text_small {
+    text-transform: uppercase;
+}
+
+/*-------------------------------------*/
+/*LOADING*/
+/*-------------------------------------*/
+
+#loading-hibrid {
+    border-radius: 0 5px 5px 0;
+    background-color: rgb(244, 0, 122);
+    background-image: repeating-linear-gradient(45deg, transparent, transparent 35px, rgba(244, 180, 122, .5) 35px, rgba(244, 200, 122, .5) 70px);
+    width: 0;
+    animation-name: barFill;
+    animation-duration: 1s;
+    animation-fill-mode: forwards;
+    height: 100%;
+}
+
+.progress {
+    height: 40px;
+    width: 100%
+}
+
+/*-------------------------------------*/
+/*FORMS*/
+/*-------------------------------------*/
+
+.tp-total {
+    border: none;
+    flex-direction: column;
+    align-content: space-around;
+    border-radius: 0;
+    font-size: 18px;
+    color: #ffffff;
+    text-align: center;
+    background-color: #c1c1c1;
+    height: 56px;
+    width: 100%;
+    margin-bottom: 20px;
+    padding: 50px 0;
+    justify-content: center;
+}
+
+.tp-total div:first-child {
+    margin-bottom: 15px;
+}
+
+.tp_form_control {
+    margin-bottom: 5px;
+    display: inline-block;
+    width: 100%;
+}
+
+input.tp_form_control {
+    border: 0;
+    border-bottom: 1px solid #c4c4c4;
+    color: #909090;
+}
+
+input[type=text].tp_form_control,
+input[type=email].tp_form_control,
+input[type=password].tp_form_control,
+select.tp_form_control {
+    background-color: #fff;
+    padding: 0 3%;
+    border: 0px solid #000;
+    border-bottom: 1px solid #c4c4c4;
+    color: #909090;
+}
+
+input:focus {
+    box-shadow: 0 0 4px 1px #EA3297;
+}
+
+select:disabled {
+    background-color: #eeeeee;
+}
+
+.med_width {
+    width: 50%;
+}
+
+.full_width {
+    width: 100%;
+}
+
+#formaPagoCbx {
+    display: none;
+}
+
+label {
+    color: #909090;
+}
+
+#tp-dni-numero,#tp-dni-label-tipo {
+    width: 60%;
+}
+
+#NumeroDocCbxLabel{
+    float:left;
+}
+
+#codigoSeguridadTxt::placeholder {
+    font-size: 0.7em;
+}
+
+#codigoSeguridadLabel{
+    float:left;
+    font-size:7px
+    
+}
+
+/*pei box*/
+#pei-block {
+   width: 80%;
+   margin: auto;
+}
+
+#peibox {
+    margin-top: 15px;
+    display: none;
+    border: 1px solid #c4c4c4;
+    color: #555369;
+    background-color: #eee;
+    padding: 0 !important;
+}
+
+#peibox p {
+    font-size: 9px !important;
+}
+
+#peibox strong {
+    font-size: 10px !important;
+}
+
+#peiLbl strong {
+    margin: 0 0 0 15px;
+}
+
+#peiLbl p {
+    margin: 4px 0 0 15px;
+    border-top: 1px solid #000;
+}
+
+#peiCbx {
+    margin: 0 0 0 22px;
+    opacity: 0;
+}
+
+.tp-pei-txt {
+    font-size: 11px;
+    margin-top: 2px;
+    line-height: 1;
+}
+
+#tokenPeiLbl {
+    font-size: 10px;
+}
+
+/*-------------------------------------*/
+/*SECTION PAGAR CON BILLETERA*/
+/*-------------------------------------*/
+.confirmacion {
+    text-align: center;
+    text-transform: uppercase;
+    font-size: 12px;
+}
+
+.confirmacion {
+   text-align: center;
+   text-transform: uppercase;
+   font-size: 12px;
+}
+
+.text_size_billetera{
+   font-size: 15px !important;
+   text-align: center;
+}
+
+/*-------------------------------------*/
+/*FORM PAGAR*/
+/*-------------------------------------*/
+#btn_ConfirmarPago {
+    margin-bottom: 15px;
+}
+
+/*-------------------------------------*/
+/*SWITCH*/
+/* The switch - the box around the slider */
+/*-------------------------------------*/
+.switch {
+    position: relative;
+    display: inline-block;
+    width: 50px;
+    height: 24px;
+}
+
+/* Hide default HTML checkbox */
+.switch input {
+    display: none;
+}
+
+/*-------------------------------------*/
+/*THE SLIDER*/
+/* The switch - the box around the slider */
+/* Hide default HTML checkbox */
+/*-------------------------------------*/
+
+#slider-text {
+    /*z-index: 1000;*/
+    transition: all cubic-bezier(0.3, 1.5, 0.7, 1) 0.3s;
+    width: 60%;
+    height: 100%;
+    position: absolute;
+    padding: 4px;
+    font-size: 12px;
+    left: 0;
+    color: white;
+}
+
+.switch {
+    margin: 16px 26px 0 0;
+    float: right;
+    position: relative;
+    display: inline-block;
+    width: 50px;
+    height: 25px;
+}
+
+.switch input {
+    display: none;
+}
+
+.switch:target:before {
+    left: 32px;
+}
+
+/* The slider */
+.slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #adadad;
+    -webkit-transition: .4s;
+    transition: .4s;
+    overflow: hidden;
+    outline: none;
+    display: inline-block;
+    border-radius: 20px;
+}
+
+.slider:before {
+    /*z-index: 1001;*/
+    color: white;
+    text-indent: -22px;
+    font-size: 14px;
+    position: absolute;
+    content: "";
+    height: 18px;
+    width: 18px;
+    left: 4px;
+    bottom: 4px;
+    background-color: white;
+    -webkit-transition: .4s;
+    transition: all cubic-bezier(0.3, 1.5, 0.7, 1) 0.3s;
+    white-space: nowrap;
+    word-spacing: 1px;
+    display: block
+}
+
+.slider:checked:before {
+    left: 32px;
+}
+
+input::placeholder {
+    color: lightgray !important;
+}
+
+input:checked + .slider {
+    background-color: #e6007e;
+}
+
+input:focus + .slider {
+    box-shadow: 0 0 1px #2196F3;
+}
+
+input:checked + .slider:before {
+    -webkit-transform: translateX(26px);
+    -ms-transform: translateX(26px);
+    transform: translateX(26px);
+}
+
+/* Rounded sliders */
+.slider.round {
+    border-radius: 34px;
+}
+
+.slider.round:before {
+    border-radius: 50%;
+}
+
+#tpform_content_fixed{
+    z-index: 9999 !important;
 }

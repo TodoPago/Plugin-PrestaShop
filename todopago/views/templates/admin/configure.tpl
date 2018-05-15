@@ -42,9 +42,18 @@
 <!-- Add Media helper (this is optional) -->
 <script type="text/javascript" src="{$url_base}modules/todopago/js/fancybox/source/helpers/jquery.fancybox-media.js?v=1.0.6"></script>
 
+<!-- Add version compare js -->
+<script type="text/javascript" src="{$url_base}modules/todopago/js/version_compare/version_compare.js"></script>
+
+<!-- check_version js -->
+<script type="text/javascript" src="{$url_base}modules/todopago/js/version_compare/check_version.js"></script>
+
 
 <script type="text/javascript">
 	$(document).ready(function() {
+            
+                check_last_version("{$version}");
+                
 		$("#fieldset_0_1_1").css("display","none");
 
 		$('.fancybox').fancybox({
@@ -119,6 +128,10 @@
 <div class="tab-content panel">	
 	<!-- Tab Configuracion -->
 	<div id="general">
+                <div id="panel_actualizacion_disponible" class="alert alert-warning">
+                    <span class="text-error">Se encuentra disponible una versi&oacute;n m&aacute;s reciente del plugin de Todo Pago, puede consultarla desde <a target="_blank" href="https://github.com/TodoPago/Plugin-PrestaShop">aqu&iacute;</a></span>
+                </div>
+            
 		<div class="panel">
 			<div class="panel-heading">
 				<i class="icon-cogs"></i>Versi&oacute;n utilizada

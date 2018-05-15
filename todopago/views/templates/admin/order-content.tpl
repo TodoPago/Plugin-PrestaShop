@@ -44,10 +44,6 @@
 			 		if(data.length != null){
 			 			response = $.parseJSON(data);
 			 			$('#message').html(response.StatusMessage);
-				 		if(response.StatusCode == 2011){
-				 			location.reload();
-				 		}
-
 			 		}else{
 			 			$('#message').html("Error de servicio, vuelva a intentarlo en unos minutos");
 			 		}

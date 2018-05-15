@@ -125,7 +125,7 @@ class TodoPagoPaymentModuleFrontController extends ModuleFrontController
 
         //asigno las variables que se van a a ver en la template de payment (payment.tpl)
         $this->context->smarty->assign(array(
-            'nombre' => "TodoPago",//nombre con el que aparece este modulo de pago en el frontend
+            'nombre' => "Todo Pago",//nombre con el que aparece este modulo de pago en el frontend
             'cart_id' => $cart->id,
             'nbProducts' => $cart->nbProducts(),//productos
             'save_cart' => ((Configuration::get('TODOPAGO_CARRITO_COMPRAS'))? "1": "0"),
@@ -201,9 +201,9 @@ class TodoPagoPaymentModuleFrontController extends ModuleFrontController
   protected function call_SAR($options, $cart, $prefijo, $cliente, $connector)
   {
       $user_location = str_replace(' ', '', $options['operacion']['CSBTSTREET1']) . $options['operacion']['CSBTPOSTALCODE'];
-//      $base_location = $this->get_base_gmaps($user_location);
+      $base_location = $this->get_base_gmaps($user_location);
 
-/*      if (Configuration::get($this->module->getPrefijo('PREFIJO_CONFIG') . '_GMAPS') == 1 && $base_location == null) {
+      if (Configuration::get($this->module->getPrefijo('PREFIJO_CONFIG') . '_GMAPS') == 1 && $base_location == null) {
           $g = new \TodoPago\Client\Google();
           $connector->setGoogleClient($g);
           $respuesta            = $connector->sendAuthorizeRequest($options['comercio'], $options['operacion']); //me comunico con el webservice
@@ -226,10 +226,10 @@ class TodoPagoPaymentModuleFrontController extends ModuleFrontController
           $respuesta = $connector->sendAuthorizeRequest($options['comercio'], $options['operacion']); //me comunico con el webservice
 
       } else {
-*/
+
           $respuesta = $connector->sendAuthorizeRequest($options['comercio'], $options['operacion']); //me comunico con el webservice
 
-//      }
+      }
 
       $this->module->log->info('response SAR - ' . json_encode($respuesta));
 
@@ -537,9 +537,19 @@ class TodoPagoPaymentModuleFrontController extends ModuleFrontController
                     'MERCHANT' => Configuration::get($prefijo.'_ID_SITE'),
                     'OPERATIONID' => (string) $cart->id,
                     'CURRENCYCODE' => '032',
-                    'AMOUNT' => $this->context->cart->getOrderTotal(true, Cart::BOTH)
+                    'AMOUNT' => $this->context->cart->getOrderTotal(true, Cart::BOTH),
+                    'ECOMMERCENAME' => 'PRESTASHOP',
+                    'ECOMMERCEVERSION' => _PS_VERSION_,
+                    'PLUGINVERSION' => $this->module->version,
                 )
         );
+	$embebed = $this->_getEmbebedSettings();
+        if($embebed['enabled']) {
+		$params["operacion"]["PLUGINVERSION"] =  $params["operacion"]["PLUGINVERSION"] . "-H";
+	} else {
+		$params["operacion"]["PLUGINVERSION"] =  $params["operacion"]["PLUGINVERSION"] . "-E";
+	}
+
 
         if(Configuration::get($this->module->getPrefijo('PREFIJO_CONFIG').'_CUOTASENABLE') == 1) {
             $params['operacion']['MAXINSTALLMENTS'] = Configuration::get($this->module->getPrefijo('PREFIJO_CONFIG').'_CUOTASCANT');
@@ -717,10 +727,10 @@ class TodoPagoPaymentModuleFrontController extends ModuleFrontController
                     //devolucion parcial
                     $response = $this->partialRefundTP($orderIdTPOperation, $amount);
                 }else{
-                   $response = array(  
+                   $response = array(
                         "StatusCode" => '',
                         "StatusMessage" => "Debe Ingresar un monto menor o igual al total de la compra sin interes"
-                    ); 
+                    );
                 }
 
             }else{

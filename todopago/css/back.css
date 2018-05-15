@@ -166,3 +166,8 @@
 .icon-key{
 	display:none !important;
 }
+
+
+#panel_actualizacion_disponible{
+    display:none;
+}

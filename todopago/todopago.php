@@ -63,7 +63,7 @@ class TodoPago extends PaymentModule
 		//acerca del modulo en si
 		$this->name = 'todopago';
 		$this->tab = 'payments_gateways';
-		$this->version = '1.12.0';
+		$this->version = '1.13.0';
 		$this->author = 'Todo Pago';
 		$this->bootstrap = true;
 		$this->is_eu_compatible = 0;
@@ -969,7 +969,7 @@ class TodoPago extends PaymentModule
 
 		//si hay un status para esta orden
 		if(isset($status['Operations']) && is_array($status['Operations'])){
-			foreach($status['Operations'] as $key => $value){
+			/*foreach($status['Operations'] as $key => $value){
 				if($key == "REFUNDS"){
 					$rta .=$key.": <br>";
 					if(is_array($value)){
@@ -991,7 +991,8 @@ class TodoPago extends PaymentModule
 					if(is_array($value)) $value = implode("-",$value);
 					$rta .= $key .": ". $value."<br>";
 				}
-			}
+			}*/
+                        $rta = $this->printGetStatus($status['Operations'], 0);
 		}else{
 			$rta = "No hay datos para esta orden";
 		}
@@ -1027,6 +1028,22 @@ class TodoPago extends PaymentModule
 
 		return $this->display(__FILE__, 'views/templates/admin/order-content.tpl');//indico la template a utilizar
 	}
+        
+        private function printGetStatus($array, $indent) {
+            $rta = '';
+            foreach ($array as $key => $value) {
+
+                if ($key !== 'nil' && $key !== "@attributes") {
+                    if (is_array($value) ){
+                        $rta .= str_repeat("-", $indent) . "$key: <br/>";
+                        $rta .= $this->printGetStatus($value, $indent + 2);
+                    } else {
+                        $rta .= str_repeat("-", $indent) . "$key: $value <br/>";
+                    }
+                }
+            }
+            return $rta;
+        }
 
 	/**
 	 * Se ejecuta cuando se quiere acceder a la orden desde el backoffice

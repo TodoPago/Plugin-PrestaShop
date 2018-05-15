@@ -1,0 +1,94 @@
+/*  SECTIONS  ============================================================================= */
+
+/*.section {
+	clear: both;
+	padding: 0px;
+	margin: 0px;
+}*/
+
+/*  GROUPING  ============================================================================= */
+
+.tp_row {
+    zoom: 1; /* For IE 6/7 (trigger hasLayout) */
+}
+
+.tp_row:before,
+.tp_row:after {
+    content:"";
+    display:table;
+}
+.tp_row:after {
+    clear:both;
+}
+
+/*  GRID COLUMN SETUP   ==================================================================== */
+.tp_col {
+    display: block;
+    float:left;
+    margin: 1% 0 1% 1.6%;
+}
+
+.tp_col:first-child { margin-left: 0; } /* all browsers except IE6 and lower */
+
+
+/*  REMOVE MARGINS AS ALL GO FULL WIDTH AT 480 PIXELS */
+
+@media only screen and (max-width: 480px) {
+    .tp_col { 
+            /*margin: 1% 0 1% 0%;*/
+    margin: 0;
+    }
+}
+
+
+/*  GRID OF TWO   ============================================================================= */
+
+
+.tp_span_2_of_2 {
+    width: 100%;
+}
+
+.tp_span_1_of_2 {
+    width: 49.2%;
+}
+
+/*  GO FULL WIDTH AT LESS THAN 480 PIXELS */
+
+@media only screen and (max-width: 480px) {
+    .tp_span_2_of_2 {
+            width: 100%; 
+    }
+    .tp_span_1_of_2 {
+            width: 100%; 
+    }
+}
+
+/*  GRID OF THREE   ============================================================================= */
+
+	
+.tp_span_3_of_3 {
+    width: 100%; 
+}
+
+.tp_span_2_of_3{
+    width: 66.13%; 
+}
+
+.tp_span_1_of_3 {
+    width: 37.26%; 
+}
+
+
+/*  GO FULL WIDTH AT LESS THAN 480 PIXELS */
+
+@media only screen and (max-width: 480px) {
+    .tp_span_3_of_3 {
+            width: 100%; 
+    }
+    .tp_span_2_of_3 {
+            width: 100%; 
+    }
+    .tp_span_1_of_3 {
+            width: 100%;
+    }
+}

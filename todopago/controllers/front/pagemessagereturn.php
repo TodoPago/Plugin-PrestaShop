@@ -16,13 +16,13 @@ Class todopagoPagemessagereturnModuleFrontController extends ModuleFrontControll
 	    parent::initContent();
 
 	    $this->context->smarty->assign(array(
-				'step' => Tools::getValue('step'),
-				'status' => Tools::getValue('status'),
-				'total' => Tools::getValue('total_to_pay'),
-				'reference' => Tools::getValue('reference'),
-				'customer' => Tools::getValue('customer'),
-				'message' => Tools::getValue('message'),
-			));
+                    'step' => Tools::getValue('step'),
+                    'status' => Tools::getValue('status'),
+                    'total' => Tools::getValue('total_to_pay'),
+                    'reference' => Tools::getValue('reference'),
+                    'customer' => Tools::getValue('customer'),
+                    'message' => Tools::getValue('message'),
+            ));
 
 	    if (version_compare(_PS_VERSION_, '1.7.0.0') < 0) {
 	    	$this->setTemplate('returnerror.tpl');

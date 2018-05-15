@@ -15,27 +15,47 @@ Class todopagoTppaymentformModuleFrontController extends ModuleFrontController
 	{
 	    parent::initContent();
 
+	    if(version_compare(_PS_VERSION_, '1.7.0.0') >= 0 ){
+	    	$prestaVersion = 17;
+	    }else{
+	    	$prestaVersion = 16;
+	    }
+
+            
+                $order=Tools::getValue('order');
+                
+                $sql = 'SELECT params_SAR FROM '._DB_PREFIX_.'todopago_transaccion WHERE id_orden = '.$order;
+
+		$dataTransacciontions = Db::getInstance()->ExecuteS($sql);
+                
+                $params_sar=json_decode($dataTransacciontions[0]["params_SAR"]);
+                
+                $total_amount=$params_sar->operacion->AMOUNT;
+            
 		$this->context->smarty->assign(array(
 			'jslinkForm' => $this->getAmbientUrlForm(),
 			'publicKey' => $this->getPublicKey(),
 			'email' => $this->getMail(),
+                        'total'=>$total_amount,
 			'name' => $this->getCompleteName(),
 			'orderId' => Tools::getValue('order'),
+			'prestaVersion' => $prestaVersion,
+			'modulePath' => _PS_BASE_URL_.__PS_BASE_URI__, 
+			'logoForm' => $this->getLogoTP(),
 			'urlBase' => $this->context->link->getModuleLink('todopago', 'payment', array('paso' => '2'), true)
 		));
 
 		if (version_compare(_PS_VERSION_, '1.7.0.0') >= 0 ) {
-			$this->setTemplate('module:todopago/views/templates/front/tppayment.tpl');
-		} else {
-			$this->setTemplate('tppaymentform.tpl');
-		}
+            $this->setTemplate('module:todopago/views/templates/front/formblock17.tpl');
+        } else {
+            $this->setTemplate('formblock16.tpl');
+        }
 	}
 
 	public function setMedia()
 	{
 	    parent::setMedia();
-
-	    $this->addCSS('modules/'.$this->module->name.'/css/form_todopago.css');
+	    //$this->addCSS('modules/'.$this->module->name.'/css/form_todopago.css');
 	}
 
 	public function getPublicKey()
@@ -84,5 +104,20 @@ Class todopagoTppaymentformModuleFrontController extends ModuleFrontController
 		}
 
 		return $url;
+	}
+
+	public function getLogoTP()
+	{	
+	    if(version_compare(_PS_VERSION_, '1.7.0.0') >= 0 ){
+	    	$path = _PS_BASE_URL_.__PS_BASE_URI__.'/modules/todopago/imagenes';
+	    }else{
+	    	$path = "/modules/todopago/imagenes";
+	    }
+
+	    //$mode = ($this->module->getModo())?"prod":"test";
+	   
+            $logoForm = $path."/tp_logo_prod.png";
+
+	    return $logoForm;
 	}
 }
