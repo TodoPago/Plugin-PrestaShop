@@ -42,7 +42,7 @@
 
 	<div class="cart_navigation clearfix">
 		{if isset ($payment) && $payment['status'] == 1} <!-- Si el pago fue autorizado -->
-			<a href="index.php?fc=module&module=todopago&controller=tppaymentform&order={l s=$cart_id}" class="button btn btn-default button-medium">
+			<a href="index.php?fc=module&module=todopago&controller=tppaymentform&payment_option={$payment_option}&order={l s=$cart_id}" class="button btn btn-default button-medium">
 				<span>{l s='Confirmar compra' mod='todopago'}<i class="icon-chevron-right right"></i></span>
 			</a>
 		{/if}

@@ -60,6 +60,10 @@ class Formulario {
 	 */
 	public static function getConfigFormInputs($segmentoOptions, $canalOptions, $timeoutValue=0)
 	{
+                $img_1="https://todopago.com.ar/sites/todopago.com.ar/files/billetera/pluginstarjeta1.jpg";
+                $img_2="https://todopago.com.ar/sites/todopago.com.ar/files/billetera/pluginstarjeta2.jpg";
+                $img_3="https://todopago.com.ar/sites/todopago.com.ar/files/billetera/pluginstarjeta3.jpg";  
+            
 		return array(
 				array(
 						'type' => 'switch',
@@ -239,7 +243,36 @@ class Formulario {
 								)
 						),
 						'required' => false
-				)
+				),
+                    
+                                array(
+                                    'type'      => 'radio',
+                                    'label'     => 'Billetera en checkout',
+                                    'desc'      => 'Seleccione el banner que desea mostrar para billetera',
+                                    'name'      => 'banner_billetera',
+                                    'required'  => true,
+                                    'class'     => 'bannerBilletera',
+                                    //'is_bool'   => true,
+                                                                                          
+                                    'values'    => array(                                 
+                                      array(
+                                        'id'    => 'banner1',
+                                        'value' => $img_1,
+                                        'label' => '<img src="'.$img_1.'" style="margin:-20px 0 15px 0;">'
+                                      ),
+                                      array(
+                                        'id'    => 'banner2',
+                                        'value' => $img_2,
+                                        'label' => '<img src="'.$img_2.'" style="margin:-20px 0 15px 0;">'
+                                      ),
+                                      array(
+                                        'id'    => 'banner3',
+                                        'value' => $img_3,
+                                        'label' => '<img src="'.$img_3.'" style="margin:-20px 0 15px 0;">'
+                                      )
+                                    ),
+                                  ),
+
 		);
 	}
 

@@ -31,9 +31,16 @@
 
 
 <p class="payment_module">
-	<a href="{$link->getModuleLink('todopago', 'payment', ['paso' => '1'], true)|escape:'html'}" title="Todo Pago">
+	<a href="{$link->getModuleLink('todopago', 'payment', ['paso' => '1','payment_option'=>'form'], true)|escape:'html'}" title="Todo Pago">
 		<img src="http://www.todopago.com.ar/sites/todopago.com.ar/files/pluginstarjeta.jpg" alt="Todo Pago"/>
 	</a>
-</p> 
+</p>
+
+<p class="payment_module">
+	<a href="{$link->getModuleLink('todopago', 'payment', ['paso' => '1','payment_option'=>'billetera'], true)|escape:'html'}" title="Banner Billetera Todo Pago">
+		<img src="{$banner_billetera}" alt="Todo Pago" title="Banner Billetera Todo Pago"/>
+	</a>
+</p>
+
 {/if}
 

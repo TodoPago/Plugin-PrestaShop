@@ -31,7 +31,7 @@
             <p>y evitá cargar los datos de tu tarjeta</p>
         </div>
         <div class="tp-flex-grow-1 tp-bloque-span">
-            <button id="btn_Billetera" title="Pagar con Billetera" class="tp_btn tp_btn_sm text_size_billetera">
+            <button id="btn_Billetera" title="Iniciar sesión" class="tp_btn tp_btn_sm text_size_billetera">
                 Iniciar Sesión
             </button>
         </div>
@@ -232,6 +232,7 @@
     var peiCbx = tpformJquery("#peiCbx");
     var switchPei = tpformJquery("#switch-pei");
     var sliderText = tpformJquery("#slider-text");
+    var payment_option="{$payment_option}";
     var idTarjetas = {
         42: 'VISA',
         43: 'VISAD',
@@ -351,8 +352,17 @@
         }, 2000);
         setTimeout(function () {
             tpformJquery("#tpForm").fadeTo('fast', 1);
+            click_billetera_btn();
         }, 2200);
     }
+    
+    function click_billetera_btn(){
+        if("{$payment_option}"==="billetera"){
+            $(".billetera_tp").css("display", "none");
+            $("#btn_Billetera").trigger("click");
+        }
+    }
+    
     //callbacks de respuesta del pago
     window.validationCollector = function (parametros) {
         
@@ -407,6 +417,8 @@
         } else {
             rowPei.css("display", "none");
         }
+        
+        $("#btn_Billetera").html("Iniciar Sesión");
     };
     // Verifica que el usuario no haya puesto para solo pagar con PEI y actúa en consecuencia
     function activateSwitch(soloPEI) {

@@ -63,7 +63,7 @@ class TodoPago extends PaymentModule
 		//acerca del modulo en si
 		$this->name = 'todopago';
 		$this->tab = 'payments_gateways';
-		$this->version = '1.13.0';
+		$this->version = '1.14.0';
 		$this->author = 'Todo Pago';
 		$this->bootstrap = true;
 		$this->is_eu_compatible = 0;
@@ -88,38 +88,56 @@ class TodoPago extends PaymentModule
 	 */
 	public function install()
 	{//instalacion del modulo
-		if (Module::isInstalled('botondepago'))
-		{
-		  Module::disableByName($this->name);   //note during testing if this is not done, your module will show as installed in modules
-		  die(Tools::displayError('Primero debe desinstalar la version anterior del modulo.'));
-		}
+            if (Module::isInstalled('botondepago'))
+            {
+              Module::disableByName($this->name);   //note during testing if this is not done, your module will show as installed in modules
+              die(Tools::displayError('Primero debe desinstalar la version anterior del modulo.'));
+            }
 
-		$this->createConfigVariables();
+            $this->createConfigVariables();
 
-		include(dirname(__FILE__).'/sql/install.php');//script sql con la creacion de la tabla transaction
+            include(dirname(__FILE__).'/sql/install.php');//script sql con la creacion de la tabla transaction
 
-		return parent::install() &&
-					$this->registerHook('displayBackOfficeHeader') && //para insertar /js/back.js
-					//$this->registerHook('displayHeader') && //para insertar /js/front.js
-					$this->registerHook('displayAdminProductsExtra') && //para crear la tab y mostrar contenido en ella
-            		$this->registerHook('actionProductUpdate') && //se llama cuando se actualiza un producto, asi podemos recuperar lo que se ingreso en la tab
-            		$this->registerHook('displayAdminOrderContentOrder') && //muestra contenido en el detalle de la orden
-					$this->registerHook('displayAdminOrderTabOrder') &&
-					$this->unregisterHook('displayAdminProductsExtra') && //muestra una tab en el detalle de la orden
-					$this->registerHook('displayPayment') &&
-					$this->registerHook('displayPaymentReturn') &&
-					$this->registerHook('paymentOptions');
-					$this->registerHook('displayPDFInvoice') && //en la factura muestra costo financiero
-					$this->registerHook('displayAdminOrder');  //en el detalle del pedido muestra costo financiero
+            //Sí es presta 1.7 > /////////////////////////////////////////////////////
+            //Crear tabla todopago_banner_billetera
 
-		return true;
+            if ($this->compare_presta() >= 0) {
+                
+                $this->createTableTodoPagoBilletera();
+                $this->insertTableTodoPagoBilletera();
+            }
+            //////////////////////////////////////////////////////////////////////////
+
+            return parent::install() &&
+                                    $this->registerHook('displayBackOfficeHeader') && //para insertar /js/back.js
+                                    //$this->registerHook('displayHeader') && //para insertar /js/front.js
+                                    $this->registerHook('displayAdminProductsExtra') && //para crear la tab y mostrar contenido en ella
+                    $this->registerHook('actionProductUpdate') && //se llama cuando se actualiza un producto, asi podemos recuperar lo que se ingreso en la tab
+                    $this->registerHook('displayAdminOrderContentOrder') && //muestra contenido en el detalle de la orden
+                                    $this->registerHook('displayAdminOrderTabOrder') &&
+                                    $this->unregisterHook('displayAdminProductsExtra') && //muestra una tab en el detalle de la orden
+                                    $this->registerHook('displayPayment') &&
+                                    $this->registerHook('displayPaymentReturn') &&
+                                    $this->registerHook('paymentOptions');
+                                    $this->registerHook('displayPDFInvoice') && //en la factura muestra costo financiero
+                                    $this->registerHook('displayAdminOrder');  //en el detalle del pedido muestra costo financiero
+
+            return true;
 	}
 
 	public function uninstall()
 	{//desinstalacion
 		$this->deleteConfigVariables();
 		//include(dirname(__FILE__).'/sql/uninstall.php');//no se borran para no perder los datos
-		return parent::uninstall();
+		
+                //Si es presta 1.7 >= /////////////////////////////////////////////
+                if ($this->compare_presta() >= 0) {
+                    $tabla_billetera='DROP TABLE IF EXISTS `'._DB_PREFIX_.'todopago_banner_billetera'.'`';
+                    Db::getInstance()->executeS($tabla_billetera);
+                }
+                ///////////////////////////////////////////////////////////////////
+                
+                return parent::uninstall();
 	}
 
 	public function configureLog() {
@@ -731,28 +749,22 @@ class TodoPago extends PaymentModule
 
 	public function hookPaymentOptions($params)
 	{
-		if (!$this->active || !$this->isActivo()) {
-	            return;
-	        }
+            if (!$this->active || !$this->isActivo()) {
+                return;
+            }
 
-        if (!$this->checkCurrency($params['cart'])) {
-            return;
-        }
+            if (!$this->checkCurrency($params['cart'])) {
+                return;
+            }
 
-        $cart = $this->context->cart;
+            $cart = $this->context->cart;
+                   
+            $payment_options = [
+                    $this->todopago_payment_option(),
+                    $this->todopago_billetera_payment_option()
+            ];
 
-        $newOption = new PrestaShop\PrestaShop\Core\Payment\PaymentOption();
-
-		$newOption->setCallToActionText('Todo Pago')
-                    ->setAction($this->context->link->getModuleLink($this->name, 'payment', array(), true))
-                    ->setInputs([])
-                    ->setAdditionalInformation($this->context->smarty->fetch('module:todopago/views/templates/hook/todopago_payment_intro.tpl'));
-
-        $payment_options = [
-        	$newOption
-        ];
-
-        return $payment_options;
+            return $payment_options;
 	}
 
 	public function hookDisplayPayment()
@@ -767,6 +779,7 @@ class TodoPago extends PaymentModule
 			'this_path' => $this->_path,
 			'this_path_ejemplo' => $this->_path,
 			'this_path_ssl' => Tools::getShopDomainSsl(true, true).__PS_BASE_URI__.'modules/'.$this->name.'/',
+                        'banner_billetera'=>Configuration::get('TODOPAGO_BANNER_BILLETERA')
 		));
 		return $this->display(__FILE__, 'payment.tpl');//asigno el template que quiero usar
 	}
@@ -774,14 +787,14 @@ class TodoPago extends PaymentModule
 	public function hookDisplayPaymentReturn($params)
 	{
 		if (!$this->active) {
-            return;
-        }
+            		return;
+        	}
 
 		//si el modulo no esta activo
 		if (!$this->active || !$this->isActivo())
 			return;
 
-		if (version_compare(_PS_VERSION_, '1.7.0.0') < 0) {
+		if ($this->compare_presta() < 0) {
 			$order = $params['objOrder'];
 		}else{
 			$order= $params['order'];	
@@ -795,7 +808,7 @@ class TodoPago extends PaymentModule
 
 		if ($state != $estadoDenegada[0]['value'])//si el estado de la orden no es denegada
 		{	
-			if (version_compare(_PS_VERSION_, '1.7.0.0') >= 0) {
+			if ($this->compare_presta() >= 0) {
 				$total = "ARS ".number_format((float)$params['order']->total_paid, 2, '.', '');
 			}else{
 				$total = Tools::displayPrice($params['total_to_pay'], $params['currencyObj'], false);
@@ -821,12 +834,12 @@ class TodoPago extends PaymentModule
 			$status = "failed";
 		}
 
-		if (version_compare(_PS_VERSION_, '1.7.0.0') < 0) {
+		if ($this->compare_presta() < 0) {
 
 			return $this->display(__FILE__, 'payment_return.tpl');//asigno el template que quiero usar
 		}else{
 			
-			if (version_compare(_PS_VERSION_, '1.7.0.0') >= 0) {
+			if ($this->compare_presta() >= 0) {
 				$total_to_pay = "ARS ".number_format((float)$params['order']->total_paid, 2, '.', '');
 			}else{
 				$total_to_pay = Tools::displayPrice($params['total_to_pay'], $params['currencyObj'], false);
@@ -1057,4 +1070,47 @@ class TodoPago extends PaymentModule
 		}
 		return ;
 	}
+        
+        //******** PRIVATE METHODS ********//
+        private function createTableTodoPagoBilletera(){
+            $tabla_billetera='CREATE TABLE IF NOT EXISTS `'._DB_PREFIX_.'todopago_banner_billetera'.'` (
+                            `id` INT(1) NOT NULL,
+                            `payment_option` VARCHAR(50) NOT NULL,
+                            PRIMARY KEY (`id`)
+            )';
+
+            Db::getInstance()->executeS($tabla_billetera);
+        }
+        
+        private function insertTableTodoPagoBilletera(){            
+            $insert="insert into "._DB_PREFIX_."todopago_banner_billetera values(1,'form')";
+            
+            Db::getInstance()->executeS($insert);
+        }
+        
+        private function todopago_payment_option(){
+            $newOption = new PrestaShop\PrestaShop\Core\Payment\PaymentOption();
+
+            $newOption->setCallToActionText('Todo Pago')
+                ->setAction($this->context->link->getModuleLink($this->name, 'payment', array("payment_option"=>"form")))
+                ->setInputs([])
+                ->setAdditionalInformation($this->context->smarty->fetch('module:todopago/views/templates/hook/todopago_payment_intro.tpl'));
+            
+            return $newOption;
+        }
+        
+        private function todopago_billetera_payment_option(){
+            $newOption2 = new PrestaShop\PrestaShop\Core\Payment\PaymentOption();
+
+            $newOption2->setCallToActionText('Billetera Virtual Todo Pago')
+                ->setAction($this->context->link->getModuleLink($this->name, 'payment', array("payment_option"=>"billetera")))
+                ->setInputs([])
+                ->setAdditionalInformation($this->context->smarty->fetch('module:todopago/views/templates/hook/billetera_todopago_payment_intro.tpl'));
+            
+            return $newOption2;
+        }
+        
+        private function compare_presta(){
+            return version_compare(_PS_VERSION_, '1.7.0.0');
+        }
 }

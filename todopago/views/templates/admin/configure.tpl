@@ -48,9 +48,12 @@
 <!-- check_version js -->
 <script type="text/javascript" src="{$url_base}modules/todopago/js/version_compare/check_version.js"></script>
 
+<!-- Default Value TodoPago Billetera value -->
+<script type="text/javascript" src="{$url_base}modules/todopago/js/billetera/billetera.js"></script>
 
 <script type="text/javascript">
 	$(document).ready(function() {
+                checkBilleteraValue("#banner1");
             
                 check_last_version("{$version}");
                 

@@ -45,13 +45,31 @@ class TodoPagoPaymentModuleFrontController extends ModuleFrontController
     public $display_column_left = false;
     private $codigoAprobacion = -1; //valor del campo SatusCode que indica que la transaccion fue aprobada (en este caso -1).
     private $first_step = false;
-
+    
+    public function __construct(){
+        parent::__construct();
+    }
+    
     public function initContent()
     {
         $this->display_column_left = false;//para que no se muestre la columna de la izquierda
         $this->db = Db::getInstance();
         parent::initContent();//llama al init() de FrontController, que es la clase padre
-
+        
+        $payment_option=Tools::getValue('payment_option');
+        
+        $this->module->log->info("InitContent de Payment");
+        
+        $this->module->log->info("Valor de payment_option = {$payment_option}");
+        
+        if($this->compare_presta() >= 0){
+            if($payment_option == "billetera"){
+                //Actualizo el valor de la base para que sea billetera
+                $this->module->log->info("Actualizo el valor de la tabla a: {$payment_option}");
+                $this->update_todopago_banner_table("billetera");
+            }
+        }
+        
         //variables a usar
         $cart = $this->context->cart;
 
@@ -67,7 +85,9 @@ class TodoPagoPaymentModuleFrontController extends ModuleFrontController
         $total = $cart->getOrderTotal(true, Cart::BOTH);
         $cliente = new Customer($cart->id_customer);//recupera al objeto cliente
         $paso = (int) Tools::getValue('paso');
-
+        
+        $this->module->log->info("La variable paso vale: ".$paso);
+        
         try
         {
             if (!$this->module->checkCurrency($cart))
@@ -84,25 +104,30 @@ class TodoPagoPaymentModuleFrontController extends ModuleFrontController
 			//Prefijo que se usa para la peticion al webservice, dependiendo del modo en el que este seteado el modulo
 			$prefijo = $this->module->getPrefijoModo();
 			$connector = $this->prepare_connector($prefijo);
-			$this->tranEstado = $this->_tranEstado($cart->id);
-
+			$this->tranEstado = $this->_tranEstado($cart->id);  
+            
             switch ($paso)
             {
                 case 1:
+                    $this->module->log->info('Estás en el paso 1');
                     list($smarty, $template) = $this->first_step_todopago($cart, $prefijo, $cliente, $connector);
                 break;
                 case 2:
+                    $this->module->log->info('Estás en el paso 2');
                     $this->second_step_todopago($prefijo, $cart, $connector);
                 break;
                 case 3:
-                    $order  = Tools::getValue('order');
+                    $this->module->log->info('Estás en el paso 3');
+                    $order=Tools::getValue('order');
                     $orderIdTPOperation = Tools::getValue('orderOperation');
                     $amount = Tools::getValue('amount');
                     $this->doRefund($order, $orderIdTPOperation, $amount);
                     die;
                 default:
                     $this->module->log->info('Redireccionando al paso 1');
-                    Tools::redirect($this->context->link->getModuleLink('todopago', 'payment', array ('paso' => '1'), true));
+                    $route_redirect=$this->context->link->getModuleLink('todopago', 'payment', array ('paso' => '1','payment_option'=>$payment_option), true);
+                    $this->module->log->info('Redireccionando al paso 1 , ruta que le paso: '.$route_redirect);
+                    Tools::redirect($route_redirect);
                 break;
             }
         }
@@ -115,7 +140,7 @@ class TodoPagoPaymentModuleFrontController extends ModuleFrontController
                 Db::getInstance()->delete(_DB_PREFIX_.'todopago_transaccion','id_orden = '.$cart->id);
             }
 
-            if (version_compare(_PS_VERSION_, '1.7.0.0') >= 0){
+            if ($this->compare_presta() >= 0){
                 Tools::redirect($this->context->link->getModuleLink('todopago', 'pagemessagereturn', array('step' => 'first')));
             }else{
                 $template='payment_error';
@@ -135,9 +160,10 @@ class TodoPagoPaymentModuleFrontController extends ModuleFrontController
             'cliente' =>$cliente->email,
             'this_path' => $this->module->getPathUri(),
             'this_path_modulo' => strtolower('modules/'.$this->module->name.'/'),
-            'this_path_ssl' => Tools::getShopDomainSsl(true, true).__PS_BASE_URI__.'modules/'.$this->module->name.'/'
+            'this_path_ssl' => Tools::getShopDomainSsl(true, true).__PS_BASE_URI__.'modules/'.$this->module->name.'/',
+            'payment_option'=>Tools::getValue('payment_option')
         ));
-
+        
         if (isset($smarty))//hay casos en los que esta variable no esta seteada
         {
             $this->context->smarty->assign(array(
@@ -145,132 +171,169 @@ class TodoPagoPaymentModuleFrontController extends ModuleFrontController
             ));
         }
 
-        if (version_compare(_PS_VERSION_, '1.7.0.0') >= 0){
+        $this->module->log->info('Version de Presta mayor a 1.7.0: '.$this->compare_presta());
+        
+        $this->module->log->info('Antes de llamar al formulario hibrido o externo.Valor de payment_option= '.$payment_option);
+        
+        if ($this->compare_presta() >= 0){
             $embebed = $this->_getEmbebedSettings();
 
             if($embebed['enabled'] == 1){
-                //prueb redirect a form hibrido
-                Tools::redirect($this->context->link->getModuleLink('todopago', 'tppaymentform', array('order' => $cart->id)));
-
-            }else{
+                //pruebo redirect a form hibrido
+                
+                $module_name="todopago";
+                
+                $controller_name="tppaymentform";
+                
+                $fc="module";
+                               
+                $payment_option=$this->db->executeS("SELECT payment_option FROM " . _DB_PREFIX_ . "todopago_banner_billetera");
+                
+                $this->update_todopago_banner_table("form");
+       
+                //$route=$this->context->link->getModuleLink('todopago', 'tppaymentform', array('order' => $cart->id,'payment_option'=>$payment_option[0]["payment_option"]),true);
+                
+                //$alt_route=_PS_BASE_URL_.__PS_BASE_URI__."index.php?order={$cart->id}&payment_option={$payment_option[0]["payment_option"]}&fc={$fc}&module={$module_name}&controller={$controller_name}";
+                
+                $valor_billetera=$payment_option[0]["payment_option"];
+                
+                $valores_concatenados="Valores concatenados ->Nombre del modulo: {$module_name} , nombre del controlador: {$controller_name} , fc: {$fc} , valor de payment option: {$valor_billetera}";
+                
+                $this->module->log->info($valores_concatenados);
+                
+                $alt_route="index.php?order={$cart->id}&payment_option={$valor_billetera}&fc={$fc}&module={$module_name}&controller={$controller_name}";
+                
+                $this->module->log->info("Ruta para abrir el form y procesar el pago: {$alt_route}");
+                
+                Tools::redirect($alt_route);
+            }
+            else{
                 //form externo
+                $this->module->log->info("Redir a formulario ext");
                 Tools::redirect($smarty['redir']);
             }
-
+            
         }else{
+            $this->module->log->info('Justo antes de setear el template: '.$template);
             $this->setTemplate($template.'.tpl');
         }
     }
 
-	protected function prepare_connector($prefijo)
-	{
-		//Traigo los settings del servicio (proxy, ubicacion del certificado y timeout
-		$servicioConfig = $this->_getServiceSettings($prefijo);
+    public function update_todopago_banner_table($value){
+        $this->db->executeS("UPDATE " . _DB_PREFIX_ . "todopago_banner_billetera set payment_option='{$value}'");
+        
+        //$this->db->update(_DB_PREFIX_.'todopago_banner_billetera',array('id'=>1,'payment_option'=>$value));
+    }
+    
+    protected function prepare_connector($prefijo)
+    {
+            //Traigo los settings del servicio (proxy, ubicacion del certificado y timeout
+            $servicioConfig = $this->_getServiceSettings($prefijo);
 
-		$mode = ($this->module->getModo())?"prod":"test";
-		//creo el conector con el valor de Authorization
-		$connector = new Sdk($this->_getAuthorization(), $mode);
+            $mode = ($this->module->getModo())?"prod":"test";
+            //creo el conector con el valor de Authorization
+            $connector = new Sdk($this->_getAuthorization(), $mode);
 
-		if (isset($servicioConfig['proxy'])) // si hay un proxy
-			$connector->setProxyParameters($proxy['host'], $proxy['port'], $proxy['user'], $proxy['pass']);
+            if (isset($servicioConfig['proxy'])) // si hay un proxy
+                    $connector->setProxyParameters($proxy['host'], $proxy['port'], $proxy['user'], $proxy['pass']);
 
-		if ($servicioConfig['certificado'] != '')//si hay una ubicación de certificado
-			$connector->setLocalCert($servicioConfig['certificado']);
+            if ($servicioConfig['certificado'] != '')//si hay una ubicación de certificado
+                    $connector->setLocalCert($servicioConfig['certificado']);
 
-		if ($servicioConfig['timeout'] != '')//si hay un timeout
-			$connector->setConnectionTimeout($servicioConfig['timeout']);
+            if ($servicioConfig['timeout'] != '')//si hay un timeout
+                    $connector->setConnectionTimeout($servicioConfig['timeout']);
 
-		return $connector;
-	}
+            return $connector;
+    }
 
-	protected function prepare_order($cart)
-	{
-		if($this->tranEstado == 0)
-			$this->_tranCrear($cart->id, array());
-	}
+    protected function prepare_order($cart)
+    {
+            if($this->tranEstado == 0)
+                    $this->_tranCrear($cart->id, array());
+    }
 
-	protected function get_paydata($prefijo, $cart, $cliente)
-	{
-        $options = $this->getOptionsSARComercio($prefijo, $cart->id);
-        $options = array_merge($options, $this->getOptionsSAROperacion($prefijo, $cliente, $cart));
+    protected function get_paydata($prefijo, $cart, $cliente)
+    {
+    $options = $this->getOptionsSARComercio($prefijo, $cart->id);
+    $options = array_merge($options, $this->getOptionsSAROperacion($prefijo, $cliente, $cart));
 
-        $this->module->log->info('params SAR - '.json_encode($options));
-		return $options;
-	}
+    $this->module->log->info('params SAR - '.json_encode($options));
+            return $options;
+    }
 
-  protected function call_SAR($options, $cart, $prefijo, $cliente, $connector)
-  {
-      $user_location = str_replace(' ', '', $options['operacion']['CSBTSTREET1']) . $options['operacion']['CSBTPOSTALCODE'];
-      $base_location = $this->get_base_gmaps($user_location);
+    protected function call_SAR($options, $cart, $prefijo, $cliente, $connector)
+    {
+        $user_location = str_replace(' ', '', $options['operacion']['CSBTSTREET1']) . $options['operacion']['CSBTPOSTALCODE'];
+        $base_location = $this->get_base_gmaps($user_location);
 
-      if (Configuration::get($this->module->getPrefijo('PREFIJO_CONFIG') . '_GMAPS') == 1 && $base_location == null) {
-          $g = new \TodoPago\Client\Google();
-          $connector->setGoogleClient($g);
-          $respuesta            = $connector->sendAuthorizeRequest($options['comercio'], $options['operacion']); //me comunico con el webservice
-          $responseGoogleStatus = $connector->getGoogleClient()->getGoogleResponse()['billing']['status'];
-          $responseGoogle       = $connector->getGoogleClient()->getFinalAddress();
+        if (Configuration::get($this->module->getPrefijo('PREFIJO_CONFIG') . '_GMAPS') == 1 && $base_location == null) {
+            $g = new \TodoPago\Client\Google();
+            $connector->setGoogleClient($g);
+            $respuesta            = $connector->sendAuthorizeRequest($options['comercio'], $options['operacion']); //me comunico con el webservice
+            $responseGoogleStatus = $connector->getGoogleClient()->getGoogleResponse()['billing']['status'];
+            $responseGoogle       = $connector->getGoogleClient()->getFinalAddress();
 
-          if (!$responseGoogle['billing']['CSBTPOSTALCODE']) {
-              $responseGoogle['billing']['CSBTPOSTALCODE'] = $options['operacion']['CSBTPOSTALCODE'];
-          }
-          if (!$responseGoogle['shipping']['CSSTPOSTALCODE']) {
-              $responseGoogle['shipping']['CSSTPOSTALCODE'] = $options['operacion']['CSSTPOSTALCODE'];
-          }
-          if ($responseGoogleStatus == 'OK') {
-              $this->set_base_gmaps($user_location, $responseGoogle);
-          } else {
-              $respuesta = $connector->sendAuthorizeRequest($options['comercio'], $options['operacion']);
-          }
-      } else if (Configuration::get($this->module->getPrefijo('PREFIJO_CONFIG') . '_GMAPS') == 1 && $base_location != null) {
-          $options   = $this->merge_sar_with_base($options, $base_location);
-          $respuesta = $connector->sendAuthorizeRequest($options['comercio'], $options['operacion']); //me comunico con el webservice
+            if (!$responseGoogle['billing']['CSBTPOSTALCODE']) {
+                $responseGoogle['billing']['CSBTPOSTALCODE'] = $options['operacion']['CSBTPOSTALCODE'];
+            }
+            if (!$responseGoogle['shipping']['CSSTPOSTALCODE']) {
+                $responseGoogle['shipping']['CSSTPOSTALCODE'] = $options['operacion']['CSSTPOSTALCODE'];
+            }
+            if ($responseGoogleStatus == 'OK') {
+                $this->set_base_gmaps($user_location, $responseGoogle);
+            } else {
+                $respuesta = $connector->sendAuthorizeRequest($options['comercio'], $options['operacion']);
+            }
+        } else if (Configuration::get($this->module->getPrefijo('PREFIJO_CONFIG') . '_GMAPS') == 1 && $base_location != null) {
+            $options   = $this->merge_sar_with_base($options, $base_location);
+            $respuesta = $connector->sendAuthorizeRequest($options['comercio'], $options['operacion']); //me comunico con el webservice
 
-      } else {
+        } else {
 
-          $respuesta = $connector->sendAuthorizeRequest($options['comercio'], $options['operacion']); //me comunico con el webservice
+            $respuesta = $connector->sendAuthorizeRequest($options['comercio'], $options['operacion']); //me comunico con el webservice
 
-      }
+        }
 
-      $this->module->log->info('response SAR - ' . json_encode($respuesta));
+        $this->module->log->info('response SAR - ' . json_encode($respuesta));
 
-      //validate states set
-      if (Configuration::get($prefijo . '_APROBADA') == " " || Configuration::get($prefijo . '_DENEGADA') == " " || Configuration::get($prefijo . '_PROCESO') == " " || Configuration::get($prefijo . '_PENDIENTE') == " ") {
+        //validate states set
+        if (Configuration::get($prefijo . '_APROBADA') == " " || Configuration::get($prefijo . '_DENEGADA') == " " || Configuration::get($prefijo . '_PROCESO') == " " || Configuration::get($prefijo . '_PENDIENTE') == " ") {
 
-          $this->module->log->info('Los estados del proceso de pago de Todopago no estan definidos');
-          throw new Exception("Los estados de la compra de Todopago no estan definidos");
-      }
+            $this->module->log->info('Los estados del proceso de pago de Todopago no estan definidos');
+            throw new Exception("Los estados de la compra de Todopago no estan definidos");
+        }
 
-      if ($respuesta['StatusCode'] != $this->codigoAprobacion) //Si la transacción salió mal
-          {
-          if (($respuesta['StatusCode'] == 702) && (!$this->first_step)) {
-              $http_header = $this->_getAuthorization();
-              $merchant    = Configuration::get($prefijo . '_ID_SITE');
-              $security    = Configuration::get($prefijo . '_SECURITY');
-              if ((isset($http_header["Authorization"])) && (!empty($merchant)) && (!empty($security))) {
-                  $this->first_step = true;
-                  $this->module->log->info('Reintento');
-                  $this->first_step_todopago($cart, $prefijo, $cliente, $connector);
-              }
-          }
-          $this->_guardarTransaccion($cart, $respuesta['StatusMessage'], "");
-          $this->_tranUpdate($cart->id, array(
-              "first_step" => null
-          ));
-          $smarty['status'] = 0; //indica que hubo un error en este paso
-          throw new Exception($respuesta['StatusMessage']);
-      }
-      $this->_guardarTransaccion($cart, $respuesta['StatusMessage'], $respuesta['RequestKey']); //guardo la request key y otros datos importantes
+        if ($respuesta['StatusCode'] != $this->codigoAprobacion) //Si la transacción salió mal
+            {
+            if (($respuesta['StatusCode'] == 702) && (!$this->first_step)) {
+                $http_header = $this->_getAuthorization();
+                $merchant    = Configuration::get($prefijo . '_ID_SITE');
+                $security    = Configuration::get($prefijo . '_SECURITY');
+                if ((isset($http_header["Authorization"])) && (!empty($merchant)) && (!empty($security))) {
+                    $this->first_step = true;
+                    $this->module->log->info('Reintento');
+                    $this->first_step_todopago($cart, $prefijo, $cliente, $connector);
+                }
+            }
+            $this->_guardarTransaccion($cart, $respuesta['StatusMessage'], "");
+            $this->_tranUpdate($cart->id, array(
+                "first_step" => null
+            ));
+            $smarty['status'] = 0; //indica que hubo un error en este paso
+            throw new Exception($respuesta['StatusMessage']);
+        }
+        $this->_guardarTransaccion($cart, $respuesta['StatusMessage'], $respuesta['RequestKey']); //guardo la request key y otros datos importantes
 
-      $now = new DateTime();
-      $this->_tranUpdate($cart->id, array(
-          "first_step" => $now->format('Y-m-d H:i:s'),
-          "params_SAR" => pSql(json_encode($options)),
-          "response_SAR" => json_encode($respuesta),
-          "request_key" => $respuesta['RequestKey'],
-          "public_request_key" => $respuesta['PublicRequestKey']
-      ));
+        $now = new DateTime();
+        $this->_tranUpdate($cart->id, array(
+            "first_step" => $now->format('Y-m-d H:i:s'),
+            "params_SAR" => pSql(json_encode($options)),
+            "response_SAR" => json_encode($respuesta),
+            "request_key" => $respuesta['RequestKey'],
+            "public_request_key" => $respuesta['PublicRequestKey']
+        ));
 
-      return $respuesta;
+        return $respuesta;
   }
 
   protected function get_base_gmaps($user_location)
@@ -299,29 +362,28 @@ class TodoPagoPaymentModuleFrontController extends ModuleFrontController
       return $options;
   }
 
-	protected function custom_commerce($respuesta)
-	{
-        $smarty['redir'] = $respuesta['URL_Request'];//direccion del formulario
-        $smarty['StatusMessage'] = $respuesta['StatusMessage'];//mensaje que devuelve el primer webservice
-        $smarty['status'] = 1;//indica que este paso se ejecuto correctamente
-        $smarty['RequestKey'] = $respuesta['RequestKey'];
-        $smarty['PublicRequestKey'] = $respuesta['PublicRequestKey'];
+    protected function custom_commerce($respuesta)
+    {
+    $smarty['redir'] = $respuesta['URL_Request'];//direccion del formulario
+    $smarty['StatusMessage'] = $respuesta['StatusMessage'];//mensaje que devuelve el primer webservice
+    $smarty['status'] = 1;//indica que este paso se ejecuto correctamente
+    $smarty['RequestKey'] = $respuesta['RequestKey'];
+    $smarty['PublicRequestKey'] = $respuesta['PublicRequestKey'];
 
-        // Chequeo si form embebed o redirect
-        $embebed = $this->_getEmbebedSettings();
-        if($embebed['enabled'])
-        {
-            $smarty['embebed'] = $embebed;
-            $template = 'payment_embebed';
-        } else {
-            $template = 'payment_execution';
-        }
-        return array($smarty,$template);
-	}
+    // Chequeo si form embebed o redirect
+    $embebed = $this->_getEmbebedSettings();
+    if($embebed['enabled'])
+    {
+        $smarty['embebed'] = $embebed;
+        $template = 'payment_embebed';
+    } else {
+        $template = 'payment_execution';
+    }
+    return array($smarty,$template);
+    }
 
     public function first_step_todopago($cart, $prefijo, $cliente, $connector)
     {
-
         /** PASO 1: sendAuthorizeRequest
          * La respuesta contiene los siguientes campos:
          * StatusCode: codigo correspondiente al resultado de la autorizacion,
@@ -751,4 +813,9 @@ class TodoPagoPaymentModuleFrontController extends ModuleFrontController
         }
 
     }
+    
+     private function compare_presta(){
+        return version_compare(_PS_VERSION_, '1.7.0.0');
+    }
+   
 }

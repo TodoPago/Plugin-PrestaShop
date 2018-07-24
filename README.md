@@ -2,7 +2,7 @@
 Prestashop - módulo Todo Pago (v1.4.x a 1.9.x)
 ==========
 
-**Para reinstalar debe desinstalar cualquier versión anterior antes de copiar el plugin a la carpeta modules de Prestashop. De lo contrario fallará la instalacion de la nueva versión**
+**Para actualizar el módulo debe desinstalar cualquier versión anterior antes de copiar el plugin a la carpeta modules de Prestashop. De lo contrario fallará la instalacion de la nueva versión**
 
 Plug in para la integración con gateway de pago <strong>Todo Pago</strong>
 - [Consideraciones Generales](#consideracionesgenerales)

@@ -2,7 +2,6 @@
 
 Class todopagoTppaymentformModuleFrontController extends ModuleFrontController
 {
-
 	public function init()
 	{
 	    $this->page_name = 'Todo Pago Payment'; // page_name and body id
@@ -20,30 +19,31 @@ Class todopagoTppaymentformModuleFrontController extends ModuleFrontController
 	    }else{
 	    	$prestaVersion = 16;
 	    }
+            $order=Tools::getValue('order');
 
-            
-                $order=Tools::getValue('order');
-                
-                $sql = 'SELECT params_SAR FROM '._DB_PREFIX_.'todopago_transaccion WHERE id_orden = '.$order;
+            $sql = 'SELECT params_SAR FROM '._DB_PREFIX_.'todopago_transaccion WHERE id_orden = '.$order;
 
-		$dataTransacciontions = Db::getInstance()->ExecuteS($sql);
-                
-                $params_sar=json_decode($dataTransacciontions[0]["params_SAR"]);
-                
-                $total_amount=$params_sar->operacion->AMOUNT;
-            
-		$this->context->smarty->assign(array(
-			'jslinkForm' => $this->getAmbientUrlForm(),
-			'publicKey' => $this->getPublicKey(),
-			'email' => $this->getMail(),
-                        'total'=>$total_amount,
-			'name' => $this->getCompleteName(),
-			'orderId' => Tools::getValue('order'),
-			'prestaVersion' => $prestaVersion,
-			'modulePath' => _PS_BASE_URL_.__PS_BASE_URI__, 
-			'logoForm' => $this->getLogoTP(),
-			'urlBase' => $this->context->link->getModuleLink('todopago', 'payment', array('paso' => '2'), true)
-		));
+            $dataTransacciontions = Db::getInstance()->ExecuteS($sql);
+
+            $params_sar=json_decode($dataTransacciontions[0]["params_SAR"]);
+
+            $total=$params_sar->operacion->AMOUNT;
+
+            $total_amount=number_format($total, 2);
+
+            $this->context->smarty->assign(array(
+                    'jslinkForm' => $this->getAmbientUrlForm(),
+                    'publicKey' => $this->getPublicKey(),
+                    'email' => $this->getMail(),
+                    'total'=>$total_amount,
+                    'name' => $this->getCompleteName(),
+                    'orderId' => Tools::getValue('order'),
+                    'prestaVersion' => $prestaVersion,
+                    'modulePath' => _PS_BASE_URL_.__PS_BASE_URI__, 
+                    'logoForm' => $this->getLogoTP(),
+                    'urlBase' => $this->context->link->getModuleLink('todopago', 'payment', array('paso' => '2'), true),
+                    'payment_option'=>Tools::getValue('payment_option')
+            ));
 
 		if (version_compare(_PS_VERSION_, '1.7.0.0') >= 0 ) {
             $this->setTemplate('module:todopago/views/templates/front/formblock17.tpl');
@@ -60,24 +60,23 @@ Class todopagoTppaymentformModuleFrontController extends ModuleFrontController
 
 	public function getPublicKey()
 	{
+            $id_orden = Tools::getValue('order');
+            //$id_orden = 6;
+            $requestPublicKey = "";
 
-		$id_orden = Tools::getValue('order');
-		//$id_orden = 6;
-		$requestPublicKey = "";
+            $sql = 'SELECT public_request_key FROM '._DB_PREFIX_.'todopago_transaccion WHERE id_orden = '.$id_orden;
 
-		$sql = 'SELECT public_request_key FROM '._DB_PREFIX_.'todopago_transaccion WHERE id_orden = '.$id_orden;
+            $dataTransacciontions = Db::getInstance()->ExecuteS($sql);
 
-		$dataTransacciontions = Db::getInstance()->ExecuteS($sql);
+            if (!$dataTransacciontions){
+                    return null;
+            }else{
+                    foreach($dataTransacciontions as $publicKey){
+                            $requestPublicKey = $publicKey['public_request_key'];
+                    }
+            }
 
-		if (!$dataTransacciontions){
-			return null;
-		}else{
-			foreach($dataTransacciontions as $publicKey){
-				$requestPublicKey = $publicKey['public_request_key'];
-			}
-		}
-
-		return $requestPublicKey;
+            return $requestPublicKey;
 	}
 
 	public function getMail()
